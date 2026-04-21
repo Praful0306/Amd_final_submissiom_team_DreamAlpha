@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en" data-role="doctor">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Sahayak AI — Doctor Dashboard</title>
+  <link rel="stylesheet" href="portal.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+  <script src="firebase_refresh.js"></script>
+  <script src="offline_sync.js" defer></script>
+</head>
+<body>
+<div class="portal-wrap">
+
+<!-- ── SIDEBAR ───────────────────────────────────────────── -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-logo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 4v4m0 8v4M4 12h4m8 0h4" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/><circle cx="12" cy="12" r="3" fill="#fff"/></svg></div>
+    <span class="sidebar-brand-name">Sahayak <span>AI</span></span>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Doctor Portal</div>
+    <div class="nav-item active" data-section="my-patients" onclick="showSection('my-patients',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      My Patients
+      <span class="nav-badge" id="patients-count" style="display:none">0</span>
+    </div>
+    <div class="nav-item" data-section="patient-detail" id="nav-patient-detail" onclick="showSection('patient-detail',this)" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span id="nav-patient-name">Patient Detail</span>
+    </div>
+    <div class="nav-item" data-section="all-records" onclick="showSection('all-records',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      All Records
+    </div>
+    <div class="nav-item" data-section="access-patient" onclick="showSection('access-patient',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      Access New Patient
+    </div>
+    <div class="nav-section-label" style="margin-top:.75rem">AI Assistant</div>
+    <div class="nav-item" onclick="openClinicalAssistant()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Clinical Assistant
+    </div>
+    <div class="nav-item" onclick="startDoctorVapiCall()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.18h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      Voice Patient Query
+    </div>
+    <div class="nav-section-label" style="margin-top:.75rem">Appointments</div>
+    <div class="nav-item" data-section="doc-calendar" id="nav-calendar" onclick="showSection('doc-calendar',this);loadCalendar()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Today's Appointments
+    </div>
+    <div class="nav-section-label" style="margin-top:.75rem">Account</div>
+    <div class="nav-item" data-section="doc-profile" onclick="showSection('doc-profile',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      My Profile
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-chip" onclick="showSection('doc-profile',document.querySelector('[data-section=doc-profile]'))">
+      <div class="user-avatar" id="doc-avatar">D</div>
+      <div>
+        <div class="user-info-name" id="doc-name">Doctor</div>
+        <div class="user-info-role" id="doc-spec">Physician</div>
+      </div>
+    </div>
+    <button class="btn-logout" onclick="logoutDoctor()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign Out
+    </button>
+  </div>
+</aside>
+
+<!-- ── MAIN ───────────────────────────────────────────────── -->
+<div class="main-area">
+  <div class="topbar">
+      <div class="net-status" id="net-indicator"><div class="net-dot network-status-dot" id="net-dot-main"></div><span class="network-status-label" id="net-label-main" style="display:none">Online</span></div>
+    <div class="topbar-left">
+      <h1 id="doc-page-title">My Patients</h1>
+      <p id="doc-page-sub">All patients who shared their code with you</p>
+    </div>
+    <div class="topbar-right">
+      <div class="search-box" style="width:260px">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="search-input" id="patient-search" placeholder="Search patients…" oninput="filterPatients()"/>
+      </div>
+      <button class="topbar-btn" onclick="showSection('access-patient', document.querySelector('[data-section=access-patient]'))">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Patient
+      </button>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- SEC 1: MY PATIENTS                                   -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div id="sec-my-patients" class="section-view active">
+      <div class="stat-row stat-4" style="margin-bottom:1.5rem">
+        <div class="stat-card">
+          <div class="stat-card-header"><div class="stat-icon stat-icon-blue"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div></div>
+          <div class="stat-value" id="doc-stat-total">0</div>
+          <div class="stat-label">Total Patients</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-header"><div class="stat-icon stat-icon-red"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg></div></div>
+          <div class="stat-value" id="doc-stat-highrisk">0</div>
+          <div class="stat-label">High / Emergency Risk</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-header"><div class="stat-icon stat-icon-orange"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></div></div>
+          <div class="stat-value" id="doc-stat-reports">0</div>
+          <div class="stat-label">Total Reports</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-header"><div class="stat-icon stat-icon-green"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div></div>
+          <div class="stat-value" id="doc-stat-updated">0</div>
+          <div class="stat-label">Updated This Week</div>
+        </div>
+      </div>
+      <div id="patient-cards-grid">
+        <div class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <h4>No patients yet</h4>
+          <p>Ask patients to share their Sahayak patient code with you, then add them using "Access New Patient".</p>
+          <button class="btn btn-primary" style="margin-top:1.25rem" onclick="showSection('access-patient', document.querySelector('[data-section=access-patient]'))">Access First Patient</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- SEC 2: PATIENT DETAIL                               -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div id="sec-patient-detail" class="section-view">
+      <div class="card" style="margin-bottom:1.5rem;padding:1.25rem 1.5rem">
+        <div style="display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap">
+          <div class="user-avatar" id="dp-avatar" style="width:52px;height:52px;font-size:1.25rem;font-weight:800">P</div>
+          <div style="flex:1">
+            <div style="font-size:1.375rem;font-weight:800;letter-spacing:-.5px" id="dp-name">—</div>
+            <div style="font-size:.875rem;color:var(--muted);margin-top:2px" id="dp-meta">—</div>
+          </div>
+          <div id="dp-risk-badge"></div>
+          <div style="display:flex;gap:.75rem">
+            <button class="btn btn-outline btn-sm" onclick="generateDoctorPDF(S.activeId)">🖨 Print Report</button>
+            <button class="btn btn-primary btn-sm" onclick="addDoctorNote()">+ Add Note</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-bar" style="max-width:500px;margin-bottom:1.5rem">
+        <button class="tab-pill active" onclick="switchPatientTab('overview',this)">Overview</button>
+        <button class="tab-pill" onclick="switchPatientTab('dp-reports',this)">All Reports</button>
+        <button class="tab-pill" onclick="switchPatientTab('dp-history',this)">Visit History</button>
+        <button class="tab-pill" onclick="switchPatientTab('dp-compare',this)">Compare</button>
+      </div>
+
+      <div id="dp-tab-overview" class="dp-tab">
+        <div class="stat-row stat-4" style="margin-bottom:1.5rem">
+          <div class="stat-card"><div class="stat-card-header"><div class="stat-icon stat-icon-orange"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div></div><div class="stat-value" id="dp-bp">—</div><div class="stat-label">Blood Pressure</div></div>
+          <div class="stat-card"><div class="stat-card-header"><div class="stat-icon stat-icon-amber"></div></div><div class="stat-value" id="dp-sugar">—</div><div class="stat-label">Blood Sugar</div></div>
+          <div class="stat-card"><div class="stat-card-header"><div class="stat-icon stat-icon-red"></div></div><div class="stat-value" id="dp-hb">—</div><div class="stat-label">Haemoglobin</div></div>
+          <div class="stat-card"><div class="stat-card-header"><div class="stat-icon stat-icon-green"></div></div><div class="stat-value" id="dp-spo2">—</div><div class="stat-label">SpO2</div></div>
+        </div>
+        <div class="card-grid-2" style="margin-bottom:1.5rem">
+          <div class="chart-box">
+            <div class="chart-box-title">Blood Sugar Trend</div>
+            <div class="chart-box-sub">All readings from uploaded reports</div>
+            <div class="chart-area"><canvas id="dp-sugar-chart"></canvas></div>
+          </div>
+          <div class="chart-box">
+            <div class="chart-box-title">Haemoglobin Trend</div>
+            <div class="chart-box-sub">g/dL across all checkups</div>
+            <div class="chart-area"><canvas id="dp-hb-chart"></canvas></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">AI Clinical Summary</div><div class="card-subtitle">LLaMA 70B analysis of all patient reports</div></div><span class="ai-badge">AI Generated</span></div>
+          <div id="dp-ai-summary"><div class="empty-state" style="padding:1.5rem"><p>Generate AI report from patient's records to see clinical summary.</p></div></div>
+        </div>
+      </div>
+
+      <div id="dp-tab-dp-reports" class="dp-tab" style="display:none">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">All Patient Reports</div>
+            <div class="search-box" style="max-width:240px">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input class="search-input" placeholder="Search reports…" oninput="filterDPReports(this.value)"/>
+            </div>
+          </div>
+          <div id="dp-reports-list"><div class="empty-state" style="padding:2rem"><p>No reports uploaded yet.</p></div></div>
+        </div>
+      </div>
+
+      <div id="dp-tab-dp-history" class="dp-tab" style="display:none">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Visit Timeline</div>
+            <div class="card-subtitle" id="dp-visit-count">—</div>
+          </div>
+          <div id="dp-timeline-list"><div class="empty-state" style="padding:2rem"><p>No checkup history available.</p></div></div>
+        </div>
+      </div>
+
+      <div id="dp-tab-dp-compare" class="dp-tab" style="display:none">
+        <div class="card" style="margin-bottom:1.5rem">
+          <div class="card-header"><div><div class="card-title">Latest vs Previous Report</div><div class="card-subtitle">Key changes between most recent reports</div></div></div>
+          <div id="dp-compare-table"><div class="empty-state" style="padding:2rem"><p>At least 2 reports needed for comparison.</p></div></div>
+        </div>
+        <div class="card-grid-2">
+          <div class="chart-box">
+            <div class="chart-box-title">Multi-metric Radar</div>
+            <div class="chart-box-sub">Latest report health profile</div>
+            <div class="chart-area"><canvas id="dp-radar-chart"></canvas></div>
+          </div>
+          <div class="chart-box">
+            <div class="chart-box-title">Risk Level History</div>
+            <div class="chart-box-sub">AI risk assessment over time</div>
+            <div class="chart-area"><canvas id="dp-risk-chart"></canvas></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- SEC 3: ALL RECORDS                                   -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div id="sec-all-records" class="section-view">
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Patient Records Database</div><div class="card-subtitle" id="all-records-count">All accessible patients</div></div>
+          <div style="display:flex;gap:.75rem;align-items:center">
+            <select id="records-filter-risk" class="form-select" style="font-size:.8rem;padding:.4rem .75rem" onchange="filterAllRecords()">
+              <option value="">All Risk Levels</option>
+              <option value="EMERGENCY">Emergency</option>
+              <option value="HIGH">High Risk</option>
+              <option value="MEDIUM">Medium Risk</option>
+              <option value="LOW">Low Risk</option>
+            </select>
+            <div class="search-box" style="width:240px">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input class="search-input" id="all-records-search" placeholder="Search by name, condition…" oninput="filterAllRecords()"/>
+            </div>
+          </div>
+        </div>
+        <div class="data-table-wrap">
+          <table class="data-table" id="all-records-table">
+            <thead>
+              <tr>
+                <th>Patient</th><th>Age/Gender</th><th>Last Visit</th><th>Reports</th><th>Risk Level</th><th>Condition</th><th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="all-records-tbody">
+              <tr><td colspan="7" style="text-align:center;padding:3rem;color:var(--muted)">No patients found.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- SEC 4: ACCESS NEW PATIENT                            -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div id="sec-access-patient" class="section-view">
+      <div style="max-width:500px;margin:3rem auto">
+        <div class="card" style="text-align:center;padding:3rem">
+          <div style="width:64px;height:64px;background:var(--pale);border:1px solid var(--orange-border);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;color:var(--orange)">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <h2 style="font-size:1.5rem;font-weight:800;letter-spacing:-.5px;margin-bottom:.75rem">Access Patient Records</h2>
+          <p style="font-size:.9375rem;color:var(--muted);margin-bottom:2rem;line-height:1.65">Ask your patient for their Sahayak Patient Code. Enter it below to get instant access to their complete health history.</p>
+          <div style="text-align:left;margin-bottom:1.5rem">
+            <label class="form-label" style="display:block;margin-bottom:.5rem">Patient Access Code</label>
+            <input id="access-code-input" class="form-input" placeholder="e.g. SAHA-7293" style="text-align:center;letter-spacing:.2em;font-size:1.25rem;font-weight:700;text-transform:uppercase"/>
+          </div>
+          <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:1rem;padding:.875rem" onclick="accessPatientByCode()">
+            Access Patient Records
+          </button>
+          <p style="font-size:.75rem;color:var(--hint);margin-top:1rem;line-height:1.6">You get read-only access to all uploaded reports, checkup history, and AI analysis. The patient can revoke access by regenerating their code.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- SEC 5: MY PROFILE                                    -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div id="sec-doc-profile" class="section-view">
+      <div class="card-grid-2" style="max-width:960px">
+
+        <!-- Profile Card -->
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">Professional Profile</div><div class="card-subtitle">Your account & credentials</div></div>
+            <button class="btn btn-outline btn-sm" id="dp-prof-edit-btn" onclick="toggleDocProfileEdit()">Edit Profile</button>
+          </div>
+
+          <!-- View Mode -->
+          <div id="dp-prof-view">
+            <div style="display:flex;align-items:center;gap:1.25rem;margin-bottom:1.5rem">
+              <div class="user-avatar" id="dp-prof-avatar" style="width:60px;height:60px;font-size:1.375rem;font-weight:800;flex-shrink:0">D</div>
+              <div>
+                <div style="font-size:1.25rem;font-weight:800;letter-spacing:-.4px" id="dp-prof-name">—</div>
+                <div style="font-size:.875rem;color:var(--muted);margin-top:2px" id="dp-prof-spec">—</div>
+              </div>
+            </div>
+            <div style="display:grid;gap:1rem">
+              <div class="prof-row"><div class="prof-label">Email</div><div class="prof-value" id="dp-prof-email">—</div></div>
+              <div class="prof-row"><div class="prof-label">Hospital / Clinic</div><div class="prof-value" id="dp-prof-hosp">—</div></div>
+              <div class="prof-row"><div class="prof-label">Registration No.</div><div class="prof-value" id="dp-prof-reg">—</div></div>
+              <div class="prof-row"><div class="prof-label">Phone</div><div class="prof-value" id="dp-prof-phone">—</div></div>
+              <div class="prof-row"><div class="prof-label">Experience</div><div class="prof-value" id="dp-prof-exp">—</div></div>
+            </div>
+          </div>
+
+          <!-- Edit Mode -->
+          <div id="dp-prof-edit" style="display:none">
+            <div class="form-grid-2" style="gap:.875rem">
+              <div class="form-group full"><label class="form-label">Full Name</label><input class="form-input" id="dpe-name" placeholder="Dr. Full Name"/></div>
+              <div class="form-group full"><label class="form-label">Specialization</label><input class="form-input" id="dpe-spec" placeholder="e.g. General Physician, Cardiologist"/></div>
+              <div class="form-group full"><label class="form-label">Hospital / Clinic</label><input class="form-input" id="dpe-hospital" placeholder="Hospital or clinic name"/></div>
+              <div class="form-group"><label class="form-label">Registration No.</label><input class="form-input" id="dpe-reg" placeholder="MCI/State reg. no."/></div>
+              <div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="dpe-phone" placeholder="+91 XXXXX XXXXX"/></div>
+              <div class="form-group full"><label class="form-label">Years of Experience</label><input class="form-input" type="number" id="dpe-exp" placeholder="e.g. 8"/></div>
+            </div>
+            <div style="display:flex;gap:.75rem;margin-top:1.25rem">
+              <button class="btn btn-primary" onclick="saveDocProfile_fn()">Save Changes</button>
+              <button class="btn btn-outline" onclick="toggleDocProfileEdit()">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats + Info Cards -->
+        <div style="display:flex;flex-direction:column;gap:1rem">
+          <div class="card">
+            <div class="card-title" style="margin-bottom:1rem">Activity Summary</div>
+            <div class="stat-row stat-3" style="margin:0">
+              <div class="stat-card" style="padding:1rem"><div class="stat-value" style="font-size:1.5rem" id="dp-prof-stat-patients">0</div><div class="stat-label">Patients</div></div>
+              <div class="stat-card" style="padding:1rem"><div class="stat-value" style="font-size:1.5rem" id="dp-prof-stat-reports">0</div><div class="stat-label">Reports</div></div>
+              <div class="stat-card" style="padding:1rem"><div class="stat-value" style="font-size:1.5rem;color:var(--danger)" id="dp-prof-stat-highrisk">0</div><div class="stat-label">High Risk</div></div>
+            </div>
+          </div>
+          <div class="card" style="flex:1">
+            <div class="card-title" style="margin-bottom:.875rem">Data & Privacy</div>
+            <div class="insight-card insight-good" style="margin-bottom:.75rem">🔒 Patient data is stored <strong>on the patient's device only</strong>. You see only what they share with you.</div>
+            <div class="insight-card insight-info" style="margin-bottom:.75rem">🏛 AI diagnoses are based on <strong>ICMR & WHO Standard Treatment Guidelines</strong>.</div>
+            <div class="insight-card" style="border-color:var(--muted);background:var(--surface2);color:var(--muted)">⚡ Running on <strong>AMD Ryzen AI NPU</strong> — offline, private, edge inference.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end .page-content -->
+</div><!-- end .main-area -->
+</div><!-- end .portal-wrap -->
+
+<!-- ── MODAL: Doctor Note ─────────── -->
+<div id="doctor-note-modal" class="modal-bg">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Add Clinical Note</h3>
+      <button class="modal-close" onclick="closeModal('doctor-note-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Clinical Observation</label><textarea id="note-text" class="form-textarea" style="min-height:140px" placeholder="Your clinical notes, observations, or recommendations…"></textarea></div>
+      <div class="form-group"><label class="form-label">Action Required</label><select id="note-action" class="form-select"><option value="none">No immediate action</option><option value="followup">Schedule follow-up</option><option value="test">Additional tests needed</option><option value="refer">Referral required</option><option value="urgent">Urgent intervention</option></select></div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('doctor-note-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveDoctorNote()">Save Note</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast" style="display:none"></div>
+
+<style>
+/* ── Doctor-page-specific styles ── */
+.dp-tab{display:none}
+.dp-tab.active{display:block}
+
+/* Patient cards */
+.patient-cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem}
+.patient-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;transition:var(--t);cursor:pointer}
+.patient-card:hover{border-color:var(--orange-border);transform:translateY(-2px);box-shadow:var(--shadow)}
+.pc-header{display:flex;align-items:center;gap:.875rem;margin-bottom:.875rem}
+.pc-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--orange),var(--orange-light));color:#fff;font-size:1.0625rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pc-name{font-size:.9375rem;font-weight:700;margin-bottom:2px}
+.pc-meta{font-size:.75rem;color:var(--muted)}
+.pc-vitals{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-bottom:.875rem}
+.pc-vital{text-align:center;padding:.5rem;background:var(--surface2);border-radius:8px}
+.pc-vval{font-size:.9375rem;font-weight:700}
+.pc-vlbl{font-size:.65rem;color:var(--muted);margin-top:1px}
+.pc-footer{display:flex;justify-content:space-between;font-size:.75rem;color:var(--muted)}
+
+/* Compare table */
+.change-up{color:var(--danger)}.change-down{color:var(--success)}.change-same{color:var(--muted)}
+
+/* Profile rows */
+.prof-row{display:flex;align-items:flex-start;gap:1rem;padding:.625rem 0;border-bottom:1px solid var(--border)}
+.prof-row:last-child{border-bottom:none}
+.prof-label{font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;min-width:130px;padding-top:1px;flex-shrink:0}
+.prof-value{font-size:.9rem;font-weight:500;color:var(--text)}
+
+.net-status{display:flex;align-items:center;gap:.35rem;font-size:.72rem;color:var(--muted)}
+.net-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;flex-shrink:0;transition:.3s}
+.net-dot.offline{background:#f59e0b;animation:net-pulse .9s infinite}
+@keyframes net-pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+</style>
+
+<script src="report_generator.js"></script>
+<script src="doctor.js"></script>
+<script>
+// Update doctor profile stats on load
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    if (typeof S !== 'undefined') {
+      const el1 = document.getElementById('dp-prof-stat-patients');
+      const el2 = document.getElementById('dp-prof-stat-reports');
+      const el3 = document.getElementById('dp-prof-stat-highrisk');
+      if (el1) el1.textContent = S.patients.length;
+      if (el2) el2.textContent = S.patients.reduce((s,p)=>s+p.reports.length,0);
+      if (el3) el3.textContent = S.patients.filter(p=>p.reports[0]&&(p.reports[0].ai_risk==='HIGH'||p.reports[0].ai_risk==='EMERGENCY')).length;
+    }
+  }, 600);
+});
+</script>
+
+  <!-- Doctor Appointment Calendar Section -->
+  <div id="sec-doc-calendar" class="section-view" style="padding:1.5rem;display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem">
+      <div>
+        <h2 style="font-size:1.4rem;font-weight:800;margin-bottom:.25rem">Appointments</h2>
+        <p style="color:var(--muted);font-size:.875rem" id="cal-date-label">Today</p>
+      </div>
+      <div style="display:flex;gap:.75rem;align-items:center">
+        <input type="date" id="cal-date-picker" style="padding:.5rem .9rem;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:.875rem" onchange="loadCalendar()"/>
+        <button onclick="loadCalendar()" style="background:var(--or);color:#fff;border:none;border-radius:10px;padding:.5rem 1.25rem;font-size:.875rem;font-weight:600;cursor:pointer">Refresh</button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem">
+      <div class="card">
+        <div class="card-header"><div class="card-title">Free Slots</div></div>
+        <div id="slot-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;padding:.75rem"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Booked</div><span id="appt-count-badge" style="background:rgba(227,90,44,.12);color:var(--or);padding:2px 10px;border-radius:20px;font-size:.75rem;font-weight:700">0</span></div>
+        <div id="appt-list" style="padding:.5rem 0;max-height:280px;overflow-y:auto"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Book Appointment</div></div>
+      <div class="card-body" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;align-items:end">
+        <div><label style="font-size:.75rem;font-weight:600;color:var(--muted);display:block;margin-bottom:.3rem">Patient Name</label>
+          <input id="bk-name" placeholder="Name" style="width:100%;padding:.6rem .9rem;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text)"/></div>
+        <div><label style="font-size:.75rem;font-weight:600;color:var(--muted);display:block;margin-bottom:.3rem">Phone</label>
+          <input id="bk-phone" placeholder="+91 XXXXX" style="width:100%;padding:.6rem .9rem;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text)"/></div>
+        <div><label style="font-size:.75rem;font-weight:600;color:var(--muted);display:block;margin-bottom:.3rem">Time Slot</label>
+          <select id="bk-slot" style="width:100%;padding:.6rem .9rem;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text)"></select></div>
+        <div style="grid-column:1/-1"><label style="font-size:.75rem;font-weight:600;color:var(--muted);display:block;margin-bottom:.3rem">Reason</label>
+          <input id="bk-reason" placeholder="Reason for visit" style="width:100%;padding:.6rem .9rem;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text)"/></div>
+        <button onclick="manualBook()" style="background:var(--or);color:#fff;border:none;border-radius:10px;padding:.65rem 1.5rem;font-size:.875rem;font-weight:700;cursor:pointer">Book Now</button>
+        <div id="bk-msg" style="grid-column:2/-1;font-size:.8rem;color:var(--muted)"></div>
+      </div>
+    </div>
+  </div>
+
+<!-- Doctor VAPI Settings Section -->
+<div id="sec-voice-settings" class="section-view" style="padding:1.5rem;display:none">
+  <h2 style="margin-bottom:1.5rem;font-size:1.4rem;font-weight:800">Voice Assistant Settings</h2>
+  <div class="card" style="max-width:520px">
+    <div class="card-header"><div class="card-title">VAPI Clinical Assistant</div></div>
+    <div class="card-body" style="display:flex;flex-direction:column;gap:1rem">
+      <div><label style="font-size:.8rem;font-weight:600;color:var(--muted);display:block;margin-bottom:.4rem">VAPI Public Key</label>
+        <input id="d-vapi-key" type="password" placeholder="vapi_pub_xxxx…" style="width:100%;padding:.6rem .9rem;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text)"/></div>
+      <button onclick="saveDoctorVapiSettings()" style="background:#e35a2c;color:#fff;border:none;border-radius:22px;padding:.6rem 1.5rem;font-size:.875rem;font-weight:600;cursor:pointer;align-self:flex-start">Save Settings</button>
+      <div id="d-vapi-result" style="display:none;padding:.75rem;border-radius:8px;font-size:.8rem;background:var(--surface2)"></div>
+      <div style="font-size:.75rem;color:var(--muted);line-height:1.8;border-top:1px solid var(--border);padding-top:.75rem">
+        Get free key: <a href="https://vapi.ai" target="_blank" style="color:#e35a2c">vapi.ai</a> &rarr; API Keys &rarr; Public Key<br>
+        Ask: &ldquo;High-risk patients today?&rdquo; &bull; &ldquo;ICMR dengue protocol?&rdquo; &bull; &ldquo;Metformin interactions?&rdquo;
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+function saveDoctorVapiSettings(){
+  var k=document.getElementById('d-vapi-key').value.trim();
+  if(!k){alert('Enter VAPI Public Key');return;}
+  localStorage.setItem('doctor_vapi_key',k); localStorage.setItem('vapi_public_key',k);
+  var r=document.getElementById('d-vapi-result');
+  if(r){r.style.display='block';r.style.color='#22c55e';r.textContent='\u2705 Saved! Use Voice Patient Query in sidebar.';}
+}
+document.addEventListener('DOMContentLoaded',function(){
+  var k=localStorage.getItem('doctor_vapi_key')||'';
+  var ke=document.getElementById('d-vapi-key'); if(ke&&k) ke.value=k;
+});
+</script>
+<!-- Floating AI Clinical Assistant button -->
+<button onclick="openDoctorChatbot()" id="float-chat-btn-doc"
+  style="position:fixed;bottom:1.25rem;right:1.25rem;width:56px;height:56px;border-radius:50%;
+         background:linear-gradient(135deg,#e35a2c,#f47a50);border:none;cursor:pointer;
+         display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(227,90,44,.4);
+         z-index:999;transition:.2s" title="AI Clinical Assistant"
+  onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+  </svg>
+</button>
+<script>
+function openDoctorChatbot() {
+  var uid = localStorage.getItem('sahayak_user_id') || '';
+  window.open('chatbot_doctor.html?uid=' + encodeURIComponent(uid), '_blank', 'width=440,height=700,resizable=yes');
+}
+</script>
+</body>
+</html>

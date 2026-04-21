@@ -1,0 +1,108 @@
+{
+  "name": "Sahayak AI — Patient Call + Reminder",
+  "flow": [
+    {
+      "id": 1,
+      "module": "gateway:CustomWebHook",
+      "version": 1,
+      "parameters": {
+        "hook": "CREATE_NEW_WEBHOOK",
+        "maxResults": 1
+      },
+      "mapper": {},
+      "metadata": {
+        "designer": { "x": 0, "y": 0 },
+        "restore": { "parameters": { "hook": { "label": "Sahayak Incoming Call Request" } } },
+        "parameters": [
+          { "name": "hook", "type": "hook:gateway-webhook", "label": "Webhook" },
+          { "name": "maxResults", "type": "number", "label": "Maximum number of results" }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "module": "http:ActionSendData",
+      "version": 3,
+      "parameters": { "handleErrors": false, "useNewZLibDeCompress": true },
+      "mapper": {
+        "url": "https://api.vapi.ai/call/phone",
+        "serializeUrl": false,
+        "method": "POST",
+        "headers": [
+          {
+            "name": "Authorization",
+            "value": "Bearer YOUR_VAPI_PRIVATE_KEY_HERE"
+          },
+          {
+            "name": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "bodyType": "raw",
+        "contentType": "application/json",
+        "body": "{\n  \"phoneNumberId\": \"YOUR_VAPI_PHONE_NUMBER_ID_HERE\",\n  \"customer\": {\n    \"number\": \"{{1.patient_phone}}\",\n    \"name\": \"{{1.patient_name}}\"\n  },\n  \"assistant\": {\n    \"model\": {\n      \"provider\": \"openai\",\n      \"model\": \"gpt-4o-mini\",\n      \"messages\": [{\n        \"role\": \"system\",\n        \"content\": \"You are Sahayak AI, a health assistant for rural India. You are calling {{1.patient_name}} on behalf of their ASHA worker {{1.asha_name}}. The reminder message is: {{1.reminder_text}}. Speak in {{1.lang}} language (kn=Kannada, hi=Hindi, en=English). After delivering the reminder, ask if the patient has any health questions. If they have urgent medical issues, tell them to call 108. Keep the call under 3 minutes. After the call, if the patient wants to speak to the ASHA worker directly, say you will transfer them.\"\n      }]\n    },\n    \"voice\": {\n      \"provider\": \"azure\",\n      \"voiceId\": \"hi-IN-SwaraNeural\"\n    },\n    \"firstMessage\": \"{{1.first_message}}\",\n    \"endCallMessage\": \"ಧನ್ಯವಾದ. ನಿಮ್ಮ ಆರೋಗ್ಯ ಚೆನ್ನಾಗಿರಲಿ.\",\n    \"transcriber\": {\n      \"provider\": \"deepgram\",\n      \"language\": \"hi\"\n    },\n    \"forwardingPhoneNumber\": \"{{1.asha_phone}}\"\n  },\n  \"metadata\": {\n    \"asha_name\": \"{{1.asha_name}}\",\n    \"call_type\": \"{{1.call_type}}\",\n    \"patient_id\": \"{{1.patient_id}}\"\n  }\n}"
+      },
+      "metadata": {
+        "designer": { "x": 300, "y": 0 },
+        "restore": {
+          "expect": {
+            "method": { "label": "POST" },
+            "bodyType": { "label": "Raw" },
+            "contentType": { "label": "JSON (application/json)" }
+          }
+        },
+        "parameters": [
+          { "name": "handleErrors", "type": "boolean", "label": "Evaluate all states as errors" },
+          { "name": "useNewZLibDeCompress", "type": "boolean", "label": "Use new ZLib" }
+        ],
+        "expect": [
+          { "name": "url", "type": "url", "label": "URL", "required": true },
+          { "name": "serializeUrl", "type": "boolean", "label": "Serialize URL" },
+          { "name": "method", "type": "select", "label": "Method", "required": true },
+          { "name": "headers", "type": "array", "label": "Headers" },
+          { "name": "bodyType", "type": "select", "label": "Body type" },
+          { "name": "contentType", "type": "select", "label": "Content type" },
+          { "name": "body", "type": "string", "label": "Request content" }
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "module": "gateway:WebhookRespondToWebhook",
+      "version": 1,
+      "parameters": {},
+      "mapper": {
+        "status": "200",
+        "body": "{\n  \"success\": true,\n  \"call_id\": \"{{2.data.id}}\",\n  \"status\": \"{{2.data.status}}\",\n  \"message\": \"Call initiated to {{1.patient_name}} at {{1.patient_phone}}\"\n}",
+        "headers": [{ "name": "Content-Type", "value": "application/json" }]
+      },
+      "metadata": {
+        "designer": { "x": 600, "y": 0 },
+        "restore": {},
+        "parameters": [],
+        "expect": [
+          { "name": "status", "type": "string", "label": "Status" },
+          { "name": "body", "type": "string", "label": "Body" },
+          { "name": "headers", "type": "array", "label": "Headers" }
+        ]
+      }
+    }
+  ],
+  "metadata": {
+    "instant": true,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": false,
+      "confidential": false,
+      "dataloss": false,
+      "dlq": false,
+      "freshVariables": false
+    },
+    "designer": { "orphans": [] },
+    "zone": "eu2.make.com"
+  }
+}

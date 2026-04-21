@@ -1,0 +1,43 @@
+PNEUMONIA — WHO IMCI / MoHFW India Guidelines
+
+CLINICAL FEATURES
+Cough with rapid breathing, chest indrawing, fever, difficulty breathing.
+Children: fast breathing (≥ 60/min < 2 months; ≥ 50/min 2–12 months; ≥ 40/min 1–5 years), lower chest indrawing, nasal flaring, grunting.
+Adults: productive cough, pleuritic chest pain, high fever (≥ 38.5°C), tachypnoea (RR > 20), reduced SpO2 (< 94%), dullness on percussion, bronchial breathing.
+
+WHO IMCI CLASSIFICATION (Children)
+Pneumonia: Fast breathing, no chest indrawing → oral Amoxicillin × 5 days.
+Severe Pneumonia: Chest indrawing → refer urgently + pre-referral amoxicillin.
+Very Severe Disease: Central cyanosis, unable to feed, altered sensorium → emergency referral + pre-referral antibiotics.
+
+DIAGNOSIS
+Clinical: rapid breathing + fever + cough = high suspicion.
+SpO2 < 94% with room air = serious.
+Chest X-ray: consolidation, lobar opacity.
+CBC: raised WBC (bacterial), normal/low WBC (viral).
+Sputum culture (hospital setting for severe cases).
+
+TREATMENT
+Mild (community): Amoxicillin 500 mg TID × 5 days (adults); Amoxicillin 40 mg/kg/day × 5 days (children).
+Moderate: Add Azithromycin for atypical coverage.
+Severe/Hospital: IV Ampicillin + IV Gentamicin (children); IV Ceftriaxone (adults).
+Supportive: adequate hydration, paracetamol for fever, SpO2 monitoring.
+Oxygen if SpO2 < 94%.
+
+RED FLAGS (Emergency referral)
+- SpO2 < 90% despite positioning
+- Cyanosis (bluish lips/fingertips)
+- Severe chest indrawing (children)
+- Inability to drink/feed (children)
+- Altered consciousness
+- Age < 2 months with any danger sign
+- Failure to improve after 48 hours of antibiotics
+
+ASHA ACTION
+1. Check RR (respiratory rate) in 1 full minute.
+2. Check for chest indrawing and SpO2 (if oximeter available).
+3. Children with fast breathing only → oral Amoxicillin + refer to PHC next day.
+4. Any danger sign → immediate referral with pre-referral dose.
+5. Adults: refer to PHC for evaluation if moderate/severe.
+6. Ensure complete antibiotic course (do not stop early).
+7. Vaccination: ensure PCV and Hib vaccines up to date (children).

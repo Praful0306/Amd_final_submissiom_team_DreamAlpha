@@ -1,0 +1,47 @@
+TUBERCULOSIS (TB) — RNTCP / NTEP India Guidelines
+
+CLINICAL FEATURES
+Pulmonary TB: Cough ≥ 2 weeks, blood in sputum (haemoptysis), fever (low-grade, evening), night sweats, unexplained weight loss, fatigue, chest pain.
+Extrapulmonary TB: lymph node swelling (scrofula), pleural effusion, abdominal TB, TB meningitis, spinal TB (Pott's disease), TB of kidney/genitourinary.
+High-risk groups: HIV/AIDS, diabetes, malnutrition, household contacts of TB patients, smokers, elderly.
+
+DIAGNOSIS
+Presumptive TB: cough ≥ 2 weeks + any one of: fever, night sweats, weight loss, haemoptysis.
+CBNAAT/TrueNat: gold standard — also detects rifampicin resistance (DR-TB).
+Sputum smear: AFB stain (less sensitive but widely available).
+Chest X-ray: cavity, infiltrates, hilar lymphadenopathy.
+Mantoux/TST: positive ≥ 10 mm (≥ 5 mm in HIV) — indicates exposure, not active disease.
+Culture: drug sensitivity testing when needed.
+
+TREATMENT — NTEP Regimen
+DS-TB: 2HRZE + 4HR (6 months total). Daily fixed-dose combination (FDC).
+H = Isoniazid, R = Rifampicin, Z = Pyrazinamide, E = Ethambutol.
+DRTB/MDR-TB: Longer regimens (18–24 months) with second-line drugs — refer to DRTB centre.
+Nikshay Poshan Yojana: ₹500/month nutritional support for all TB patients.
+DOTS: directly observed treatment — ASHA supervises.
+
+PREVENTIVE THERAPY (TPT)
+Household contacts of sputum-positive TB (especially children < 5 years and HIV+ contacts): Isoniazid preventive therapy (IPT) 6 months.
+
+RED FLAGS (refer urgently)
+- Haemoptysis (blood in cough)
+- Respiratory distress, severe breathlessness
+- Altered sensorium (TB meningitis)
+- Spinal pain/weakness (Pott's)
+- HIV + presumptive TB
+
+ASHA ACTION
+1. Identify presumptive TB patients (cough ≥ 2 weeks).
+2. Refer to NAAT testing centre (CBNAAT/TrueNat).
+3. Register diagnosed patients on Nikshay portal.
+4. Supervise DOTS daily dose.
+5. Ensure ₹500/month Nikshay Poshan Yojana benefit.
+6. Screen household contacts; refer children < 5 years for IPT.
+7. Monthly follow-up; report treatment interruption immediately.
+8. Contact tracing: test all household contacts.
+
+PATIENT COUNSELLING
+TB is curable with complete treatment.
+Do not stop medicines even after feeling better.
+Wear mask, ventilate room, cover mouth while coughing.
+Balanced diet and adequate nutrition essential.

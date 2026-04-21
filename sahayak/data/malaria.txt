@@ -1,0 +1,43 @@
+MALARIA — NVBDCP / WHO Clinical Guidelines for India
+
+CLINICAL FEATURES
+Symptoms: Fever (high-grade, cyclical), rigors and chills, sweating, headache, body aches, nausea/vomiting, loss of appetite.
+Hallmark: Fever paroxysms — cold stage (shivering), hot stage (high fever), sweating stage.
+P. falciparum: more severe; may have continuous fever, altered sensorium, jaundice, bleeding.
+P. vivax: periodic fever (48-hour cycle), anaemia, splenomegaly.
+
+DIAGNOSIS
+Mandatory: RDT (Rapid Diagnostic Test) OR thick blood smear microscopy.
+RDT for P. falciparum detects HRP2 antigen.
+Repeat smear if negative but suspicion high.
+Supporting labs: Low platelet count, low haemoglobin, raised bilirubin.
+
+TREATMENT — NVBDCP Protocol
+P. vivax: Chloroquine 25 mg/kg over 3 days + Primaquine 0.25 mg/kg/day × 14 days (check G6PD).
+P. falciparum: Artemisinin Combination Therapy (ACT) — Artemether-Lumefantrine (AL) or Artesunate-SP per state protocol × 3 days.
+Severe malaria: IV Artesunate — refer immediately.
+Avoid Primaquine in pregnancy and G6PD deficiency.
+
+RED FLAGS (Refer to hospital immediately)
+- Altered consciousness, seizures, coma
+- Severe anaemia (Hb < 7 g/dL)
+- Respiratory distress / pulmonary oedema
+- Abnormal bleeding / haemoglobinuria (black urine)
+- Jaundice with high parasite count
+- Persistent vomiting preventing oral medication
+- Hypoglycaemia (glucose < 50 mg/dL)
+- Prostration (inability to sit/stand)
+
+ASHA ACTION
+1. Perform RDT immediately.
+2. Positive P. vivax → start Chloroquine + Primaquine (check G6PD).
+3. Positive P. falciparum → start ACT, refer to PHC same day.
+4. Negative RDT + strong suspicion → refer for smear.
+5. Record in HMIS.
+6. Insecticide-treated bed-net distribution.
+7. Report cluster (≥ 3 cases in one week) to BMO.
+
+PREVENTION
+Use insecticide-treated bed nets (ITN/LLIN).
+Indoor residual spraying (IRS) per NVBDCP schedule.
+Eliminate stagnant water breeding sites.

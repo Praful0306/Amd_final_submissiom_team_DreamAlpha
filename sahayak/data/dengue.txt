@@ -1,0 +1,48 @@
+DENGUE FEVER — WHO / NVBDCP Clinical Guidelines
+
+CLINICAL FEATURES
+Symptoms: Sudden high fever (39–40°C), severe headache, retro-orbital pain, myalgia, arthralgia ("breakbone fever"), skin rash (maculopapular, appears day 3–5), nausea/vomiting.
+Dengue Haemorrhagic Fever (DHF): bleeding (petechiae, ecchymosis, epistaxis, gum bleeding), plasma leakage, thrombocytopenia.
+Dengue Shock Syndrome: severe plasma leakage → hypotension, narrow pulse pressure (< 20 mmHg), rapid weak pulse.
+
+WHO DENGUE CLASSIFICATION
+Group A: No warning signs → manage at home.
+Group B: Warning signs or co-morbidities → hospitalise.
+Group C: Severe dengue → emergency treatment.
+
+WARNING SIGNS (admit immediately)
+- Abdominal pain or tenderness
+- Persistent vomiting
+- Clinical fluid accumulation (ascites, pleural effusion)
+- Mucosal bleeding
+- Lethargy, restlessness
+- Liver enlargement > 2 cm
+- Rapid increase in haematocrit with drop in platelets
+
+DIAGNOSIS
+NS1 antigen (day 1–5), IgM/IgG antibodies (from day 5).
+CBC: thrombocytopenia (platelets < 1,00,000), raised haematocrit (> 20% rise = plasma leak).
+Tourniquet test: ≥ 10 petechiae per sq inch = positive.
+
+TREATMENT
+No specific antiviral. Supportive care.
+Adequate oral hydration (ORS, coconut water, juices).
+Paracetamol for fever (500 mg q6h). AVOID aspirin/NSAIDs (risk of bleeding).
+Platelet transfusion only if < 10,000 or active bleeding.
+IV fluid for DHF — cautious isotonic crystalloid, avoid over-hydration.
+
+RED FLAGS (Emergency referral)
+- Platelets < 50,000 with bleeding
+- Shock (cold extremities, hypotension, altered consciousness)
+- Respiratory distress
+- Liver failure, encephalopathy
+- Haematocrit rise > 20% with platelet drop
+
+ASHA ACTION
+1. Suspect dengue: fever ≥ 3 days + body pain + rash.
+2. Advise paracetamol only (not aspirin/ibuprofen).
+3. Ensure adequate oral fluids.
+4. Refer to PHC for NS1/CBC test.
+5. Warn: warning signs → go to hospital immediately.
+6. Eliminate Aedes mosquito breeding (stagnant water in containers, tyres, pots).
+7. Report cluster to BMO.

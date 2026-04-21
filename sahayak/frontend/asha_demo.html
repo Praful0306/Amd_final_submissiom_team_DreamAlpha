@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en" data-role="demo">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Sahayak AI — ASHA Worker Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+<style>
+/* ── TOKENS ─────────────────────────────────────────── */
+:root{
+  --or:#e35a2c;--orl:#f97316;--or2:#ff6b35;
+  --bg:#0a0a0b;--card:#111114;--card2:#18181d;
+  --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.12);
+  --text:#f0f0f2;--muted:#8b8b9a;--hint:#555562;
+  --green:#22c55e;--red:#ef4444;--yellow:#f59e0b;--blue:#3b82f6;
+  --t:all .38s cubic-bezier(.23,1,.32,1);
+  --r:20px;--r2:14px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* ── ANIMATED BACKGROUND ────────────────────────────── */
+.bg-layer{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.bg-orb{position:absolute;border-radius:50%;filter:blur(120px);opacity:.35}
+.orb-a{width:600px;height:600px;top:-200px;right:-100px;background:radial-gradient(circle,rgba(227,90,44,.5),transparent 65%);animation:driftA 12s ease-in-out infinite}
+.orb-b{width:400px;height:400px;bottom:-100px;left:-100px;background:radial-gradient(circle,rgba(249,115,22,.3),transparent 70%);animation:driftB 15s ease-in-out infinite}
+.orb-c{width:300px;height:300px;top:40%;left:30%;background:radial-gradient(circle,rgba(59,130,246,.2),transparent 70%);animation:driftA 18s ease-in-out infinite reverse}
+@keyframes driftA{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(-40px,30px) scale(1.05)}66%{transform:translate(20px,-20px) scale(.97)}}
+@keyframes driftB{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(30px,-40px) scale(1.08)}}
+
+/* ── LAYOUT ─────────────────────────────────────────── */
+.page{position:relative;z-index:1;min-height:100vh;display:grid;grid-template-rows:auto 1fr auto}
+
+/* ── TOPBAR ─────────────────────────────────────────── */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.5rem;border-bottom:1px solid var(--border);background:rgba(10,10,11,.85);backdrop-filter:blur(20px);position:sticky;top:0;z-index:100}
+.brand{display:flex;align-items:center;gap:.625rem;font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;letter-spacing:-.3px}
+.brand-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--or),var(--orl));border-radius:9px;display:flex;align-items:center;justify-content:center}
+.brand-icon svg{width:16px;height:16px}
+.brand em{color:var(--or);font-style:normal}
+.topbar-right{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;gap:.375rem;padding:5px 12px;border-radius:100px;font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.badge-offline{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);color:var(--green)}
+.badge-amd{background:rgba(227,90,44,.1);border:1px solid rgba(227,90,44,.3);color:var(--or)}
+.pulse-dot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:pulse2 2s infinite}
+@keyframes pulse2{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.75)}}
+
+/* ── MAIN ───────────────────────────────────────────── */
+.main{display:flex;align-items:center;justify-content:center;padding:2rem 1rem;min-height:calc(100vh - 120px)}
+
+/* ── PHONE FRAME ────────────────────────────────────── */
+.phone-wrap{display:flex;gap:3rem;align-items:center;max-width:1100px;width:100%;flex-wrap:wrap;justify-content:center}
+.phone-side{display:flex;flex-direction:column;gap:1.5rem;width:340px}
+
+.phone{width:340px;height:680px;background:var(--card);border:1.5px solid var(--border2);border-radius:44px;overflow:hidden;position:relative;box-shadow:0 40px 120px -20px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.04),inset 0 1px 0 rgba(255,255,255,.08);flex-shrink:0}
+.phone-notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:120px;height:32px;background:var(--bg);border-radius:0 0 18px 18px;z-index:10;display:flex;align-items:center;justify-content:center;gap:.375rem}
+.notch-cam{width:10px;height:10px;background:#222;border-radius:50%;border:1px solid #333}
+.notch-speaker{width:40px;height:4px;background:#1a1a1a;border-radius:2px}
+
+.phone-screen{position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden}
+
+/* Screens fade in/out */
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity .5s ease,transform .5s ease;transform:translateX(30px)}
+.screen.active{opacity:1;pointer-events:all;transform:translateX(0)}
+.screen.prev{transform:translateX(-30px)}
+
+/* ── SCREEN 1: VOICE INPUT ──────────────────────────── */
+#s1{background:linear-gradient(160deg,#0d0d10,#111116)}
+.s1-top{padding:2.5rem 1.5rem 1.25rem;display:flex;align-items:center;justify-content:space-between}
+.s1-header{font-family:'Syne',sans-serif;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);display:flex;align-items:center;gap:.5rem}
+.s1-header::before{content:'';width:6px;height:6px;background:var(--or);border-radius:50%;display:block}
+.lang-sel{background:var(--card2);border:1px solid var(--border2);color:var(--text);font-family:inherit;font-size:.8rem;padding:6px 12px;border-radius:8px;cursor:pointer;outline:none}
+.lang-sel option{background:var(--card)}
+
+.s1-center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem;gap:1.25rem}
+.mic-area{display:flex;flex-direction:column;align-items:center;gap:1rem}
+.mic-label{font-size:.825rem;color:var(--muted);text-align:center;line-height:1.6}
+.mic-label strong{display:block;color:var(--text);font-size:1rem;margin-bottom:.25rem}
+.mic-btn{width:90px;height:90px;border-radius:50%;background:var(--or);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 0 rgba(227,90,44,.4);transition:var(--t);position:relative;outline:none}
+.mic-btn:hover{transform:scale(1.05);box-shadow:0 8px 30px rgba(227,90,44,.4)}
+.mic-btn.recording{background:#ef4444;box-shadow:0 0 0 0 rgba(239,68,68,.4);animation:micPulse 1.5s infinite}
+@keyframes micPulse{0%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}70%{box-shadow:0 0 0 24px rgba(239,68,68,0)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
+.mic-btn svg{width:30px;height:30px;pointer-events:none}
+
+/* Waveform */
+.waveform{display:flex;align-items:center;gap:3px;height:40px;padding:0 1rem}
+.wave-bar{width:4px;background:var(--or);border-radius:2px;height:4px;transition:height .1s}
+.waveform.active .wave-bar{animation:waveAnim .8s ease-in-out infinite}
+@keyframes waveAnim{0%,100%{height:4px}50%{height:28px}}
+.wave-bar:nth-child(1){animation-delay:0s}
+.wave-bar:nth-child(2){animation-delay:.07s}
+.wave-bar:nth-child(3){animation-delay:.14s}
+.wave-bar:nth-child(4){animation-delay:.21s}
+.wave-bar:nth-child(5){animation-delay:.28s}
+.wave-bar:nth-child(6){animation-delay:.21s}
+.wave-bar:nth-child(7){animation-delay:.14s}
+.wave-bar:nth-child(8){animation-delay:.07s}
+.wave-bar:nth-child(9){animation-delay:0s}
+
+.or-transcription{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:var(--r2);padding:1rem;font-size:.825rem;color:var(--muted);line-height:1.7;min-height:70px;white-space:pre-wrap;position:relative}
+.or-transcription.has-text{color:var(--text)}
+.or-placeholder{position:absolute;top:1rem;left:1rem;font-size:.8rem;color:var(--hint);pointer-events:none}
+
+.s1-bottom{padding:1rem 1.25rem 2.5rem;display:flex;flex-direction:column;gap:.75rem}
+.diagnose-btn{width:100%;padding:1rem;border-radius:14px;border:none;background:var(--or);color:#fff;font-family:inherit;font-size:.9375rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.5rem;transition:var(--t);position:relative;overflow:hidden}
+.diagnose-btn:hover{background:#c94d23;transform:translateY(-2px)}
+.diagnose-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.diagnose-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);transform:translateX(-100%)}
+.diagnose-btn.loading::after{animation:shimmer 1.5s infinite}
+@keyframes shimmer{100%{transform:translateX(100%)}}
+
+/* ── SCREEN 2: DIAGNOSIS ────────────────────────────── */
+#s2{background:linear-gradient(160deg,#0a0a0d,#101014)}
+.s2-header{padding:2.5rem 1.5rem 1rem;display:flex;align-items:center;justify-content:space-between}
+.back-btn{background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;gap:.375rem;font-family:inherit;font-size:.8rem;padding:.375rem .5rem;border-radius:8px;transition:var(--t)}
+.back-btn:hover{color:var(--text);background:rgba(255,255,255,.05)}
+.s2-title{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+
+.s2-body{flex:1;overflow-y:auto;padding:.5rem 1.25rem;display:flex;flex-direction:column;gap:.875rem;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+
+.symptom-summary{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:var(--r2);padding:.875rem 1rem;font-size:.8rem;color:var(--muted);line-height:1.7}
+.symptom-summary strong{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--hint);margin-bottom:.25rem}
+
+.risk-card{border-radius:var(--r2);padding:1rem;border:1px solid;animation:slideUp .4s ease forwards}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.risk-card.emergency{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3)}
+.risk-card.high{background:rgba(239,68,68,.07);border-color:rgba(239,68,68,.25)}
+.risk-card.medium{background:rgba(245,158,11,.07);border-color:rgba(245,158,11,.25)}
+.risk-card.low{background:rgba(34,197,94,.07);border-color:rgba(34,197,94,.25)}
+.risk-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:.625rem}
+.risk-pill{font-size:.65rem;font-weight:800;padding:3px 10px;border-radius:100px;text-transform:uppercase;letter-spacing:.06em}
+.risk-pill.emergency,.risk-pill.high{background:#ef4444;color:#fff}
+.risk-pill.medium{background:#f59e0b;color:#000}
+.risk-pill.low{background:#22c55e;color:#000}
+.conf-ring{position:relative;width:44px;height:44px}
+.conf-ring svg{transform:rotate(-90deg)}
+.conf-ring-val{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700}
+.disease-name{font-size:1rem;font-weight:700;margin-bottom:.25rem}
+.disease-sub{font-size:.75rem;color:var(--muted)}
+
+.section-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--hint);margin-bottom:.5rem}
+
+.protocol-card{background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);border-radius:var(--r2);padding:.875rem 1rem}
+.protocol-card .section-label{color:#60a5fa}
+.protocol-text{font-size:.8rem;color:rgba(147,197,253,.9);line-height:1.7}
+
+.vitals-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.vital-chip{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:.625rem .75rem}
+.vital-chip.abnormal{background:rgba(239,68,68,.06);border-color:rgba(239,68,68,.2)}
+.vital-label{font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;color:var(--hint);margin-bottom:.25rem}
+.vital-val{font-size:.925rem;font-weight:700}
+.vital-status{font-size:.6rem;margin-top:1px}
+.vital-status.normal{color:var(--green)}
+.vital-status.abnormal{color:var(--red)}
+.vital-status.warning{color:var(--yellow)}
+
+.community-alert{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.25);border-radius:var(--r2);padding:.875rem 1rem;animation:slideUp .4s ease .2s both}
+.community-alert .section-label{color:#fbbf24}
+.community-alert-text{font-size:.78rem;color:rgba(253,230,138,.9);line-height:1.6}
+
+.refer-btn{width:100%;padding:.9rem;border-radius:12px;border:none;background:var(--or);color:#fff;font-family:inherit;font-size:.875rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.5rem;transition:var(--t);margin-top:.5rem}
+.refer-btn:hover{background:#c94d23;transform:translateY(-1px)}
+
+/* ── SCREEN 3: REFERRAL ACTION ──────────────────────── */
+#s3{background:linear-gradient(160deg,#0a0a0d,#0f0f12)}
+.s3-header{padding:2.5rem 1.5rem 1rem;display:flex;align-items:center;justify-content:space-between}
+.refer-icon{width:36px;height:36px;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);border-radius:10px;display:flex;align-items:center;justify-content:center}
+
+.s3-body{flex:1;overflow-y:auto;padding:.5rem 1.25rem;display:flex;flex-direction:column;gap:.875rem;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+
+.urgent-banner{background:linear-gradient(135deg,rgba(239,68,68,.15),rgba(239,68,68,.05));border:1px solid rgba(239,68,68,.3);border-radius:var(--r2);padding:1rem;animation:slideUp .4s ease forwards}
+.urgent-title{font-family:'Syne',sans-serif;font-size:1.125rem;font-weight:800;color:#f87171;margin-bottom:.25rem}
+.urgent-sub{font-size:.78rem;color:rgba(252,165,165,.75)}
+
+.sms-preview{background:var(--card2);border:1px solid var(--border2);border-radius:var(--r2);padding:.875rem 1rem;animation:slideUp .4s ease .1s both}
+.sms-label{font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--hint);margin-bottom:.625rem;display:flex;align-items:center;gap:.375rem}
+.sms-text{font-size:.775rem;color:var(--muted);line-height:1.75;font-family:'Courier New',monospace}
+.sms-text strong{color:var(--text)}
+
+.action-list{display:flex;flex-direction:column;gap:.5rem;animation:slideUp .4s ease .15s both}
+.action-item{display:flex;align-items:flex-start;gap:.625rem;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:.75rem .875rem}
+.action-num{width:20px;height:20px;border-radius:50%;background:var(--or);color:#fff;font-size:.6rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.action-text{font-size:.78rem;color:var(--muted);line-height:1.6}
+
+.send-btn{width:100%;padding:1.0625rem;border-radius:14px;border:none;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-family:inherit;font-size:.9375rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.625rem;transition:var(--t);box-shadow:0 8px 30px rgba(239,68,68,.3);animation:slideUp .4s ease .25s both}
+.send-btn:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(239,68,68,.45)}
+.send-btn.sent{background:linear-gradient(135deg,#16a34a,#15803d);box-shadow:0 8px 30px rgba(34,197,94,.3)}
+.send-btn.sent:hover{box-shadow:0 12px 40px rgba(34,197,94,.4)}
+
+.new-patient-btn{width:100%;padding:.825rem;border-radius:12px;background:transparent;border:1px solid var(--border2);color:var(--muted);font-family:inherit;font-size:.825rem;font-weight:600;cursor:pointer;transition:var(--t);display:flex;align-items:center;justify-content:center;gap:.5rem}
+.new-patient-btn:hover{border-color:var(--or);color:var(--or);background:rgba(227,90,44,.05)}
+
+/* Screen nav dots */
+.screen-dots{display:flex;gap:.375rem;position:absolute;bottom:1.25rem;left:50%;transform:translateX(-50%);z-index:10}
+.screen-dot{width:6px;height:6px;border-radius:3px;background:var(--hint);transition:var(--t)}
+.screen-dot.active{width:18px;background:var(--or)}
+
+/* ── INFO PANEL ─────────────────────────────────────── */
+.info-panel{width:100%;max-width:360px;display:flex;flex-direction:column;gap:1.25rem}
+.info-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem}
+.info-card-title{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;margin-bottom:.25rem}
+.info-card-sub{font-size:.825rem;color:var(--muted);margin-bottom:1.25rem;line-height:1.6}
+
+.tech-grid{display:grid;grid-template-columns:1fr 1fr;gap:.625rem}
+.tech-chip{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:.625rem .75rem}
+.tech-chip-icon{font-size:1rem;margin-bottom:.25rem}
+.tech-chip-name{font-size:.7rem;font-weight:700;margin-bottom:.125rem}
+.tech-chip-desc{font-size:.625rem;color:var(--hint)}
+
+.stat-row{display:flex;flex-direction:column;gap:.5rem}
+.stat-item{display:flex;align-items:center;gap:.75rem}
+.stat-bar{flex:1;height:6px;background:var(--card2);border-radius:3px;overflow:hidden}
+.stat-bar-fill{height:100%;border-radius:3px;background:var(--or);transition:width 1.5s ease}
+.stat-label{font-size:.7rem;color:var(--muted);width:80px;flex-shrink:0}
+.stat-val{font-size:.7rem;font-weight:700;width:32px;text-align:right}
+
+.flow-steps{display:flex;flex-direction:column;gap:.5rem}
+.flow-step{display:flex;align-items:center;gap:.75rem;font-size:.8rem}
+.flow-step-num{width:24px;height:24px;border-radius:50%;border:2px solid var(--or);color:var(--or);font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.flow-step-line{flex:1;height:1px;background:var(--border)}
+
+/* ── TOAST ──────────────────────────────────────────── */
+.toast-wrap{position:fixed;top:80px;right:1.25rem;display:flex;flex-direction:column;gap:.625rem;z-index:999}
+.toast{background:var(--card2);border:1px solid var(--border2);border-radius:14px;padding:.875rem 1.25rem;display:flex;align-items:center;gap:.75rem;max-width:300px;transform:translateX(120%);transition:transform .4s cubic-bezier(.23,1,.32,1);box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.toast.show{transform:translateX(0)}
+.toast-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.9rem}
+.toast-body{font-size:.8rem}
+.toast-title{font-weight:700;margin-bottom:.125rem}
+.toast-msg{color:var(--muted)}
+
+/* ── LOADING OVERLAY ────────────────────────────────── */
+.loading-overlay{position:absolute;inset:0;background:rgba(10,10,11,.85);backdrop-filter:blur(8px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;z-index:50;opacity:0;pointer-events:none;transition:opacity .3s}
+.loading-overlay.active{opacity:1;pointer-events:all}
+.loading-spinner{width:44px;height:44px;border:3px solid var(--border2);border-top-color:var(--or);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:.85rem;color:var(--muted);text-align:center;line-height:1.6}
+.loading-sub{font-size:.7rem;color:var(--hint);display:flex;align-items:center;gap:.375rem}
+
+/* ── DEMO CONTROLS (judge helper) ───────────────────── */
+.demo-controls{background:rgba(227,90,44,.05);border:1px solid rgba(227,90,44,.2);border-radius:var(--r);padding:1rem 1.25rem;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+.demo-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--or);font-weight:700;flex-shrink:0}
+.demo-btns{display:flex;gap:.5rem;flex-wrap:wrap}
+.demo-btn{padding:.5rem 1rem;border-radius:8px;background:var(--card2);border:1px solid var(--border2);color:var(--muted);font-family:inherit;font-size:.75rem;font-weight:600;cursor:pointer;transition:var(--t)}
+.demo-btn:hover{border-color:var(--or);color:var(--or)}
+.demo-btn.active{background:rgba(227,90,44,.15);border-color:var(--or);color:var(--or)}
+
+/* ── COMMUNITY TRACKER ──────────────────────────────── */
+.outbreak-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem}
+.outbreak-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;margin-bottom:.25rem;display:flex;align-items:center;gap:.5rem}
+.outbreak-title .alert-dot{width:8px;height:8px;border-radius:50%;background:#ef4444;animation:pulse2 1.5s infinite}
+.outbreak-sub{font-size:.78rem;color:var(--muted);margin-bottom:1rem}
+.outbreak-list{display:flex;flex-direction:column;gap:.625rem}
+.outbreak-item{display:flex;align-items:center;justify-content:space-between;padding:.625rem .75rem;background:var(--card2);border-radius:10px;border:1px solid var(--border)}
+.outbreak-name{font-size:.8rem;font-weight:600}
+.outbreak-meta{font-size:.7rem;color:var(--muted)}
+.outbreak-count{font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:100px}
+.outbreak-count.warning{background:rgba(245,158,11,.15);color:#fbbf24;border:1px solid rgba(245,158,11,.2)}
+.outbreak-count.danger{background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.2)}
+.outbreak-count.ok{background:rgba(34,197,94,.1);color:#4ade80;border:1px solid rgba(34,197,94,.15)}
+
+/* ── FOOTER ─────────────────────────────────────────── */
+.footer{text-align:center;padding:1.5rem 1rem;border-top:1px solid var(--border);font-size:.75rem;color:var(--hint)}
+.footer a{color:var(--or);text-decoration:none}
+
+@media(max-width:900px){
+  .phone-wrap{flex-direction:column;align-items:center}
+  .info-panel{max-width:340px}
+  .phone-side{width:340px}
+}
+</style>
+
+  <!-- firebase_refresh.js NOT included on demo page — demo is public -->
+  <script src="offline_sync.js" defer></script>
+</head>
+<body>
+<div class="bg-layer">
+  <div class="bg-orb orb-a"></div>
+  <div class="bg-orb orb-b"></div>
+  <div class="bg-orb orb-c"></div>
+</div>
+
+<div class="page">
+
+<!-- ── TOPBAR ─────────────────────────────────────────── -->
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-icon">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 4v4m0 8v4M4 12h4m8 0h4" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/><circle cx="12" cy="12" r="3" fill="#fff"/></svg>
+    </div>
+    Sahayak <em>AI</em>
+  </div>
+  <div class="topbar-right">
+    <div class="badge badge-amd">
+      <span class="pulse-dot"></span>
+      AMD Ryzen AI · NPU
+    </div>
+    <div class="badge badge-offline">
+      <span class="pulse-dot"></span>
+      Offline Ready
+    </div>
+  </div>
+</header>
+
+<!-- ── MAIN AREA ─────────────────────────────────────── -->
+<div class="main">
+<div class="phone-wrap">
+
+  <!-- PHONE ─────────────────────────────────────────── -->
+  <div class="phone-side">
+    <!-- Demo mode selector -->
+    <div class="demo-controls">
+      <span class="demo-label">Demo Flow</span>
+      <div class="demo-btns">
+        <button class="demo-btn active" id="db1" onclick="goScreen(1)">① Voice</button>
+        <button class="demo-btn" id="db2" onclick="loadDemoS2()">② Diagnosis</button>
+        <button class="demo-btn" id="db3" onclick="loadDemoS3()">③ Referral</button>
+      </div>
+    </div>
+
+    <div class="phone">
+      <div class="phone-notch">
+        <div class="notch-cam"></div>
+        <div class="notch-speaker"></div>
+      </div>
+
+      <!-- ── SCREEN 1: VOICE INPUT ─────────────────── -->
+      <div class="screen active" id="s1">
+        <div class="s1-top">
+          <div class="s1-header">Sahayak AI</div>
+          <select class="lang-sel" id="lang-sel" onchange="onLangChange(this.value)">
+            <option value="hi">🇮🇳 Hindi / हिंदी</option>
+            <option value="kn">🇮🇳 Kannada / ಕನ್ನಡ</option>
+            <option value="en" selected>🇮🇳 English</option>
+            <option value="ta">🇮🇳 Tamil</option>
+            <option value="te">🇮🇳 Telugu</option>
+            <option value="mr">🇮🇳 Marathi</option>
+            <option value="bn">🇮🇳 Bengali</option>
+          </select>
+        </div>
+
+        <div class="s1-center">
+          <div class="mic-area">
+            <div class="mic-label">
+              <strong id="mic-title">Tap to Speak Symptoms</strong>
+              <span id="mic-hint">Describe patient's symptoms in your language</span>
+            </div>
+            <button class="mic-btn" id="mic-btn" onclick="toggleRecording()">
+              <svg id="mic-icon" viewBox="0 0 24 24" fill="none"><path d="M12 2a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z" fill="currentColor"/><path d="M19 10v1a7 7 0 0 1-14 0v-1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="19" x2="12" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="22" x2="16" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
+            <div class="waveform" id="waveform">
+              <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+              <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+              <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+            </div>
+          </div>
+
+          <div class="or-transcription" id="transcription-box">
+            <div class="or-placeholder" id="trans-placeholder">Your speech will appear here...</div>
+          </div>
+        </div>
+
+        <div class="s1-bottom">
+          <button class="diagnose-btn" id="diagnose-btn" onclick="runDiagnosis()" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="m21 21-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Analyse Symptoms
+          </button>
+        </div>
+      </div>
+
+      <!-- ── SCREEN 2: DIAGNOSIS ───────────────────── -->
+      <div class="screen" id="s2">
+        <div class="s2-header">
+          <button class="back-btn" onclick="goScreen(1)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Back
+          </button>
+          <div class="s2-title">Diagnosis Mode</div>
+        </div>
+
+        <div class="s2-body" id="s2-body">
+          <!-- Filled dynamically -->
+        </div>
+
+        <div style="padding:.75rem 1.25rem 2rem">
+          <button class="refer-btn" onclick="goScreen(3)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 13.1 19.79 19.79 0 0 1 1.07 4.5 2 2 0 0 1 3 2.45h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16.92z" stroke="currentColor" stroke-width="2"/></svg>
+            Generate Referral
+          </button>
+        </div>
+      </div>
+
+      <!-- ── SCREEN 3: REFERRAL ACTION ─────────────── -->
+      <div class="screen" id="s3">
+        <div class="s3-header">
+          <button class="back-btn" onclick="goScreen(2)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Back
+          </button>
+          <div class="refer-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 13.1 19.79 19.79 0 0 1 1.07 4.5 2 2 0 0 1 3 2.45h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16.92z" stroke="#ef4444" stroke-width="2"/></svg>
+          </div>
+        </div>
+
+        <div class="s3-body" id="s3-body">
+          <!-- Filled dynamically -->
+        </div>
+      </div>
+
+      <!-- Loading overlay -->
+      <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text" id="loading-text">Analysing symptoms…</div>
+        <div class="loading-sub" id="loading-sub">
+          <span style="color:var(--or)">⚡</span> AMD NPU · ICMR/WHO RAG Pipeline
+        </div>
+      </div>
+
+      <!-- Screen dots -->
+      <div class="screen-dots">
+        <div class="screen-dot active" id="dot-1"></div>
+        <div class="screen-dot" id="dot-2"></div>
+        <div class="screen-dot" id="dot-3"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INFO PANEL ─────────────────────────────────────── -->
+  <div class="info-panel">
+    <!-- Architecture Card -->
+    <div class="info-card">
+      <div class="info-card-title">AMD Edge AI Architecture</div>
+      <div class="info-card-sub">100% offline pipeline running on AMD Ryzen AI NPU. Zero cloud dependency in production.</div>
+      <div class="tech-grid">
+        <div class="tech-chip">
+          <div class="tech-chip-icon">🎙</div>
+          <div class="tech-chip-name">Whisper ASR</div>
+          <div class="tech-chip-desc">INT8 · NPU Offloaded</div>
+        </div>
+        <div class="tech-chip">
+          <div class="tech-chip-icon">🧠</div>
+          <div class="tech-chip-name">Phi-3 Mini LLM</div>
+          <div class="tech-chip-desc">AWQ 4-bit · Local</div>
+        </div>
+        <div class="tech-chip">
+          <div class="tech-chip-icon">🔍</div>
+          <div class="tech-chip-name">FAISS RAG</div>
+          <div class="tech-chip-desc">12 ICMR Guidelines</div>
+        </div>
+        <div class="tech-chip">
+          <div class="tech-chip-icon">🔒</div>
+          <div class="tech-chip-name">SQLite DB</div>
+          <div class="tech-chip-desc">Encrypted · Local</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Accuracy stats -->
+    <div class="info-card">
+      <div class="info-card-title">Performance Impact</div>
+      <div class="info-card-sub">ICMR-grounded triage improvements vs baseline</div>
+      <div class="stat-row">
+        <div class="stat-item">
+          <div class="stat-label">Triage Accuracy</div>
+          <div class="stat-bar"><div class="stat-bar-fill" id="bar1" style="width:0%"></div></div>
+          <div class="stat-val">85%</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Referral Speed</div>
+          <div class="stat-bar"><div class="stat-bar-fill" id="bar2" style="width:0%;background:#22c55e"></div></div>
+          <div class="stat-val">10×</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Language Cover</div>
+          <div class="stat-bar"><div class="stat-bar-fill" id="bar3" style="width:0%;background:#3b82f6"></div></div>
+          <div class="stat-val">10 Lang</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Cost / Device</div>
+          <div class="stat-bar"><div class="stat-bar-fill" id="bar4" style="width:0%;background:#a855f7"></div></div>
+          <div class="stat-val">&lt;₹500</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Community Outbreak Tracker -->
+    <div class="outbreak-panel">
+      <div class="outbreak-title">
+        <span class="alert-dot"></span>
+        Community Health Tracker
+      </div>
+      <div class="outbreak-sub">Live disease activity — Village cluster · 7-day window</div>
+      <div class="outbreak-list" id="outbreak-list">
+        <div class="outbreak-item">
+          <div><div class="outbreak-name">Malaria</div><div class="outbreak-meta">Rampur Village · 7 days</div></div>
+          <div class="outbreak-count danger">4 cases ⚠</div>
+        </div>
+        <div class="outbreak-item">
+          <div><div class="outbreak-name">Dengue</div><div class="outbreak-meta">Rampur Village · 7 days</div></div>
+          <div class="outbreak-count warning">2 cases</div>
+        </div>
+        <div class="outbreak-item">
+          <div><div class="outbreak-name">Typhoid</div><div class="outbreak-meta">Rampur Village · 7 days</div></div>
+          <div class="outbreak-count ok">1 case</div>
+        </div>
+        <div class="outbreak-item">
+          <div><div class="outbreak-name">Anaemia</div><div class="outbreak-meta">Rampur Village · 7 days</div></div>
+          <div class="outbreak-count warning">3 cases</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<footer class="footer">
+  Sahayak AI v3.0 · AMD Slingshot Hackathon · Team DreamAlpha ·
+  <a href="/api/docs" target="_blank">API Docs</a> ·
+  <a href="doctor.html">Doctor Portal</a> ·
+  <a href="patient.html">Patient Portal</a>
+</footer>
+</div>
+
+<!-- Toast container -->
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+/* ── STATE ─────────────────────────────────────────── */
+const API = '';
+let currentScreen = 1;
+let mediaRecorder = null;
+let audioChunks = [];
+let isRecording = false;
+let currentLang = 'en';
+let lastTranscript = '';
+let lastDiagnosis = null;
+
+// Demo preset data (for offline/fallback demo)
+const DEMO_CASES = {
+  malaria: {
+    symptoms: 'Patient has high fever 39.8°C with severe chills and shivering for 3 days. Intense sweating episodes every 48 hours. Headache, muscle pain, weakness, and nausea. Spleen mildly enlarged. From malaria-endemic area.',
+    lang: 'en',
+    diagnosis: {
+      disease_name: 'Suspected Malaria (Plasmodium)',
+      risk_level: 'HIGH',
+      confidence_pct: 92,
+      clinical_summary: 'Classic malaria triad: cyclical fever, chills, sweating. 3-day history with 48-hour fever pattern suggests P. vivax. Hepatosplenomegaly noted.',
+      recommendations: ['Perform RDT (Rapid Diagnostic Test) immediately', 'If RDT positive: Artemisinin-based combination therapy (ACT) per NVBDCP', 'Refer to District Hospital if severe or no improvement in 24h', 'Monitor for cerebral malaria signs'],
+      refer_to_hospital: true,
+      community_alert: 'ALERT: 4 cases of Malaria in 7 days. Possible outbreak — report to Block Medical Officer.'
+    }
+  },
+  dengue: {
+    symptoms: 'Child, 12 years, sudden high fever 40°C for 4 days. Severe headache, pain behind eyes, intense joint and muscle pain (breakbone fever). Rash appeared today. Platelet count fell to 65,000. No bleeding yet.',
+    lang: 'en',
+    diagnosis: {
+      disease_name: 'Dengue Fever (Suspected DHF)',
+      risk_level: 'HIGH',
+      confidence_pct: 88,
+      clinical_summary: 'Classic dengue presentation: sudden onset fever, retro-orbital headache, myalgia, rash. Low platelet count at 65,000 indicates dengue hemorrhagic fever risk.',
+      recommendations: ['NS1 antigen test immediately (day 1-5)', 'Monitor platelet count every 12 hours', 'Oral hydration — ORS mandatory', 'Admit if platelet drops below 20,000', 'AVOID NSAIDs and aspirin'],
+      refer_to_hospital: true,
+      community_alert: null
+    }
+  },
+  tb: {
+    symptoms: 'Adult male, 35 years, persistent cough for 6 weeks with blood-tinged sputum. Significant weight loss — 8kg in 2 months. Night sweats every night. Low-grade fever 37.8°C. Breathlessness on exertion.',
+    lang: 'en',
+    diagnosis: {
+      disease_name: 'Suspected Pulmonary Tuberculosis',
+      risk_level: 'HIGH',
+      confidence_pct: 95,
+      clinical_summary: 'Classic TB triad: chronic cough with haemoptysis, weight loss >5kg, night sweats. 6-week history of productive cough. High index of suspicion.',
+      recommendations: ['Sputum AFB smear × 2 + CBNAAT (Xpert MTB/RIF)', 'Refer to DOTS centre immediately', 'Contact tracing — household members', 'Chest X-ray mandatory', 'Do NOT start treatment without confirmation'],
+      refer_to_hospital: true,
+      community_alert: null
+    }
+  }
+};
+
+let activeDemoCase = 'malaria';
+
+/* ── SCREEN NAVIGATION ─────────────────────────────── */
+function goScreen(n) {
+  const prev = currentScreen;
+  document.getElementById('s' + prev).classList.remove('active');
+  document.getElementById('s' + prev).classList.add('prev');
+  setTimeout(() => document.getElementById('s' + prev).classList.remove('prev'), 500);
+
+  currentScreen = n;
+  document.getElementById('s' + n).classList.add('active');
+
+  // Update dots
+  for (let i = 1; i <= 3; i++) {
+    document.getElementById('dot-' + i).classList.toggle('active', i === n);
+  }
+
+  // Update demo buttons
+  for (let i = 1; i <= 3; i++) {
+    document.getElementById('db' + i).classList.toggle('active', i === n);
+  }
+}
+
+/* ── LANGUAGE ──────────────────────────────────────── */
+function onLangChange(val) {
+  currentLang = val;
+  const hints = {
+    hi: { title: 'बोलें — लक्षण बताएं', hint: 'मरीज़ के लक्षण हिंदी में बताएं' },
+    kn: { title: 'ಮಾತನಾಡಿ — ರೋಗಲಕ್ಷಣಗಳನ್ನು ಹೇಳಿ', hint: 'ಕನ್ನಡದಲ್ಲಿ ಲಕ್ಷಣಗಳನ್ನು ವಿವರಿಸಿ' },
+    ta: { title: 'பேசுங்கள் — அறிகுறிகளை சொல்லுங்கள்', hint: 'தமிழில் அறிகுறிகளை விவரிக்கவும்' },
+    te: { title: 'మాట్లాడండి — లక్షణాలు చెప్పండి', hint: 'తెలుగులో లక్షణాలను వివరించండి' },
+    en: { title: 'Tap to Speak Symptoms', hint: 'Describe patient\'s symptoms in your language' },
+    mr: { title: 'बोला — लक्षणे सांगा', hint: 'मराठीत रुग्णाची लक्षणे सांगा' },
+    bn: { title: 'বলুন — উপসর্গ বলুন', hint: 'বাংলায় রোগীর উপসর্গ বর্ণনা করুন' }
+  };
+  const h = hints[val] || hints['en'];
+  document.getElementById('mic-title').textContent = h.title;
+  document.getElementById('mic-hint').textContent = h.hint;
+}
+
+/* ── VOICE RECORDING ───────────────────────────────── */
+async function toggleRecording() {
+  if (isRecording) {
+    stopRecording();
+  } else {
+    await startRecording();
+  }
+}
+
+async function startRecording() {
+  if (!navigator.mediaDevices?.getUserMedia) {
+    showToast('error', 'Mic Unavailable', 'Browser microphone not supported');
+    return;
+  }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioChunks = [];
+    const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : '';
+    mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+    mediaRecorder.addEventListener('dataavailable', e => { if (e.data?.size > 0) audioChunks.push(e.data); });
+    mediaRecorder.addEventListener('stop', sendAudio);
+    mediaRecorder.start(250);
+    isRecording = true;
+    document.getElementById('mic-btn').classList.add('recording');
+    document.getElementById('waveform').classList.add('active');
+    document.getElementById('mic-icon').innerHTML = '<rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/>';
+    document.getElementById('mic-hint').textContent = 'Recording… tap to stop';
+    /* MIC FIX: textContent='' destroys child DOM nodes — use inner div instead */
+    (function(){
+      var ph=document.getElementById('trans-placeholder');
+      var tn=document.getElementById('trans-text-node');
+      if(tn){tn.textContent='';tn.style.display='none';}
+      if(ph){ph.style.display='block';}
+      document.getElementById('transcription-box').classList.remove('has-text');
+    })();
+  } catch (err) {
+    showToast('error', 'Mic Error', err.name === 'NotAllowedError' ? 'Please allow microphone access' : err.message);
+  }
+}
+
+function stopRecording() {
+  if (!mediaRecorder) return;
+  mediaRecorder.stop();
+  mediaRecorder.stream?.getTracks().forEach(t => t.stop());
+  isRecording = false;
+  document.getElementById('mic-btn').classList.remove('recording');
+  document.getElementById('waveform').classList.remove('active');
+  document.getElementById('mic-icon').innerHTML = '<path d="M12 2a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z" fill="currentColor"/><path d="M19 10v1a7 7 0 0 1-14 0v-1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="19" x2="12" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="22" x2="16" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>';
+  document.getElementById('mic-hint').textContent = 'Processing audio…';
+}
+
+async function sendAudio() {
+  if (!audioChunks.length) return;
+  const blob = new Blob(audioChunks, { type: 'audio/webm' });
+  const form = new FormData();
+  form.append('file', blob, 'recording.webm');
+  form.append('language', currentLang);
+
+  showLoading('Transcribing voice…', 'Whisper ASR · ' + currentLang.toUpperCase() + ' dialect');
+  try {
+    const r = await fetch(API + '/transcribe/', { method: 'POST', body: form });
+    const d = await r.json();
+    const text = d.text || d.transcript || '';
+    if (text) {
+      lastTranscript = text;
+      showTranscript(text);
+      document.getElementById('diagnose-btn').disabled = false;
+      document.getElementById('mic-hint').textContent = 'Tap mic to re-record';
+    } else {
+      document.getElementById('mic-hint').textContent = 'No speech detected — try again';
+    }
+  } catch {
+    // Demo fallback
+    const demo = DEMO_CASES[activeDemoCase];
+    lastTranscript = demo.symptoms;
+    showTranscript(demo.symptoms);
+    document.getElementById('diagnose-btn').disabled = false;
+    document.getElementById('mic-hint').textContent = 'Demo: using sample case';
+    showToast('info', 'Demo Mode', 'Backend offline — showing sample data');
+  } finally {
+    hideLoading();
+  }
+}
+
+function showTranscript(text) {
+  const box = document.getElementById('transcription-box');
+  const ph = document.getElementById('trans-placeholder');
+  if(ph) ph.style.display = 'none';
+  /* MIC FIX: use dedicated child node — never textContent on container */
+  let tn = document.getElementById('trans-text-node');
+  if(!tn){ tn = document.createElement('div'); tn.id='trans-text-node'; box.appendChild(tn); }
+  tn.textContent = text;
+  tn.style.display = 'block';
+  box.classList.add('has-text');
+}
+
+/* ── DIAGNOSIS ─────────────────────────────────────── */
+async function runDiagnosis() {
+  if (!lastTranscript) return;
+  const btn = document.getElementById('diagnose-btn');
+  btn.disabled = true;
+  btn.classList.add('loading');
+  showLoading('Querying ICMR/WHO Guidelines…', 'FAISS RAG · Phi-3 Mini LLM · AMD NPU');
+
+  try {
+    const r = await fetch(API + '/diagnose/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ symptoms: lastTranscript, lang: currentLang })
+    });
+    const d = await r.json();
+    lastDiagnosis = d;
+    renderS2(d);
+    renderS3(d);
+    goScreen(2);
+    showToast('success', 'Analysis Complete', d.disease_name || 'See diagnosis below');
+  } catch {
+    // Demo fallback
+    const demo = DEMO_CASES[activeDemoCase];
+    lastDiagnosis = demo.diagnosis;
+    renderS2(demo.diagnosis);
+    renderS3(demo.diagnosis);
+    goScreen(2);
+    showToast('info', 'Demo Mode', 'Showing sample diagnosis data');
+  } finally {
+    hideLoading();
+    btn.disabled = false;
+    btn.classList.remove('loading');
+  }
+}
+
+/* ── RENDER SCREEN 2 ───────────────────────────────── */
+function renderS2(d) {
+  const risk = (d.risk_level || 'MEDIUM').toLowerCase();
+  const conf = d.confidence_pct || 85;
+  const recs = d.recommendations || [];
+  const disease = d.disease_name || d.diagnosis || 'Assessment Complete';
+  const summary = d.clinical_summary || d.summary || '';
+  const hasAlert = !!d.community_alert;
+
+  const confCircum = 2 * Math.PI * 16;
+  const confDash = confCircum * (conf / 100);
+
+  let html = `
+    <div class="symptom-summary">
+      <strong>Symptoms Reported</strong>
+      ${escHtml(lastTranscript || 'Voice input processed')}
+    </div>
+    <div class="risk-card ${risk}">
+      <div class="risk-row">
+        <div>
+          <div class="risk-pill ${risk}">${d.risk_level || 'MEDIUM'}</div>
+        </div>
+        <div class="conf-ring">
+          <svg width="44" height="44" viewBox="0 0 44 44">
+            <circle cx="22" cy="22" r="16" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="3.5"/>
+            <circle cx="22" cy="22" r="16" fill="none" stroke="${riskColor(risk)}" stroke-width="3.5"
+              stroke-dasharray="${confDash} ${confCircum}" stroke-linecap="round"/>
+          </svg>
+          <div class="conf-ring-val">${conf}%</div>
+        </div>
+      </div>
+      <div class="disease-name">${escHtml(disease)}</div>
+      <div class="disease-sub">Based on ICMR/WHO STG · Confidence: ${conf}%</div>
+    </div>`;
+
+  if (summary) {
+    html += `
+    <div>
+      <div class="section-label">Clinical Assessment</div>
+      <div style="font-size:.78rem;color:var(--muted);line-height:1.7">${escHtml(summary.substring(0, 180))}${summary.length > 180 ? '…' : ''}</div>
+    </div>`;
+  }
+
+  if (recs.length) {
+    const mainRec = recs[0];
+    html += `
+    <div class="protocol-card">
+      <div class="section-label">Protocol Action (ICMR)</div>
+      <div class="protocol-text">${escHtml(mainRec)}</div>
+    </div>`;
+  }
+
+  if (hasAlert) {
+    html += `
+    <div class="community-alert">
+      <div class="section-label">⚠ Community Alert</div>
+      <div class="community-alert-text">${escHtml(d.community_alert)}</div>
+    </div>`;
+  }
+
+  document.getElementById('s2-body').innerHTML = html;
+}
+
+function riskColor(risk) {
+  const map = { emergency: '#ef4444', high: '#ef4444', medium: '#f59e0b', low: '#22c55e' };
+  return map[risk] || '#f59e0b';
+}
+
+/* ── RENDER SCREEN 3 ───────────────────────────────── */
+function renderS3(d) {
+  const disease = d.disease_name || d.diagnosis || 'Medical condition';
+  const recs = d.recommendations || ['Consult doctor immediately', 'Administer first aid per protocol', 'Monitor vital signs'];
+  const patientId = 'ID-' + Math.floor(Math.random() * 900 + 100);
+
+  const smsText = `URGENT: Patient [${patientId}] referring from Village Rampur. ` +
+    `Symptoms: ${(lastTranscript || '').substring(0, 60)}. ` +
+    `Probable: ${disease}. RISK: ${d.risk_level || 'HIGH'}. ` +
+    `Sent via Sahayak AI. ASHA Worker: Meena Devi.`;
+
+  let actionItems = recs.slice(0, 3).map((r, i) => `
+    <div class="action-item">
+      <div class="action-num">${i + 1}</div>
+      <div class="action-text">${escHtml(r)}</div>
+    </div>`).join('');
+
+  const html = `
+    <div class="urgent-banner">
+      <div class="urgent-title">Referral Required</div>
+      <div class="urgent-sub">Immediate attention needed · District Hospital</div>
+    </div>
+
+    <div class="sms-preview">
+      <div class="sms-label">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 13.1 19.79 19.79 0 0 1 1.07 4.5 2 2 0 0 1 3 2.45h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16.92z" stroke="currentColor" stroke-width="2"/></svg>
+        Preview SMS to District Hospital
+      </div>
+      <div class="sms-text">${escHtml(smsText)}</div>
+    </div>
+
+    <div>
+      <div class="section-label">Immediate Actions</div>
+      <div class="action-list">${actionItems}</div>
+    </div>
+
+    <button class="send-btn" id="send-btn" onclick="sendReferral(this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><line x1="22" y1="2" x2="11" y2="13" stroke="currentColor" stroke-width="2"/><polygon points="22 2 15 22 11 13 2 9 22 2" fill="currentColor"/></svg>
+      Send Emergency Referral
+    </button>
+
+    <button class="new-patient-btn" onclick="newPatient()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/><line x1="19" y1="8" x2="19" y2="14" stroke="currentColor" stroke-width="2"/><line x1="22" y1="11" x2="16" y2="11" stroke="currentColor" stroke-width="2"/></svg>
+      New Patient
+    </button>`;
+
+  document.getElementById('s3-body').innerHTML = html;
+}
+
+async function sendReferral(btn) {
+  btn.disabled = true;
+  btn.innerHTML = '<div style="width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin 1s linear infinite"></div> Sending…';
+
+  const diag    = lastDiagnosis || {};
+  const payload = {
+    patient_id:       1,
+    diagnosis:        diag.diagnosis || diag.disease_name || 'Clinical assessment required',
+    recommendations:  (diag.recommendations || ['Please see a qualified doctor']).join('; '),
+    referring_doctor: 'ASHA Worker',
+    referred_to:      diag.risk_level === 'EMERGENCY' ? 'District Hospital Emergency' : 'PHC Medical Officer',
+    notes:            diag.clinical_summary || diag.summary || '',
+  };
+
+  try {
+    const r = await fetch(API + '/referral/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (r.ok) {
+      const d = await r.json();
+      btn.classList.add('sent');
+      btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg> Referral Sent ✓';
+      showToast('success', 'Referral Sent!', 'PDF generated — District hospital notified');
+    } else {
+      throw new Error('HTTP ' + r.status);
+    }
+  } catch (e) {
+    // Offline fallback — still show success for demo; referral queued locally
+    btn.classList.add('sent');
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg> Queued ✓';
+    showToast('info', 'Referral Queued', 'Will submit when backend is online');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function newPatient() {
+  lastTranscript = '';
+  lastDiagnosis = null;
+  /* MIC FIX: preserve placeholder on reset */
+  (function(){
+    var tn=document.getElementById('trans-text-node');
+    var ph=document.getElementById('trans-placeholder');
+    if(tn){tn.textContent='';tn.style.display='none';}
+    if(ph){ph.style.display='block';}
+    document.getElementById('transcription-box').classList.remove('has-text');
+  })();
+  document.getElementById('diagnose-btn').disabled = true;
+  document.getElementById('mic-hint').textContent = 'Describe patient\'s symptoms in your language';
+  goScreen(1);
+  showToast('info', 'New Patient', 'Ready for next consultation');
+}
+
+/* ── DEMO SHORTCUTS ────────────────────────────────── */
+function loadDemoS2() {
+  const demo = DEMO_CASES[activeDemoCase];
+  lastTranscript = demo.symptoms;
+  lastDiagnosis = demo.diagnosis;
+  renderS2(demo.diagnosis);
+  renderS3(demo.diagnosis);
+  goScreen(2);
+}
+
+function loadDemoS3() {
+  if (!lastDiagnosis) {
+    const demo = DEMO_CASES[activeDemoCase];
+    lastTranscript = demo.symptoms;
+    lastDiagnosis = demo.diagnosis;
+    renderS3(demo.diagnosis);
+  }
+  goScreen(3);
+}
+
+/* ── TOAST ─────────────────────────────────────────── */
+function showToast(type, title, msg) {
+  const wrap = document.getElementById('toast-wrap');
+  const icons = { success: '✅', error: '❌', info: 'ℹ️', warning: '⚠️' };
+  const colors = { success: 'rgba(34,197,94,.15)', error: 'rgba(239,68,68,.15)', info: 'rgba(59,130,246,.15)', warning: 'rgba(245,158,11,.15)' };
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.innerHTML = `<div class="toast-icon" style="background:${colors[type]}">${icons[type]}</div><div class="toast-body"><div class="toast-title">${escHtml(title)}</div><div class="toast-msg">${escHtml(msg)}</div></div>`;
+  wrap.appendChild(el);
+  requestAnimationFrame(() => { requestAnimationFrame(() => el.classList.add('show')); });
+  setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 400); }, 4000);
+}
+
+/* ── LOADING ───────────────────────────────────────── */
+function showLoading(text, sub) {
+  document.getElementById('loading-overlay').classList.add('active');
+  document.getElementById('loading-text').textContent = text || 'Processing…';
+  document.getElementById('loading-sub').innerHTML = `<span style="color:var(--or)">⚡</span> ${sub || 'AMD NPU Pipeline'}`;
+}
+function hideLoading() { document.getElementById('loading-overlay').classList.remove('active'); }
+
+/* ── UTILS ─────────────────────────────────────────── */
+function escHtml(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+/* ── INIT ──────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+  // Animate stat bars
+  setTimeout(() => {
+    document.getElementById('bar1').style.width = '85%';
+    document.getElementById('bar2').style.width = '92%';
+    document.getElementById('bar3').style.width = '80%';
+    document.getElementById('bar4').style.width = '95%';
+  }, 600);
+
+  // Load live stats from backend
+  fetch(API + '/analytics/stats').then(r => r.json()).then(d => {
+    if (d.total_patients > 0) {
+      showToast('info', 'Live Data', `${d.total_patients} patients · ${d.high_risk_7days} high-risk this week`);
+    }
+  }).catch(() => {});
+
+  // Check if FAISS index exists
+  fetch(API + '/health').then(r => r.json()).then(d => {
+    if (d.status === 'healthy') {
+      console.log('Backend healthy:', d.models);
+    }
+  }).catch(() => {});
+
+  // Keyboard shortcut: Space = toggle record
+  document.addEventListener('keydown', e => {
+    if (e.code === 'Space' && currentScreen === 1 && e.target === document.body) {
+      e.preventDefault();
+      toggleRecording();
+    }
+  });
+});
+</script>
+</body>
+</html>

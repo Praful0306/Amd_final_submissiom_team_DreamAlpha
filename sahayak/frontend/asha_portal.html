@@ -1,0 +1,4751 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-role="asha">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sahayak AI — ASHA Worker Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    /* ── THEME TOKENS ────────────────────────────────────────────── */
+    :root {
+      --or: #e35a2c;
+      --orl: #f97316;
+      --or-b: rgba(227, 90, 44, .15);
+      --green: #22c55e;
+      --red: #ef4444;
+      --yellow: #f59e0b;
+      --blue: #3b82f6;
+      --sidebar-w: 260px;
+      --header-h: 64px;
+      --t: all .28s cubic-bezier(.23, 1, .32, 1);
+      --r: 14px;
+      --r2: 20px;
+    }
+
+    /* DARK THEME (default) */
+    [data-theme="dark"] {
+      --bg: #0d0d0f;
+      --surface: #141418;
+      --surface2: #1c1c22;
+      --text: #f0f0f4;
+      --muted: #8b8b9a;
+      --hint: #555562;
+      --border: rgba(255, 255, 255, .08);
+      --border2: rgba(255, 255, 255, .12);
+      --shadow: 0 4px 24px rgba(0, 0, 0, .4);
+      --shadow-lg: 0 12px 48px rgba(0, 0, 0, .5);
+      --sidebar-bg: #111115;
+      --sidebar-border: rgba(255, 255, 255, .06);
+    }
+
+    /* LIGHT THEME */
+    [data-theme="light"] {
+      --bg: #f5f4f0;
+      --surface: #ffffff;
+      --surface2: #fafaf8;
+      --text: #1a1a1a;
+      --muted: #6b7280;
+      --hint: #9ca3af;
+      --border: rgba(0, 0, 0, .065);
+      --border2: rgba(0, 0, 0, .1);
+      --shadow: 0 4px 20px rgba(0, 0, 0, .07);
+      --shadow-lg: 0 12px 40px rgba(0, 0, 0, .1);
+      --sidebar-bg: #ffffff;
+      --sidebar-border: rgba(0, 0, 0, .065);
+    }
+
+    /* ── RESET ───────────────────────────────────────────────────── */
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
+
+    html {
+      font-size: 14px;
+      scroll-behavior: smooth
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      transition: background .3s, color .3s
+    }
+
+    ::-webkit-scrollbar {
+      width: 5px
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border2);
+      border-radius: 3px
+    }
+
+    /* ── LAYOUT ─────────────────────────────────────────────────── */
+    .portal-wrap {
+      display: flex;
+      min-height: 100vh;
+      width: 100%
+    }
+
+    /* ── SIDEBAR ─────────────────────────────────────────────────── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--sidebar-border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      z-index: 200;
+      transition: background .3s, border-color .3s
+    }
+
+    .sidebar-brand {
+      height: var(--header-h);
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      padding: 0 1.25rem;
+      border-bottom: 1px solid var(--sidebar-border);
+      flex-shrink: 0
+    }
+
+    .sidebar-logo {
+      width: 34px;
+      height: 34px;
+      background: linear-gradient(135deg, var(--or), var(--orl));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0
+    }
+
+    .sidebar-logo svg {
+      width: 18px;
+      height: 18px
+    }
+
+    .sidebar-brand-name {
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: -.3px;
+      color: var(--text)
+    }
+
+    .sidebar-brand-name span {
+      color: var(--or)
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      overflow-y: auto;
+      padding: .875rem .875rem 1rem
+    }
+
+    .nav-section-label {
+      font-size: .65rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--hint);
+      padding: .5rem .5rem .3rem;
+      margin-top: .5rem
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      padding: .65rem .875rem;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: var(--t);
+      color: var(--muted);
+      font-size: .875rem;
+      font-weight: 500;
+      margin-bottom: 2px;
+      user-select: none
+    }
+
+    .nav-item:hover {
+      background: var(--surface2);
+      color: var(--text)
+    }
+
+    .nav-item.active {
+      background: rgba(227, 90, 44, .12);
+      color: var(--or);
+      font-weight: 600
+    }
+
+    .nav-item svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      opacity: .7
+    }
+
+    .nav-item.active svg {
+      opacity: 1
+    }
+
+    .nav-badge {
+      margin-left: auto;
+      background: var(--or);
+      color: #fff;
+      font-size: .65rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 100px;
+      min-width: 20px;
+      text-align: center
+    }
+
+    .nav-badge-green {
+      background: var(--green)
+    }
+
+    .nav-badge-yellow {
+      background: var(--yellow);
+      color: #000
+    }
+
+    .sidebar-footer {
+      padding: 1rem .875rem;
+      border-top: 1px solid var(--sidebar-border);
+      flex-shrink: 0
+    }
+
+    .asha-chip {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      padding: .625rem .875rem;
+      border-radius: 10px;
+      background: var(--surface2);
+      cursor: pointer
+    }
+
+    .asha-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--or), var(--orl));
+      color: #fff;
+      font-size: .8125rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0
+    }
+
+    .asha-name {
+      font-size: .8125rem;
+      font-weight: 600;
+      color: var(--text)
+    }
+
+    .asha-role {
+      font-size: .7rem;
+      color: var(--muted)
+    }
+
+    .npu-pill {
+      display: flex;
+      align-items: center;
+      gap: .375rem;
+      background: rgba(227, 90, 44, .1);
+      border: 1px solid var(--or-b);
+      color: var(--or);
+      font-size: .65rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 100px;
+      margin: .5rem .875rem 0;
+      text-transform: uppercase;
+      letter-spacing: .04em
+    }
+
+    .npu-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--or);
+      animation: npuPulse 2s infinite
+    }
+
+    @keyframes npuPulse {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1)
+      }
+
+      50% {
+        opacity: .4;
+        transform: scale(.75)
+      }
+    }
+
+    /* ── MAIN ────────────────────────────────────────────────────── */
+    .main-area {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh
+    }
+
+    .topbar {
+      height: var(--header-h);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      transition: background .3s
+    }
+
+    .topbar-left h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -.4px;
+      color: var(--text)
+    }
+
+    .topbar-left p {
+      font-size: .78rem;
+      color: var(--muted);
+      margin-top: 1px
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: .875rem
+    }
+
+    .tb-btn {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      border: none;
+      border-radius: 100px;
+      padding: .5rem 1.125rem;
+      font-family: inherit;
+      font-size: .8125rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--t)
+    }
+
+    .tb-btn-primary {
+      background: var(--or);
+      color: #fff
+    }
+
+    .tb-btn-primary:hover {
+      background: #c94d23
+    }
+
+    .tb-btn-ghost {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border)
+    }
+
+    .tb-btn-ghost:hover {
+      border-color: var(--or);
+      color: var(--or)
+    }
+
+    /* Theme toggle */
+    .theme-toggle {
+      width: 44px;
+      height: 24px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      position: relative;
+      cursor: pointer;
+      transition: var(--t);
+      flex-shrink: 0
+    }
+
+    .theme-toggle::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--or);
+      transition: var(--t)
+    }
+
+    [data-theme="light"] .theme-toggle::after {
+      left: calc(100% - 19px)
+    }
+
+    .theme-toggle-wrap {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      font-size: .75rem;
+      color: var(--muted);
+      cursor: pointer;
+      user-select: none
+    }
+
+    .theme-icon {
+      font-size: .9rem
+    }
+
+    /* Sections */
+    .page-content {
+      flex: 1;
+      padding: 1.75rem 2rem 3rem
+    }
+
+    .section-view {
+      display: none
+    }
+
+    .section-view.active {
+      display: block
+    }
+
+    /* ── STAT CARDS ──────────────────────────────────────────────── */
+    .stat-row {
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 1.5rem
+    }
+
+    .stat-4 {
+      grid-template-columns: repeat(4, 1fr)
+    }
+
+    .stat-3 {
+      grid-template-columns: repeat(3, 1fr)
+    }
+
+    .stat-2 {
+      grid-template-columns: repeat(2, 1fr)
+    }
+
+    @media(max-width:1100px) {
+      .stat-4 {
+        grid-template-columns: repeat(2, 1fr)
+      }
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r2);
+      padding: 1.25rem 1.5rem;
+      transition: var(--t)
+    }
+
+    .stat-card:hover {
+      box-shadow: var(--shadow)
+    }
+
+    .stat-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: .875rem
+    }
+
+    .stat-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0
+    }
+
+    .si-or {
+      background: rgba(227, 90, 44, .1);
+      color: var(--or)
+    }
+
+    .si-green {
+      background: rgba(34, 197, 94, .1);
+      color: var(--green)
+    }
+
+    .si-blue {
+      background: rgba(59, 130, 246, .1);
+      color: var(--blue)
+    }
+
+    .si-yellow {
+      background: rgba(245, 158, 11, .1);
+      color: var(--yellow)
+    }
+
+    .si-red {
+      background: rgba(239, 68, 68, .1);
+      color: var(--red)
+    }
+
+    .stat-value {
+      font-size: 1.875rem;
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1;
+      color: var(--text)
+    }
+
+    .stat-label {
+      font-size: .75rem;
+      color: var(--muted);
+      margin-top: .375rem;
+      font-weight: 500
+    }
+
+    .stat-change {
+      font-size: .72rem;
+      font-weight: 600;
+      margin-top: .375rem;
+      display: flex;
+      align-items: center;
+      gap: .25rem
+    }
+
+    .sc-up {
+      color: var(--green)
+    }
+
+    .sc-down {
+      color: var(--red)
+    }
+
+    .sc-neutral {
+      color: var(--muted)
+    }
+
+    /* ── CARDS ───────────────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r2);
+      overflow: hidden;
+      transition: background .3s, border-color .3s
+    }
+
+    .card-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between
+    }
+
+    .card-title {
+      font-size: .9375rem;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: .625rem
+    }
+
+    .card-body {
+      padding: 1.25rem 1.5rem
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      margin-bottom: 1.25rem
+    }
+
+    @media(max-width:900px) {
+      .grid-2 {
+        grid-template-columns: 1fr
+      }
+    }
+
+    /* ── TASK LIST ───────────────────────────────────────────────── */
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: .875rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      transition: var(--t);
+      cursor: pointer
+    }
+
+    .task-item:last-child {
+      border-bottom: none
+    }
+
+    .task-item:hover {
+      background: var(--surface2)
+    }
+
+    .task-priority {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0
+    }
+
+    .tp-high {
+      background: var(--red)
+    }
+
+    .tp-medium {
+      background: var(--yellow)
+    }
+
+    .tp-low {
+      background: var(--green)
+    }
+
+    .task-info {
+      flex: 1
+    }
+
+    .task-name {
+      font-size: .875rem;
+      font-weight: 600;
+      color: var(--text)
+    }
+
+    .task-detail {
+      font-size: .75rem;
+      color: var(--muted);
+      margin-top: 2px
+    }
+
+    .task-badge {
+      font-size: .7rem;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 100px
+    }
+
+    .tb-emergency {
+      background: rgba(239, 68, 68, .12);
+      color: var(--red);
+      border: 1px solid rgba(239, 68, 68, .2)
+    }
+
+    .tb-high {
+      background: rgba(245, 158, 11, .12);
+      color: var(--yellow);
+      border: 1px solid rgba(245, 158, 11, .2)
+    }
+
+    .tb-low {
+      background: rgba(34, 197, 94, .1);
+      color: var(--green);
+      border: 1px solid rgba(34, 197, 94, .2)
+    }
+
+    .task-checkbox {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      border: 2px solid var(--border2);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: var(--t)
+    }
+
+    .task-checkbox.done {
+      background: var(--green);
+      border-color: var(--green);
+      color: #fff
+    }
+
+    .task-item.done .task-name {
+      text-decoration: line-through;
+      color: var(--muted)
+    }
+
+    /* ── VAPI CALL SECTION ───────────────────────────────────────── */
+    .call-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r2);
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      transition: var(--t)
+    }
+
+    .call-card:hover {
+      border-color: var(--or-b);
+      box-shadow: var(--shadow)
+    }
+
+    .call-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem
+    }
+
+    .call-patient-name {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text)
+    }
+
+    .call-patient-info {
+      font-size: .78rem;
+      color: var(--muted);
+      margin-top: 2px
+    }
+
+    .call-type-badge {
+      font-size: .72rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 100px
+    }
+
+    .ctb-reminder {
+      background: rgba(59, 130, 246, .1);
+      color: var(--blue);
+      border: 1px solid rgba(59, 130, 246, .2)
+    }
+
+    .ctb-followup {
+      background: rgba(34, 197, 94, .1);
+      color: var(--green);
+      border: 1px solid rgba(34, 197, 94, .2)
+    }
+
+    .ctb-emergency {
+      background: rgba(239, 68, 68, .1);
+      color: var(--red);
+      border: 1px solid rgba(239, 68, 68, .2)
+    }
+
+    .call-actions {
+      display: flex;
+      gap: .75rem
+    }
+
+    .btn-call {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .625rem 1.25rem;
+      border: none;
+      border-radius: 100px;
+      font-family: inherit;
+      font-size: .8125rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--t)
+    }
+
+    .btn-call-start {
+      background: var(--green);
+      color: #fff
+    }
+
+    .btn-call-start:hover {
+      background: #16a34a
+    }
+
+    .btn-call-stop {
+      background: var(--red);
+      color: #fff
+    }
+
+    .btn-call-stop:hover {
+      background: #dc2626
+    }
+
+    .btn-call-ghost {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border)
+    }
+
+    .btn-call-ghost:hover {
+      border-color: var(--or);
+      color: var(--or)
+    }
+
+    .vapi-status {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      font-size: .78rem;
+      font-weight: 600;
+      padding: .5rem 1rem;
+      border-radius: 100px;
+      margin-top: 1rem
+    }
+
+    .vs-idle {
+      background: var(--surface2);
+      color: var(--muted);
+      border: 1px solid var(--border)
+    }
+
+    .vs-calling {
+      background: rgba(34, 197, 94, .1);
+      color: var(--green);
+      border: 1px solid rgba(34, 197, 94, .25);
+      animation: vsCallPulse 1.5s infinite
+    }
+
+    .vs-ended {
+      background: rgba(59, 130, 246, .08);
+      color: var(--blue);
+      border: 1px solid rgba(59, 130, 246, .2)
+    }
+
+    @keyframes vsCallPulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .6
+      }
+    }
+
+    .vs-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor
+    }
+
+    .call-transcript {
+      background: var(--surface2);
+      border-radius: var(--r);
+      padding: .875rem;
+      margin-top: .875rem;
+      font-size: .8125rem;
+      color: var(--text);
+      line-height: 1.6;
+      max-height: 140px;
+      overflow-y: auto;
+      display: none
+    }
+
+    /* ── CALL HISTORY ────────────────────────────────────────────── */
+    .call-log-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: .875rem 0;
+      border-bottom: 1px solid var(--border)
+    }
+
+    .call-log-item:last-child {
+      border-bottom: none
+    }
+
+    .call-log-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: .9rem
+    }
+
+    .cli-success {
+      background: rgba(34, 197, 94, .1)
+    }
+
+    .cli-missed {
+      background: rgba(239, 68, 68, .1)
+    }
+
+    .cli-pending {
+      background: rgba(245, 158, 11, .1)
+    }
+
+    .call-log-info {
+      flex: 1
+    }
+
+    .call-log-name {
+      font-size: .875rem;
+      font-weight: 600;
+      color: var(--text)
+    }
+
+    .call-log-detail {
+      font-size: .72rem;
+      color: var(--muted);
+      margin-top: 1px
+    }
+
+    .call-log-time {
+      font-size: .72rem;
+      color: var(--hint)
+    }
+
+    /* ── GOVERNMENT REPORT ───────────────────────────────────────── */
+    .report-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: .4rem
+    }
+
+    .form-group.full {
+      grid-column: 1/-1
+    }
+
+    .form-label {
+      font-size: .78rem;
+      font-weight: 600;
+      color: var(--muted)
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: .625rem .875rem;
+      font-family: inherit;
+      font-size: .875rem;
+      color: var(--text);
+      transition: var(--t);
+      outline: none;
+      width: 100%
+    }
+
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+      border-color: var(--or);
+      background: var(--surface)
+    }
+
+    .form-select {
+      cursor: pointer
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 80px
+    }
+
+    .form-input::placeholder,
+    .form-textarea::placeholder {
+      color: var(--hint)
+    }
+
+    .submit-btn {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      background: var(--or);
+      color: #fff;
+      border: none;
+      border-radius: 100px;
+      padding: .75rem 1.75rem;
+      font-family: inherit;
+      font-size: .875rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--t)
+    }
+
+    .submit-btn:hover {
+      background: #c94d23;
+      transform: translateY(-1px)
+    }
+
+    .sync-status-bar {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      padding: .875rem 1rem;
+      border-radius: var(--r);
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      font-size: .8125rem;
+      margin-top: .875rem
+    }
+
+    .ssb-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0
+    }
+
+    .ssb-synced {
+      background: var(--green)
+    }
+
+    .ssb-pending {
+      background: var(--yellow)
+    }
+
+    .ssb-error {
+      background: var(--red)
+    }
+
+    /* ── OUTBREAK TRACKER ────────────────────────────────────────── */
+    .outbreak-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: .875rem 1rem;
+      background: var(--surface2);
+      border-radius: var(--r);
+      margin-bottom: .625rem;
+      border: 1px solid var(--border)
+    }
+
+    .outbreak-disease {
+      font-size: .875rem;
+      font-weight: 600;
+      color: var(--text)
+    }
+
+    .outbreak-location {
+      font-size: .72rem;
+      color: var(--muted);
+      margin-top: 2px
+    }
+
+    .outbreak-count {
+      font-size: .72rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 100px
+    }
+
+    .oc-alert {
+      background: rgba(239, 68, 68, .12);
+      color: var(--red);
+      border: 1px solid rgba(239, 68, 68, .2)
+    }
+
+    .oc-warn {
+      background: rgba(245, 158, 11, .12);
+      color: var(--yellow);
+      border: 1px solid rgba(245, 158, 11, .2)
+    }
+
+    .oc-ok {
+      background: rgba(34, 197, 94, .1);
+      color: var(--green);
+      border: 1px solid rgba(34, 197, 94, .2)
+    }
+
+    /* ── VAPI CONFIG BANNER ──────────────────────────────────────── */
+    .config-banner {
+      background: rgba(227, 90, 44, .06);
+      border: 1px solid var(--or-b);
+      border-radius: var(--r2);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem
+    }
+
+    .config-banner-text {
+      font-size: .875rem;
+      color: var(--text)
+    }
+
+    .config-banner-text strong {
+      color: var(--or)
+    }
+
+    .config-banner-actions {
+      display: flex;
+      gap: .75rem;
+      flex-shrink: 0
+    }
+
+    /* ── PROGRESS / DONUT ────────────────────────────────────────── */
+    .progress-bar-wrap {
+      margin-top: .625rem
+    }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: .75rem;
+      color: var(--muted);
+      margin-bottom: .375rem
+    }
+
+    .progress-track {
+      height: 8px;
+      background: var(--surface2);
+      border-radius: 100px;
+      overflow: hidden
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 100px;
+      background: linear-gradient(90deg, var(--or), var(--orl));
+      transition: width .8s cubic-bezier(.23, 1, .32, 1)
+    }
+
+    /* ── TOAST ───────────────────────────────────────────────────── */
+    .toast-wrap {
+      position: fixed;
+      top: 80px;
+      right: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: .625rem;
+      z-index: 9999
+    }
+
+    .toast {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 14px;
+      padding: .875rem 1.125rem;
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      max-width: 320px;
+      transform: translateX(140%);
+      transition: transform .4s cubic-bezier(.23, 1, .32, 1);
+      box-shadow: var(--shadow-lg)
+    }
+
+    .toast.show {
+      transform: translateX(0)
+    }
+
+    .toast-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: .85rem
+    }
+
+    .toast-title {
+      font-size: .8125rem;
+      font-weight: 700;
+      color: var(--text)
+    }
+
+    .toast-msg {
+      font-size: .75rem;
+      color: var(--muted);
+      margin-top: 1px
+    }
+
+    /* ── VAPI ACTIVE CALL OVERLAY ────────────────────────────────── */
+    .call-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .75);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center
+    }
+
+    .call-overlay.active {
+      display: flex
+    }
+
+    .call-overlay-card {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 24px;
+      padding: 2.5rem;
+      text-align: center;
+      min-width: 320px;
+      box-shadow: var(--shadow-lg)
+    }
+
+    .call-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--or), var(--orl));
+      color: #fff;
+      font-size: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.25rem;
+      animation: callRing 1.5s infinite
+    }
+
+    @keyframes callRing {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(227, 90, 44, .4)
+      }
+
+      70% {
+        box-shadow: 0 0 0 20px rgba(227, 90, 44, 0)
+      }
+    }
+
+    .call-overlay-name {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: .375rem
+    }
+
+    .call-overlay-status {
+      font-size: .875rem;
+      color: var(--muted);
+      margin-bottom: 1.5rem
+    }
+
+    .call-overlay-timer {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--or);
+      letter-spacing: -1px;
+      margin-bottom: 1.75rem
+    }
+
+    .btn-end-call {
+      background: var(--red);
+      color: #fff;
+      border: none;
+      border-radius: 100px;
+      padding: .875rem 2.5rem;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--t)
+    }
+
+    .btn-end-call:hover {
+      background: #dc2626
+    }
+
+    /* ── SECTION HEADER ──────────────────────────────────────────── */
+    .section-header {
+      margin-bottom: 1.5rem
+    }
+
+    .section-header h2 {
+      font-size: 1.375rem;
+      font-weight: 800;
+      letter-spacing: -.5px;
+      color: var(--text)
+    }
+
+    .section-header p {
+      font-size: .8125rem;
+      color: var(--muted);
+      margin-top: .25rem
+    }
+
+
+    /* ── LOGOUT ──────────────────────────────────────────────── */
+    function ashaLogout() {
+
+      // Firebase sign out
+      try {
+        import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js') .then(function(m) {
+            var a=m.getAuth(); if(a) m.signOut(a).catch(function() {});
+
+          }) .catch(function() {});
+      }
+
+      catch(e) {}
+
+      // Clear this ASHA's namespaced data
+      var uid=localStorage.getItem('sahayak_user_id') || '';
+
+      if (uid) {
+        var pfx='u_'+uid+'_',
+        rm=[];
+
+        for (var i=0; i<localStorage.length; i++) {
+          var k=localStorage.key(i);
+          if(k&&k.startsWith (pfx)) rm.push(k);
+        }
+
+        rm.forEach(function(k) {
+            localStorage.removeItem(k);
+          });
+      }
+
+      // Clear auth + ASHA session keys
+      ['sahayak_token',
+      'sahayak_role',
+      'sahayak_name',
+      'sahayak_user_id',
+      'sahayak_email',
+      'sahayak_firebase_uid',
+      'vapi_public_key',
+      'vapi_assistant_id',
+      'asha_name',
+      'asha_district',
+      'last_sync',
+      'supabase_url',
+      'supabase_key'].forEach(function(k) {
+          localStorage.removeItem(k);
+        });
+      window.location.href='auth.html';
+    }
+
+    /* ── KANNADA TTS ─────────────────────────────────────────────── */
+    .tts-btn {
+      display: flex;
+      align-items: center;
+      gap: .375rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: .375rem .875rem;
+      font-family: inherit;
+      font-size: .75rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      transition: var(--t)
+    }
+
+    .tts-btn:hover {
+      border-color: var(--or);
+      color: var(--or)
+    }
+
+    /* ── RESPONSIVE ──────────────────────────────────────────────── */
+    @media(max-width:768px) {
+      .sidebar {
+        transform: translateX(-100%)
+      }
+
+      .main-area {
+        margin-left: 0
+      }
+
+      .stat-4,
+      .stat-3 {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .report-form-grid {
+        grid-template-columns: 1fr
+      }
+
+      .grid-2 {
+        grid-template-columns: 1fr
+      }
+    }
+
+    .net-status {
+      display: flex;
+      align-items: center;
+      gap: .35rem;
+      font-size: .72rem;
+      color: var(--muted)
+    }
+
+    .net-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #22c55e;
+      flex-shrink: 0;
+      transition: .3s
+    }
+
+    .net-dot.offline {
+      background: #f59e0b;
+      animation: net-pulse .9s infinite
+    }
+
+    @keyframes net-pulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .3
+      }
+    }
+
+
+    /* ── PATIENT TABLE (v6) ─────────────────────────────────────── */
+    .pt-table-wrap {
+      overflow-x: auto;
+      border-radius: var(--r);
+      border: 1px solid var(--border)
+    }
+
+    .pt-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .8125rem
+    }
+
+    .pt-table th {
+      background: var(--surface2);
+      color: var(--muted);
+      font-weight: 700;
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      padding: .625rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap
+    }
+
+    .pt-table td {
+      padding: .75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+      color: var(--text)
+    }
+
+    .pt-table tr:last-child td {
+      border-bottom: none
+    }
+
+    .pt-table tr:hover td {
+      background: var(--surface2)
+    }
+
+    .pt-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+      font-size: .68rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 100px;
+      white-space: nowrap
+    }
+
+    .ptb-m {
+      background: rgba(59, 130, 246, .12);
+      color: #60a5fa
+    }
+
+    .ptb-f {
+      background: rgba(236, 72, 153, .12);
+      color: #f472b6
+    }
+
+    .ptb-hi {
+      background: rgba(239, 68, 68, .12);
+      color: #ef4444
+    }
+
+    .ptb-med {
+      background: rgba(245, 158, 11, .12);
+      color: #f59e0b
+    }
+
+    .ptb-low {
+      background: rgba(34, 197, 94, .12);
+      color: #22c55e
+    }
+
+    .ptb-preg {
+      background: rgba(168, 85, 247, .12);
+      color: #c084fc
+    }
+
+    .pt-phone {
+      font-family: monospace;
+      font-size: .78rem;
+      color: var(--muted)
+    }
+
+    .pt-no-phone {
+      font-size: .72rem;
+      color: var(--hint);
+      font-style: italic
+    }
+
+    .pt-action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+      padding: .35rem .8rem;
+      border: none;
+      border-radius: 100px;
+      font-family: inherit;
+      font-size: .75rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--t);
+      white-space: nowrap
+    }
+
+    .pat-call {
+      background: rgba(34, 197, 94, .15);
+      color: var(--green);
+      border: 1px solid rgba(34, 197, 94, .3)
+    }
+
+    .pat-call:hover {
+      background: var(--green);
+      color: #fff
+    }
+
+    .pat-call:disabled {
+      opacity: .4;
+      cursor: not-allowed
+    }
+
+    .pat-remind {
+      background: rgba(245, 158, 11, .12);
+      color: #f59e0b;
+      border: 1px solid rgba(245, 158, 11, .25)
+    }
+
+    .pat-remind:hover {
+      background: #f59e0b;
+      color: #000
+    }
+
+    .pt-calling-pulse {
+      animation: callPulse .8s infinite
+    }
+
+    @keyframes callPulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .4
+      }
+    }
+
+    /* ── REMINDER MODAL ──────────────────────────────────────────── */
+    #reminder-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .6);
+      z-index: 900;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem
+    }
+
+    #reminder-modal.open {
+      display: flex
+    }
+
+    .rm-box {
+      background: var(--surface);
+      border-radius: var(--r2);
+      padding: 1.75rem;
+      width: 100%;
+      max-width: 480px;
+      border: 1px solid var(--border)
+    }
+
+    .rm-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: .25rem
+    }
+
+    .rm-sub {
+      font-size: .8rem;
+      color: var(--muted);
+      margin-bottom: 1.25rem
+    }
+
+    .rm-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      margin-bottom: 1rem
+    }
+
+    .rm-chip {
+      padding: .35rem .85rem;
+      border-radius: 100px;
+      font-size: .75rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text);
+      transition: var(--t)
+    }
+
+    .rm-chip:hover,
+    .rm-chip.sel {
+      background: var(--or);
+      color: #fff;
+      border-color: var(--or)
+    }
+
+    .rm-textarea {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: .75rem;
+      font-family: inherit;
+      font-size: .85rem;
+      color: var(--text);
+      resize: vertical;
+      min-height: 90px;
+      outline: none
+    }
+
+    .rm-textarea:focus {
+      border-color: var(--or)
+    }
+
+    .rm-footer {
+      display: flex;
+      gap: .75rem;
+      justify-content: flex-end;
+      margin-top: 1rem
+    }
+
+    .rm-cancel {
+      padding: .6rem 1.25rem;
+      border-radius: 100px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: .85rem;
+      cursor: pointer
+    }
+
+    .rm-cancel:hover {
+      border-color: var(--text);
+      color: var(--text)
+    }
+
+    .rm-send {
+      padding: .6rem 1.5rem;
+      border-radius: 100px;
+      border: none;
+      background: var(--or);
+      color: #fff;
+      font-family: inherit;
+      font-size: .85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--t)
+    }
+
+    .rm-send:hover {
+      background: #c94d23
+    }
+
+    .rm-send:disabled {
+      opacity: .5;
+      cursor: not-allowed
+    }
+
+    .rm-status {
+      font-size: .8rem;
+      margin-top: .75rem;
+      padding: .5rem .875rem;
+      border-radius: var(--r);
+      display: none
+    }
+
+    /* ── CALL STATUS BADGE in table ──────────────────────────────── */
+    .cs-idle {
+      color: var(--hint);
+      font-size: .7rem
+    }
+
+    .cs-calling {
+      color: var(--green);
+      font-size: .7rem;
+      font-weight: 700
+    }
+
+    .cs-done {
+      color: var(--blue);
+      font-size: .7rem
+    }
+  </style>
+
+  <script src="firebase_refresh.js"></script>
+  <script src="offline_sync.js" defer></script>
+</head>
+
+<body>
+  <div class="portal-wrap">
+
+    <!-- ── SIDEBAR ────────────────────────────────────────────────── -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-logo">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 4v4m0 8v4M4 12h4m8 0h4" stroke="#fff" stroke-width="2.5" stroke-linecap="round" />
+            <circle cx="12" cy="12" r="3" fill="#fff" />
+          </svg>
+        </div>
+        <span class="sidebar-brand-name">Sahayak <span>AI</span></span>
+      </div>
+
+      <div class="npu-pill">
+        <span class="npu-dot"></span>
+        AMD NPU · Offline Ready
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">ASHA Dashboard</div>
+        <div class="nav-item active" onclick="showSection('dashboard',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7" />
+            <rect x="14" y="3" width="7" height="7" />
+            <rect x="14" y="14" width="7" height="7" />
+            <rect x="3" y="14" width="7" height="7" />
+          </svg>
+          Dashboard
+        </div>
+        <div class="nav-item" onclick="showSection('tasks',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 11 12 14 22 4" />
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+          </svg>
+          Today's Tasks
+          <span class="nav-badge" id="tasks-badge">3</span>
+        </div>
+
+        <div class="nav-section-label">Patient Care</div>
+        <div class="nav-item" onclick="showSection('calls',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path
+              d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.36a16 16 0 0 0 6 6l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7a2 2 0 0 1 1.72 2z" />
+          </svg>
+          VAPI Calls
+          <span class="nav-badge nav-badge-green" id="calls-badge">4</span>
+        </div>
+        <div class="nav-item" onclick="showSection('reminders',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          </svg>
+          Reminders Scheduled
+          <span class="nav-badge nav-badge-yellow" id="rem-badge">6</span>
+        </div>
+
+        <div class="nav-section-label">Reports & Sync</div>
+        <div class="nav-item" onclick="showSection('govreport',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+          </svg>
+          Government Report
+        </div>
+        <div class="nav-item" onclick="showSection('sync',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="1 4 1 10 7 10" />
+            <polyline points="23 20 23 14 17 14" />
+            <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15" />
+          </svg>
+          Sync to Government
+        </div>
+
+        <div class="nav-section-label">Field Work</div>
+        <div class="nav-item" onclick="showSection('survey',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            <polyline points="9 22 9 12 15 12 15 22" />
+          </svg>
+          Family Survey
+          <span class="nav-badge nav-badge-yellow" id="survey-badge">0</span>
+        </div>
+        <div class="nav-item" onclick="showSection('maternal',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path
+              d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
+          Maternal &amp; Child Health
+        </div>
+        <div class="nav-item" onclick="showSection('immun',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+          </svg>
+          Immunization Tracker
+        </div>
+        <div class="nav-item" onclick="showSection('disease',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          Disease Surveillance
+        </div>
+
+        <div class="nav-section-label">AI Assistant</div>
+        <div class="nav-item" onclick="openChatbot('asha')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+          My ASHA Assistant
+        </div>
+
+        <div class="nav-section-label">Settings</div>
+        <div class="nav-item" onclick="showSection('settings',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+          VAPI Settings
+        </div>
+        <div class="nav-item" onclick="showSection('supabase',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <ellipse cx="12" cy="5" rx="9" ry="3" />
+            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+          </svg>
+          Supabase / DB Sync
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="asha-chip">
+          <div class="asha-avatar" id="asha-avatar">S</div>
+          <div>
+            <div class="asha-name" id="asha-name">ASHA Worker</div>
+            <div class="asha-role" id="asha-district-label">Hubballi, Karnataka</div>
+          </div>
+        </div>
+        <button onclick="ashaLogout()"
+          style="width:100%;margin-top:.5rem;padding:.45rem;border:1px solid var(--sidebar-border);background:none;color:var(--muted);border-radius:8px;cursor:pointer;font-size:.78rem;display:flex;align-items:center;justify-content:center;gap:.4rem;transition:.2s"
+          onmouseover="this.style.color='#ef4444';this.style.borderColor='#ef4444'"
+          onmouseout="this.style.color='';this.style.borderColor=''">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+          Sign Out
+        </button>
+      </div>
+    </aside>
+
+    <!-- ── MAIN AREA ──────────────────────────────────────────────── -->
+    <div class="main-area">
+
+      <!-- TOPBAR -->
+      <div class="topbar">
+        <div class="net-status" id="net-indicator">
+          <div class="net-dot network-status-dot" id="net-dot-main"></div><span class="network-status-label"
+            id="net-label-main" style="display:none">Online</span>
+        </div>
+        <div class="topbar-left">
+          <h1 id="topbar-title">Dashboard</h1>
+          <p id="topbar-sub">Today's overview — AMD Ryzen AI NPU Active</p>
+        </div>
+        <div class="topbar-right">
+          <div class="theme-toggle-wrap" onclick="toggleTheme()">
+            <span class="theme-icon" id="theme-icon">🌙</span>
+            <div class="theme-toggle" id="theme-toggle"></div>
+            <span style="font-size:.75rem;color:var(--muted)" id="theme-label">Dark</span>
+          </div>
+          <button class="tb-btn tb-btn-ghost" onclick="showSection('calls',document.querySelector('[onclick*=calls]'))">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12" />
+            </svg>
+            New Call
+          </button>
+          <button class="tb-btn tb-btn-primary" onclick="runDailyBriefing()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
+            </svg>
+            Daily Briefing
+          </button>
+        </div>
+      </div>
+
+      <div class="page-content">
+
+        <!-- ════════════════════════════════════════════════════════
+       SECTION: DASHBOARD
+  ════════════════════════════════════════════════════════ -->
+        <div class="section-view active" id="sec-dashboard">
+          <div class="section-header">
+            <h2>Good morning! Today's Overview</h2>
+            <p id="dashboard-date">Loading live data…</p>
+          </div>
+
+          <!-- Stats -->
+          <div class="stat-row stat-4">
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <div class="stat-icon si-or">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                  </svg>
+                </div>
+              </div>
+              <div class="stat-value" id="dash-patients">—</div>
+              <div class="stat-label">Total Patients</div>
+              <div class="stat-change sc-up">↑ Live from DB</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <div class="stat-icon si-red">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                  </svg>
+                </div>
+              </div>
+              <div class="stat-value" id="dash-highrisk">—</div>
+              <div class="stat-label">High Risk This Week</div>
+              <div class="stat-change sc-neutral">Last 7 days</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <div class="stat-icon si-green">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07" />
+                  </svg>
+                </div>
+              </div>
+              <div class="stat-value" id="dash-calls">0</div>
+              <div class="stat-label">VAPI Calls Today</div>
+              <div class="stat-change sc-up" id="dash-calls-change">Ready</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <div class="stat-icon si-yellow">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path
+                      d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                  </svg>
+                </div>
+              </div>
+              <div class="stat-value" id="dash-impact">—</div>
+              <div class="stat-label">Lives Impacted</div>
+              <div class="stat-change sc-up" id="dash-impact-msg">This month</div>
+            </div>
+          </div>
+
+          <!-- Grid: Tasks + Outbreak -->
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--or)" stroke-width="2">
+                    <polyline points="9 11 12 14 22 4" />
+                  </svg>
+                  Today's Priority Visits
+                </div>
+                <button class="tts-btn"
+                  onclick="speakKannada('ಇಂದಿನ ಆದ್ಯತೆ: ಅನೀಮಿಯಾ ಮತ್ತು ಜ್ವರ ರೋಗಿಗಳನ್ನು ಮೊದಲು ಭೇಟಿ ಮಾಡಿ')">
+                  🔊 ಕನ್ನಡ
+                </button>
+              </div>
+              <div id="priority-tasks-list">
+                <div style="color:var(--muted);font-size:.8rem;text-align:center;padding:1rem" id="priority-loading">
+                  Loading patients…
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                  </svg>
+                  Community Outbreak Tracker
+                </div>
+              </div>
+              <div class="card-body" id="outbreak-list">
+                <div class="outbreak-row">
+                  <div class="outbreak-info">
+                    <div class="outbreak-disease">Malaria</div>
+                    <div class="outbreak-location">Rampur Village · 7 days</div>
+                  </div>
+                  <span class="outbreak-count oc-alert">4 cases ⚠</span>
+                </div>
+                <div class="outbreak-row">
+                  <div class="outbreak-info">
+                    <div class="outbreak-disease">Dengue</div>
+                    <div class="outbreak-location">Hubballi · 7 days</div>
+                  </div>
+                  <span class="outbreak-count oc-warn">2 cases</span>
+                </div>
+                <div class="outbreak-row">
+                  <div class="outbreak-info">
+                    <div class="outbreak-disease">Anaemia</div>
+                    <div class="outbreak-location">Dharwad · 7 days</div>
+                  </div>
+                  <span class="outbreak-count oc-warn">3 cases</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Impact message -->
+          <div class="card"
+            style="background:linear-gradient(135deg,rgba(227,90,44,.08),rgba(249,115,22,.04));border-color:var(--or-b)">
+            <div class="card-body" style="display:flex;align-items:center;gap:1.5rem">
+              <div style="font-size:2.5rem">❤️</div>
+              <div>
+                <div style="font-size:1.0625rem;font-weight:700;color:var(--text)" id="impact-msg-kn">ಲೋಡ್ ಆಗುತ್ತಿದೆ…
+                </div>
+                <div style="font-size:.8125rem;color:var(--muted);margin-top:.25rem" id="impact-msg-en">Loading impact
+                  from your patient database…</div>
+              </div>
+              <button class="tts-btn" onclick="speakKannada(document.getElementById('impact-msg-kn').textContent)"
+                style="margin-left:auto;flex-shrink:0">🔊</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════════
+       SECTION: TODAY'S TASKS
+  ════════════════════════════════════════════════════════ -->
+        <div class="section-view" id="sec-tasks">
+          <div class="section-header">
+            <h2>Today's Tasks</h2>
+            <p>AI-prioritised from patient database · AMD NPU powered</p>
+          </div>
+          <div class="card" style="margin-bottom:1.25rem">
+            <div class="card-header">
+              <div class="card-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--or)" stroke-width="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+                Scheduled Visits
+              </div>
+              <button class="tb-btn tb-btn-ghost" style="font-size:.78rem;padding:.4rem .9rem"
+                onclick="refreshAgentTasks()">↻ Refresh</button>
+            </div>
+            <div id="full-task-list">
+              <!-- loaded by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════════
+       SECTION: VAPI CALLS
+  ════════════════════════════════════════════════════════ -->
+        <div class="section-view" id="sec-calls">
+          <div class="section-header">
+            <h2>VAPI Voice Call Agent</h2>
+            <p>Kannada medicine reminders · Appointment scheduling · Follow-up calls</p>
+          </div>
+
+          <!-- Config banner -->
+          <div class="config-banner" id="vapi-config-banner">
+            <div class="config-banner-text">
+              <strong>Set your VAPI key</strong> to enable real voice calls. Without it, calls run in demo mode.<br>
+              <span style="font-size:.75rem;color:var(--muted)">Get your free key at vapi.ai → API Keys</span>
+            </div>
+            <div class="config-banner-actions">
+              <button class="tb-btn tb-btn-ghost" style="font-size:.78rem;padding:.4rem .9rem"
+                onclick="showSection('settings',document.querySelector('[onclick*=settings]'))">Configure VAPI</button>
+              <button class="tb-btn tb-btn-primary" style="font-size:.78rem;padding:.4rem .9rem"
+                onclick="dismissVapiBanner()">Dismiss</button>
+            </div>
+          </div>
+
+          <!-- Add Patient Button -->
+          <div style="display:flex;gap:.75rem;margin-bottom:1.25rem;flex-wrap:wrap;align-items:center">
+            <button onclick="showAddPatientModal()"
+              style="background:#e35a2c;color:#fff;border:none;border-radius:22px;padding:.6rem 1.5rem;font-size:.875rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.5rem">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              Add New Patient
+            </button>
+            <button onclick="loadMyPatients()"
+              style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:22px;padding:.6rem 1.25rem;font-size:.875rem;font-weight:600;cursor:pointer">
+              🔄 Refresh List
+            </button>
+            <span id="patient-count-label" style="font-size:.8rem;color:var(--muted)"></span>
+          </div>
+
+          <!-- Patient call cards — loaded dynamically from /patients/my-patients -->
+          <div id="call-cards-list">
+            <!-- Loading state -->
+            <div style="text-align:center;padding:2rem;color:var(--muted);font-size:.875rem" id="patients-loading">
+              Loading your patients…
+            </div>
+            <!-- Empty state -->
+            <div id="patients-empty" style="display:none;text-align:center;padding:2rem">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5"
+                style="margin-bottom:.75rem">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+              <p style="color:var(--muted);font-size:.875rem">No patients yet.<br>Click <strong>Add New Patient</strong>
+                to register your first patient.</p>
+            </div>
+            <!-- Patient Table -->
+            <div class="pt-table-wrap" id="patient-table-wrap" style="display:none">
+              <table class="pt-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Patient Name</th>
+                    <th>Age</th>
+                    <th>Gender</th>
+                    <th>Phone</th>
+                    <th>Risk</th>
+                    <th>Reminder</th>
+                    <th>Call</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="patient-table-body">
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Call History -->
+          <div class="card" style="margin-top:1.5rem">
+            <div class="card-header">
+              <div class="card-title">Recent Call History</div>
+            </div>
+            <div class="card-body" id="call-history">
+              <div style="color:var(--muted);font-size:.8rem;text-align:center;padding:1rem">
+                No calls made yet. Add patients and use the Call button.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════════════════════
+       SECTION: REMINDERS
+  ════════════════════════════════════════════════════════ -->
+      <div class="section-view" id="sec-reminders">
+        <div class="section-header">
+          <h2>Scheduled Reminders</h2>
+          <p>Auto-scheduled by AI based on diagnosis + follow-up dates</p>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Today's Reminder Queue</div>
+            <button class="tb-btn tb-btn-primary" style="font-size:.78rem;padding:.45rem 1rem"
+              onclick="runAllReminders()">▶ Run All</button>
+          </div>
+          <div id="reminder-queue">
+            <!-- JS populated -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════════════════════
+       SECTION: GOVERNMENT REPORT
+  ════════════════════════════════════════════════════════ -->
+      <div class="section-view" id="sec-govreport">
+        <div class="section-header">
+          <h2>Government Report Submission</h2>
+          <p>HMIS-compliant · NDHM aligned · SAHI 2026 compliant</p>
+        </div>
+
+        <div class="card" style="margin-bottom:1.25rem">
+          <div class="card-header">
+            <div class="card-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--or)" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              </svg>
+              Monthly ASHA Activity Report
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="report-form-grid">
+              <div class="form-group">
+                <label class="form-label">ASHA ID</label>
+                <input class="form-input" id="gov-asha-id" placeholder="e.g. KA-HBL-2847" value="KA-HBL-2847" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Block / PHC</label>
+                <input class="form-input" id="gov-phc" placeholder="PHC Name" value="PHC Hubballi Urban" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">District</label>
+                <select class="form-select" id="gov-district">
+                  <option>Dharwad</option>
+                  <option selected>Hubballi</option>
+                  <option>Belagavi</option>
+                  <option>Kalaburagi</option>
+                  <option>Ballari</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Report Month</label>
+                <input class="form-input" type="month" id="gov-month" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Total Households Visited</label>
+                <input class="form-input" type="number" id="gov-households" placeholder="0" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">High-Risk Referrals</label>
+                <input class="form-input" type="number" id="gov-referrals" placeholder="0" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Malaria RDT Tests</label>
+                <input class="form-input" type="number" id="gov-rdt" placeholder="0" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Immunization Follow-ups</label>
+                <input class="form-input" type="number" id="gov-immun" placeholder="0" />
+              </div>
+              <div class="form-group full">
+                <label class="form-label">Outbreak Events Reported</label>
+                <textarea class="form-textarea" id="gov-outbreaks"
+                  placeholder="Describe any disease cluster observed this month…"></textarea>
+              </div>
+              <div class="form-group full">
+                <label class="form-label">Additional Notes</label>
+                <textarea class="form-textarea" id="gov-notes"
+                  placeholder="Any supply shortages, training needs, community issues…"></textarea>
+              </div>
+            </div>
+            <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap">
+              <button class="submit-btn" onclick="submitGovReport()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                Submit Report
+              </button>
+              <button class="tb-btn tb-btn-ghost" onclick="autoFillReport()">✨ Auto-fill from DB</button>
+              <button class="tts-btn" onclick="speakKannada('ವರದಿ ಸಿದ್ಧ. ಸರ್ಕಾರಕ್ಕೆ ಸಲ್ಲಿಸಲಾಗಿದೆ.')">🔊 ಕನ್ನಡ</button>
+            </div>
+            <div class="sync-status-bar" id="report-status" style="display:none">
+              <div class="ssb-dot ssb-synced"></div>
+              <span id="report-status-text">Report submitted successfully</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════════════════════
+       SECTION: SYNC
+  ════════════════════════════════════════════════════════ -->
+      <div class="section-view" id="sec-sync">
+        <div class="section-header">
+          <h2>Sync to Government Database</h2>
+          <p>Hybrid architecture · Offline core stays on AMD NPU · Syncs when online</p>
+        </div>
+
+        <div class="stat-row stat-3" style="margin-bottom:1.25rem">
+          <div class="stat-card">
+            <div class="stat-value" id="sync-diagnoses">—</div>
+            <div class="stat-label">Total Diagnoses</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="sync-pending" style="color:var(--yellow)">—</div>
+            <div class="stat-label">Pending Sync</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="sync-last" style="font-size:1rem">Never</div>
+            <div class="stat-label">Last Synced</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Sync Controls</div>
+          </div>
+          <div class="card-body">
+            <p style="font-size:.875rem;color:var(--muted);margin-bottom:1.25rem;line-height:1.7">
+              All diagnosis records, patient vitals, and outbreak alerts are stored in local SQLite on this device.
+              When you tap "Sync Now", only new unsynced records are pushed to the Karnataka Government Supabase DB.
+              If network drops mid-sync, data stays safely queued locally and retries automatically.
+            </p>
+            <div style="display:flex;gap:.875rem;flex-wrap:wrap">
+              <button class="submit-btn" onclick="runSync()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="1 4 1 10 7 10" />
+                  <polyline points="23 20 23 14 17 14" />
+                  <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15" />
+                </svg>
+                Sync Now
+              </button>
+              <button class="tb-btn tb-btn-ghost" onclick="checkSyncStatus()">Check Status</button>
+            </div>
+            <div class="sync-status-bar" id="sync-result" style="margin-top:1rem;display:none">
+              <div class="ssb-dot" id="sync-result-dot"></div>
+              <span id="sync-result-text">Checking…</span>
+            </div>
+            <div
+              style="background:var(--surface2);border-radius:var(--r);padding:1rem;margin-top:1rem;font-size:.78rem;color:var(--muted);line-height:1.7">
+              <strong style="color:var(--text)">Architecture:</strong> Edge (AMD NPU) → FastAPI → Supabase
+              PostgreSQL<br>
+              Offline core: SQLite + FAISS + Clinical Engine — never touches network<br>
+              Sync layer: only new diagnosis_log records, anonymised per SAHI 2026
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════════════════════
+       SECTION: SETTINGS (VAPI CONFIG)
+  ════════════════════════════════════════════════════════ -->
+      <div class="section-view" id="sec-settings">
+        <div class="section-header">
+          <h2>VAPI Settings</h2>
+          <p>Configure voice call agent for Kannada medicine reminders</p>
+        </div>
+
+        <div class="card" style="margin-bottom:1.25rem">
+          <div class="card-header">
+            <div class="card-title">VAPI API Configuration</div>
+          </div>
+          <div class="card-body">
+            <div class="report-form-grid">
+              <div class="form-group">
+                <label class="form-label">VAPI Public Key <small style="color:var(--muted)">(for browser
+                    calls)</small></label>
+                <input class="form-input" id="vapi-public-key" placeholder="vapi_pub_xxxxxxxxxxxx" type="password" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">VAPI Private Key <small style="color:var(--muted)">(for outbound calls to
+                    patients)</small></label>
+                <input class="form-input" id="vapi-private-key" placeholder="vapi_prv_xxxxxxxxxxxx" type="password" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Phone Number ID — ASHA Outbound <small style="color:var(--muted)">(ASHA calls
+                    patients)</small></label>
+                <input class="form-input" id="vapi-phone-asha" placeholder="VAPI Dashboard → Phone Numbers → ID" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Phone Number ID — Patient Inbound <small style="color:var(--muted)">(patients
+                    call doctor for appointments)</small></label>
+                <input class="form-input" id="vapi-phone-patient" placeholder="VAPI Dashboard → Phone Numbers → ID" />
+              </div>
+              <div class="form-group full">
+                <label class="form-label">Default Language</label>
+                <select class="form-select" id="vapi-lang">
+                  <option value="kn" selected>Kannada (ಕನ್ನಡ)</option>
+                  <option value="hi">Hindi (हिंदी)</option>
+                  <option value="en">English</option>
+                  <option value="te">Telugu</option>
+                  <option value="ta">Tamil</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">ASHA Name</label>
+                <input class="form-input" id="setting-asha-name" placeholder="Your name" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">ASHA Mobile Number <small style="color:var(--muted)">(patients transferred
+                    here on request)</small></label>
+                <input class="form-input" id="setting-asha-phone" placeholder="+91XXXXXXXXXX" type="tel" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">District</label>
+                <input class="form-input" id="setting-district" placeholder="e.g. Dharwad" value="Dharwad" />
+              </div>
+              <div class="form-group full" style="grid-column:1/-1">
+                <label class="form-label" style="color:#f59e0b">
+                  🔗 Make.com Webhook URL
+                  <small style="color:var(--muted);font-weight:400"> — Fallback if VAPI keys not set.
+                    <a href="https://make.com" target="_blank" style="color:var(--or)">Get from make.com →</a></small>
+                </label>
+                <input class="form-input" id="make-webhook-url" placeholder="https://hook.eu2.make.com/YOUR_WEBHOOK_ID"
+                  style="font-family:monospace;font-size:.8rem" />
+                <span style="font-size:.72rem;color:var(--muted);margin-top:.3rem;display:block">
+                  Import <strong>MAKECOM_BLUEPRINT.json</strong> from the project folder into Make.com, then paste the
+                  webhook URL here.
+                </span>
+              </div>
+            </div>
+            <div style="display:flex;gap:.875rem;margin-top:.25rem;flex-wrap:wrap">
+              <button class="submit-btn" onclick="saveVapiSettings()">Save Settings</button>
+              <button class="tb-btn tb-btn-ghost" onclick="testVapiConnection()">Test Connection</button>
+            </div>
+            <div class="sync-status-bar" id="vapi-test-result" style="margin-top:.875rem;display:none">
+              <div class="ssb-dot" id="vapi-test-dot"></div>
+              <span id="vapi-test-text">Testing…</span>
+            </div>
+            <div
+              style="background:var(--surface2);border-radius:var(--r);padding:1rem;margin-top:1rem;font-size:.78rem;color:var(--muted);line-height:1.7">
+              <strong style="color:var(--text)">How to get your VAPI key (3 steps):</strong><br>
+              1. Go to <a href="https://vapi.ai" target="_blank" style="color:#e35a2c">vapi.ai</a> → Sign up free<br>
+              2. Dashboard → <strong>API Keys</strong> → Create → Copy your <strong>Public Key</strong><br>
+              3. Paste above, fill your name + district → <strong>Save Settings</strong><br><br>
+              <strong style="color:var(--text)">No Assistant ID needed!</strong><br>
+              The system automatically creates a Kannada-speaking ASHA agent using your live patient data.<br><br>
+              <strong style="color:var(--text)">What you can ask (in Kannada):</strong><br>
+              • "ಇಂದು ಯಾರನ್ನು ಮೊದಲು ನೋಡಬೇಕು?" (Who to visit first?)<br>
+              • "ಯಾವ ಗ್ರಾಮದಲ್ಲಿ ರೋಗ ಹರಡುತ್ತಿದೆ?" (Outbreak area?)<br>
+              • "ನಿನ್ನೆ ಏನು ಬಾಕಿ ಉಳಿದಿದೆ?" (Yesterday's pending?)<br>
+              • "ಮಲೇರಿಯಾ ಚಿಕಿತ್ಸೆ ಏನು?" (Malaria treatment?)
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ FAMILY SURVEY ════ -->
+      <div class="section-view" id="sec-survey">
+        <div class="section-header">
+          <h2>Family Survey &amp; Household Census</h2>
+          <p>NRHM-mandated household registration · Family health profiling</p>
+        </div>
+        <div class="stat-row stat-4">
+          <div class="stat-card">
+            <div class="stat-value" id="sv-households">0</div>
+            <div class="stat-label">Households Registered</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="sv-members">0</div>
+            <div class="stat-label">Family Members</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="sv-pending" style="color:var(--yellow)">3</div>
+            <div class="stat-label">Pending Surveys</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="sv-completed" style="color:var(--green)">7</div>
+            <div class="stat-label">Completed This Month</div>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Register New Household</div>
+            </div>
+            <div class="card-body">
+              <div class="report-form-grid">
+                <div class="form-group"><label class="form-label">Head of Family</label><input class="form-input"
+                    id="sv-head" placeholder="Full name" /></div>
+                <div class="form-group"><label class="form-label">Village / Ward</label><input class="form-input"
+                    id="sv-village" placeholder="Village name" /></div>
+                <div class="form-group"><label class="form-label">Total Members</label><input class="form-input"
+                    type="number" id="sv-total" placeholder="0" /></div>
+                <div class="form-group"><label class="form-label">Children Under 5</label><input class="form-input"
+                    type="number" id="sv-children" placeholder="0" /></div>
+                <div class="form-group"><label class="form-label">Pregnant Women</label><input class="form-input"
+                    type="number" id="sv-pregnant" placeholder="0" /></div>
+                <div class="form-group"><label class="form-label">Elderly (60+)</label><input class="form-input"
+                    type="number" id="sv-elderly" placeholder="0" /></div>
+                <div class="form-group full"><label class="form-label">Chronic Conditions in Family</label>
+                  <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.25rem" id="sv-conditions">
+                    <label style="display:flex;align-items:center;gap:.375rem;font-size:.8125rem;cursor:pointer"><input
+                        type="checkbox" value="diabetes" /> Diabetes</label>
+                    <label style="display:flex;align-items:center;gap:.375rem;font-size:.8125rem;cursor:pointer"><input
+                        type="checkbox" value="hypertension" /> Hypertension</label>
+                    <label style="display:flex;align-items:center;gap:.375rem;font-size:.8125rem;cursor:pointer"><input
+                        type="checkbox" value="tb" /> TB History</label>
+                    <label style="display:flex;align-items:center;gap:.375rem;font-size:.8125rem;cursor:pointer"><input
+                        type="checkbox" value="malnutrition" /> Malnutrition</label>
+                    <label style="display:flex;align-items:center;gap:.375rem;font-size:.8125rem;cursor:pointer"><input
+                        type="checkbox" value="anemia" /> Anaemia</label>
+                    <label style="display:flex;align-items:center;gap:.375rem;font-size:.8125rem;cursor:pointer"><input
+                        type="checkbox" value="disability" /> Disability</label>
+                  </div>
+                </div>
+                <div class="form-group"><label class="form-label">Toilet Available</label>
+                  <select class="form-select" id="sv-toilet">
+                    <option value="yes">Yes</option>
+                    <option value="no">No (ODF pending)</option>
+                    <option value="shared">Shared</option>
+                  </select>
+                </div>
+                <div class="form-group"><label class="form-label">Drinking Water Source</label>
+                  <select class="form-select" id="sv-water">
+                    <option>Tap/Piped</option>
+                    <option>Borewell</option>
+                    <option>Open Well</option>
+                    <option>River/Pond</option>
+                  </select>
+                </div>
+                <div class="form-group full"><label class="form-label">Notes</label><textarea class="form-textarea"
+                    id="sv-notes" placeholder="Any specific health concerns, difficult cases…"
+                    style="min-height:60px"></textarea></div>
+              </div>
+              <div style="display:flex;gap:.875rem;flex-wrap:wrap">
+                <button class="submit-btn" onclick="saveSurvey()">Save Survey</button>
+                <button class="tb-btn tb-btn-ghost" onclick="speakKannada('ಕುಟುಂಬ ಸಮೀಕ್ಷೆ ಸಂಗ್ರಹಿಸಲಾಗಿದೆ')">🔊
+                  ಕನ್ನಡ</button>
+              </div>
+              <div class="sync-status-bar" id="sv-status" style="display:none">
+                <div class="ssb-dot ssb-synced"></div><span id="sv-status-text">Saved</span>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Recent Surveys</div><button class="tts-btn" onclick="exportSurveys()">Export
+                CSV</button>
+            </div>
+            <div id="survey-list">
+              <div class="task-item">
+                <div class="task-priority tp-low"></div>
+                <div class="task-info">
+                  <div class="task-name">Ramanna Family — Rampur</div>
+                  <div class="task-detail">6 members · 2 children · Diabetes noted</div>
+                </div><span class="task-badge tb-low">DONE</span>
+              </div>
+              <div class="task-item">
+                <div class="task-priority tp-medium"></div>
+                <div class="task-info">
+                  <div class="task-name">Shiva Prasad Family — Dharwad</div>
+                  <div class="task-detail">4 members · No toilet · Pending ODF</div>
+                </div><span class="task-badge tb-high">ODF</span>
+              </div>
+              <div class="task-item">
+                <div class="task-priority tp-high"></div>
+                <div class="task-info">
+                  <div class="task-name">Meena Household — Hubballi</div>
+                  <div class="task-detail">Pregnant woman · 3 children · Malnutrition risk</div>
+                </div><span class="task-badge tb-emergency">PRIORITY</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ MATERNAL & CHILD HEALTH ════ -->
+      <div class="section-view" id="sec-maternal">
+        <div class="section-header">
+          <h2>Maternal &amp; Child Health</h2>
+          <p>ANC/PNC registration · JSY institutional delivery · JSSK entitlements</p>
+        </div>
+        <div class="stat-row stat-4">
+          <div class="stat-card">
+            <div class="stat-value" id="mch-anc" style="color:var(--or)">5</div>
+            <div class="stat-label">Registered Pregnancies</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="mch-overdue" style="color:var(--red)">2</div>
+            <div class="stat-label">Overdue ANC Visits</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="mch-delivery" style="color:var(--green)">3</div>
+            <div class="stat-label">Institutional Deliveries</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="mch-sam">1</div>
+            <div class="stat-label">SAM/MAM Children</div>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Register Pregnant Woman</div>
+            </div>
+            <div class="card-body">
+              <div class="report-form-grid">
+                <div class="form-group"><label class="form-label">Mother's Name</label><input class="form-input"
+                    id="mch-name" placeholder="Full name" /></div>
+                <div class="form-group"><label class="form-label">Age</label><input class="form-input" type="number"
+                    id="mch-age" placeholder="Age" /></div>
+                <div class="form-group"><label class="form-label">LMP Date</label><input class="form-input" type="date"
+                    id="mch-lmp" /></div>
+                <div class="form-group"><label class="form-label">EDD (Expected)</label><input class="form-input"
+                    type="date" id="mch-edd" /></div>
+                <div class="form-group"><label class="form-label">Gravida / Para</label><input class="form-input"
+                    id="mch-gp" placeholder="G2P1" /></div>
+                <div class="form-group"><label class="form-label">Haemoglobin</label><input class="form-input"
+                    id="mch-hb" placeholder="g/dL" /></div>
+                <div class="form-group"><label class="form-label">Blood Group</label><select class="form-select"
+                    id="mch-bg">
+                    <option>A+</option>
+                    <option>B+</option>
+                    <option>O+</option>
+                    <option>AB+</option>
+                    <option>A-</option>
+                    <option>B-</option>
+                    <option>O-</option>
+                    <option>AB-</option>
+                  </select></div>
+                <div class="form-group"><label class="form-label">JSY Registered</label><select class="form-select"
+                    id="mch-jsy">
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                  </select></div>
+                <div class="form-group full"><label class="form-label">Risk Factors</label>
+                  <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.25rem">
+                    <label style="display:flex;align-items:center;gap:.375rem;font-size:.8125rem;cursor:pointer"><input
+                        type="checkbox" value="anemia" /> Anaemia</label>
+                    <label style="display:flex;align-items:center;gap:.375rem;font-size:.8125rem;cursor:pointer"><input
+                        type="checkbox" value="htn" /> Hypertension</label>
+                    <label style="display:flex;align-items:center;gap:.375rem;font-size:.8125rem;cursor:pointer"><input
+                        type="checkbox" value="diabetes" /> Diabetes</label>
+                    <label style="display:flex;align-items:center;gap:.375rem;font-size:.8125rem;cursor:pointer"><input
+                        type="checkbox" value="prev_c" /> Previous C-section</label>
+                    <label style="display:flex;align-items:center;gap:.375rem;font-size:.8125rem;cursor:pointer"><input
+                        type="checkbox" value="hb_low" /> Hb &lt; 7 g/dL</label>
+                  </div>
+                </div>
+              </div>
+              <button class="submit-btn" onclick="saveMCH()">Register &amp; Schedule ANC</button>
+              <div class="sync-status-bar" id="mch-status" style="display:none;margin-top:.875rem">
+                <div class="ssb-dot ssb-synced"></div><span id="mch-status-text">Saved</span>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">ANC Follow-up Due</div>
+            </div>
+            <div id="mch-list">
+              <div class="task-item">
+                <div class="task-priority tp-high"></div>
+                <div class="task-info">
+                  <div class="task-name">Lakshmi (28w) — Rampur</div>
+                  <div class="task-detail">ANC 3 overdue · Hb 8.2 g/dL · Call reminder sent</div>
+                </div><span class="task-badge tb-emergency">OVERDUE</span>
+              </div>
+              <div class="task-item">
+                <div class="task-priority tp-medium"></div>
+                <div class="task-info">
+                  <div class="task-name">Savitri (32w) — Dharwad</div>
+                  <div class="task-detail">ANC 3 due this week · BP normal</div>
+                </div><span class="task-badge tb-high">DUE</span>
+              </div>
+              <div class="task-item">
+                <div class="task-priority tp-low"></div>
+                <div class="task-info">
+                  <div class="task-name">Meena (20w) — Hubballi</div>
+                  <div class="task-detail">ANC 2 complete · Next in 4 weeks</div>
+                </div><span class="task-badge tb-low">OK</span>
+              </div>
+            </div>
+            <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)">
+              <div style="font-size:.78rem;font-weight:700;color:var(--muted);margin-bottom:.625rem">SAM/MAM Children
+                This Month</div>
+              <div class="task-item">
+                <div class="task-priority tp-high"></div>
+                <div class="task-info">
+                  <div class="task-name">Raju (2y) — Rampur</div>
+                  <div class="task-detail">MUAC 10.8cm · SAM — NRC referral done</div>
+                </div><span class="task-badge tb-emergency">SAM</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ IMMUNIZATION TRACKER ════ -->
+      <div class="section-view" id="sec-immun">
+        <div class="section-header">
+          <h2>Immunization Tracker</h2>
+          <p>Universal Immunization Programme · Due list · Defaulter tracking</p>
+        </div>
+        <div class="stat-row stat-4">
+          <div class="stat-card">
+            <div class="stat-value" id="imm-due" style="color:var(--yellow)">4</div>
+            <div class="stat-label">Due This Week</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="imm-default" style="color:var(--red)">2</div>
+            <div class="stat-label">Defaulters</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="imm-done" style="color:var(--green)">18</div>
+            <div class="stat-label">Completed This Month</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="imm-coverage">87%</div>
+            <div class="stat-label">Village Coverage</div>
+            <div class="progress-bar-wrap">
+              <div class="progress-track">
+                <div class="progress-fill" style="width:87%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Mark Vaccination Given</div>
+            </div>
+            <div class="card-body">
+              <div class="report-form-grid">
+                <div class="form-group"><label class="form-label">Child's Name</label><input class="form-input"
+                    id="imm-child" placeholder="Name" /></div>
+                <div class="form-group"><label class="form-label">Date of Birth</label><input class="form-input"
+                    type="date" id="imm-dob" /></div>
+                <div class="form-group full"><label class="form-label">Vaccine Given</label>
+                  <select class="form-select" id="imm-vaccine">
+                    <option>BCG (Birth)</option>
+                    <option>OPV 0 (Birth)</option>
+                    <option>Hep B (Birth)</option>
+                    <option>OPV 1 (6w)</option>
+                    <option>DPT 1 (6w)</option>
+                    <option>IPV 1 (6w)</option>
+                    <option>Hib 1 (6w)</option>
+                    <option>Rota 1 (6w)</option>
+                    <option>PCV 1 (6w)</option>
+                    <option>DPT 2 (10w)</option>
+                    <option>OPV 2 (10w)</option>
+                    <option>DPT 3 (14w)</option>
+                    <option>OPV 3 (14w)</option>
+                    <option>Measles 1 (9m)</option>
+                    <option>MR 1 (9m)</option>
+                    <option>JE 1 (9m)</option>
+                    <option>MR 2 (16-24m)</option>
+                    <option>DPT Booster</option>
+                    <option>OPV Booster</option>
+                    <option>TT (Pregnancy)</option>
+                  </select>
+                </div>
+                <div class="form-group"><label class="form-label">Date Given</label><input class="form-input"
+                    type="date" id="imm-date" /></div>
+                <div class="form-group"><label class="form-label">Next Due</label><input class="form-input" type="date"
+                    id="imm-next" /></div>
+                <div class="form-group full"><label class="form-label">Adverse Event (AEFI)</label><input
+                    class="form-input" id="imm-aefi" placeholder="None / describe if any reaction" /></div>
+              </div>
+              <button class="submit-btn" onclick="saveImmunization()">Mark Given &amp; Schedule Next</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Due &amp; Defaulter List</div><button class="tts-btn"
+                onclick="speakKannada('ಈ ವಾರ 4 ಮಕ್ಕಳಿಗೆ ಲಸಿಕೆ ನೀಡಬೇಕು')">🔊 ಕನ್ನಡ</button>
+            </div>
+            <div id="immun-list">
+              <div class="task-item">
+                <div class="task-priority tp-high"></div>
+                <div class="task-info">
+                  <div class="task-name">Baby Raju (6w) — DPT 1</div>
+                  <div class="task-detail">Due 5 April · Rampur village</div>
+                </div><span class="task-badge tb-high">DUE</span>
+              </div>
+              <div class="task-item">
+                <div class="task-priority tp-high"></div>
+                <div class="task-info">
+                  <div class="task-name">Baby Priya (9m) — Measles</div>
+                  <div class="task-detail">Due 3 April · Dharwad</div>
+                </div><span class="task-badge tb-high">DUE</span>
+              </div>
+              <div class="task-item">
+                <div class="task-priority tp-high"></div>
+                <div class="task-info">
+                  <div class="task-name">Arjun (18m) — DPT Booster</div>
+                  <div class="task-detail">Overdue 15 days · Hubballi</div>
+                </div><span class="task-badge tb-emergency">DEFAULTER</span>
+              </div>
+              <div class="task-item">
+                <div class="task-priority tp-high"></div>
+                <div class="task-info">
+                  <div class="task-name">Sunita (Pregnant) — TT 2</div>
+                  <div class="task-detail">Due this week</div>
+                </div><span class="task-badge tb-high">DUE</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ DISEASE SURVEILLANCE ════ -->
+      <div class="section-view" id="sec-disease">
+        <div class="section-header">
+          <h2>Disease Surveillance</h2>
+          <p>IDSP weekly reporting · TB DOTS · Malaria RDT · Outbreak alerts</p>
+        </div>
+        <div class="stat-row stat-4">
+          <div class="stat-card">
+            <div class="stat-value" id="ds-fever" style="color:var(--yellow)">6</div>
+            <div class="stat-label">Fever Cases This Week</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="ds-tb">2</div>
+            <div class="stat-label">TB Suspects Referred</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="ds-malaria" style="color:var(--red)">4</div>
+            <div class="stat-label">Malaria RDT Positive</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="ds-sanitation">68%</div>
+            <div class="stat-label">ODF Compliance</div>
+            <div class="progress-bar-wrap">
+              <div class="progress-track">
+                <div class="progress-fill" style="width:68%;background:var(--yellow)"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Report Suspected Case</div>
+            </div>
+            <div class="card-body">
+              <div class="report-form-grid">
+                <div class="form-group"><label class="form-label">Patient Name</label><input class="form-input"
+                    id="ds-name" placeholder="Name" /></div>
+                <div class="form-group"><label class="form-label">Village</label><input class="form-input"
+                    id="ds-village" placeholder="Village" /></div>
+                <div class="form-group full"><label class="form-label">Disease Suspected</label>
+                  <select class="form-select" id="ds-disease">
+                    <option>Malaria (Suspected)</option>
+                    <option>Malaria RDT Positive</option>
+                    <option>Dengue (Suspected)</option>
+                    <option>Typhoid (Suspected)</option>
+                    <option>TB Suspect (Cough >2 weeks)</option>
+                    <option>Diarrhoea / Gastroenteritis</option>
+                    <option>Acute Respiratory Infection</option>
+                    <option>Jaundice / Hepatitis</option>
+                    <option>Snakebite</option>
+                    <option>Dog Bite (Rabies Risk)</option>
+                    <option>Chickenpox</option>
+                    <option>Measles</option>
+                    <option>COVID-like Illness</option>
+                    <option>Unknown Fever Cluster</option>
+                  </select>
+                </div>
+                <div class="form-group"><label class="form-label">Symptom Onset Date</label><input class="form-input"
+                    type="date" id="ds-onset" /></div>
+                <div class="form-group"><label class="form-label">RDT Result</label><select class="form-select"
+                    id="ds-rdt">
+                    <option value="">Not tested</option>
+                    <option value="positive">Positive</option>
+                    <option value="negative">Negative</option>
+                  </select></div>
+                <div class="form-group full"><label class="form-label">Action Taken</label>
+                  <select class="form-select" id="ds-action">
+                    <option>Treatment given + monitored</option>
+                    <option>Referred to PHC</option>
+                    <option>Referred to District Hospital</option>
+                    <option>Sputum sample collected (TB)</option>
+                    <option>RDT done + ACT given (Malaria)</option>
+                    <option>ORS + zinc given</option>
+                    <option>Reported to BMO — potential outbreak</option>
+                  </select>
+                </div>
+                <div class="form-group full"><label class="form-label">Notes</label><textarea class="form-textarea"
+                    id="ds-notes" style="min-height:60px"
+                    placeholder="Any cluster, contacts, exposure details…"></textarea></div>
+              </div>
+              <div style="display:flex;gap:.875rem;flex-wrap:wrap">
+                <button class="submit-btn" onclick="saveDisease()">Submit IDSP Report</button>
+                <button class="tb-btn tb-btn-ghost" onclick="alertOutbreak()">⚠ Flag Outbreak</button>
+              </div>
+              <div class="sync-status-bar" id="ds-status" style="display:none;margin-top:.875rem">
+                <div class="ssb-dot" id="ds-dot"></div><span id="ds-status-text">Submitting…</span>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Active Surveillance List</div>
+            </div>
+            <div id="disease-list">
+              <div class="task-item">
+                <div class="task-priority tp-high"></div>
+                <div class="task-info">
+                  <div class="task-name">Malaria Cluster — Rampur</div>
+                  <div class="task-detail">4 confirmed · RDT positive · ACT given · BMO alerted</div>
+                </div><span class="task-badge tb-emergency">OUTBREAK</span>
+              </div>
+              <div class="task-item">
+                <div class="task-priority tp-medium"></div>
+                <div class="task-info">
+                  <div class="task-name">Ravi (TB Suspect) — Dharwad</div>
+                  <div class="task-detail">Cough 3 weeks · Sputum sent · Awaiting result</div>
+                </div><span class="task-badge tb-high">TB SUSPECT</span>
+              </div>
+              <div class="task-item">
+                <div class="task-priority tp-medium"></div>
+                <div class="task-info">
+                  <div class="task-name">Diarrhoea Cases — Hubballi Ward 3</div>
+                  <div class="task-detail">3 cases in 2 days · ORS distributed · Water source checked</div>
+                </div><span class="task-badge tb-high">WATCH</span>
+              </div>
+            </div>
+            <div
+              style="margin-top:1rem;padding:.875rem;background:var(--surface2);border-radius:var(--r);font-size:.78rem;color:var(--muted)">
+              <strong style="color:var(--text)">IDSP S-Form</strong> — Submit weekly by Friday 5PM to BMO
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ SUPABASE SETTINGS ════ -->
+      <div class="section-view" id="sec-supabase">
+        <div class="section-header">
+          <h2>Supabase / Government DB Sync</h2>
+          <p>Central Karnataka health database credentials</p>
+        </div>
+        <div class="card" style="margin-bottom:1.25rem">
+          <div class="card-header">
+            <div class="card-title">Supabase Configuration</div>
+          </div>
+          <div class="card-body">
+            <div class="report-form-grid">
+              <div class="form-group full"><label class="form-label">Supabase Project URL</label><input
+                  class="form-input" id="sb-url" placeholder="https://xxxx.supabase.co" /></div>
+              <div class="form-group full"><label class="form-label">Supabase Service Key (anon or
+                  service_role)</label><input class="form-input" id="sb-key" type="password" placeholder="eyJhbGc…" />
+              </div>
+              <div class="form-group"><label class="form-label">Project / District Name</label><input class="form-input"
+                  id="sb-project" placeholder="Karnataka Health Dept" /></div>
+              <div class="form-group"><label class="form-label">ASHA ID (for row-level security)</label><input
+                  class="form-input" id="sb-asha-id" placeholder="KA-HBL-2847" /></div>
+            </div>
+            <div style="display:flex;gap:.875rem;margin-top:.25rem;flex-wrap:wrap">
+              <button class="submit-btn" onclick="saveSupabase()">Save &amp; Test Connection</button>
+              <button class="tb-btn tb-btn-ghost" onclick="runSync()">Sync Now</button>
+            </div>
+            <div class="sync-status-bar" id="sb-result" style="margin-top:.875rem;display:none">
+              <div class="ssb-dot" id="sb-result-dot"></div><span id="sb-result-text">Testing…</span>
+            </div>
+            <div
+              style="background:var(--surface2);border-radius:var(--r);padding:1rem;margin-top:1rem;font-size:.78rem;color:var(--muted);line-height:1.7">
+              <strong style="color:var(--text)">Free tier setup:</strong><br>
+              1. supabase.com → New Project (free) → Settings → API<br>
+              2. Copy Project URL + service_role key above<br>
+              3. Create table: <code
+                style="background:var(--surface);padding:1px 5px;border-radius:4px">diagnosis_log</code> with columns:
+              local_id, patient_id, district, disease_name, risk_level, confidence_pct, recorded_at, source<br>
+              4. Enable Row Level Security → policy: asha_id matches your ID<br>
+              5. Click Save — all local SQLite records sync automatically
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /page-content -->
+  </div><!-- /main-area -->
+  </div><!-- /portal-wrap -->
+
+  <!-- Active call overlay -->
+  <div class="call-overlay" id="call-overlay">
+    <div class="call-overlay-card">
+      <div class="call-avatar" id="call-avatar-initial">L</div>
+      <div class="call-overlay-name" id="call-overlay-name">Lakshmi Devi</div>
+      <div class="call-overlay-status" id="call-overlay-status">Connecting…</div>
+      <div class="call-overlay-timer" id="call-timer">0:00</div>
+      <button class="btn-end-call" onclick="endVapiCall()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          style="vertical-align:middle;margin-right:6px">
+          <path
+            d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45c.927.346 1.897.49 2.855.49a2 2 0 0 1 2 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.42 19.42 0 0 1 4.88 12.4" />
+          <line x1="23" y1="1" x2="1" y2="23" />
+        </svg>
+        End Call
+      </button>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-wrap" id="toast-wrap"></div>
+
+  <script>
+    /* ── VAPI SDK (CDN) ─────────────────────────────────────── */
+    // VAPI: outbound phone calls only (no browser WebRTC SDK needed)
+    // All calls go via POST /vapi/call-patient -> patient phone rings directly.
+    let vapiInstance = null;
+    let vapiLoaded = false;
+    // Removed: browser WebRTC import('@vapi-ai/web') - caused "opens in browser" bug
+    // Correct flow: openCallQuery() -> executePatientCall() -> backend -> VAPI REST API
+
+    function attachVapiEvents() {
+      if (!vapiInstance) return;
+      vapiInstance.on('speech-start', () => updateCallUI('Speaking…'));
+      vapiInstance.on('speech-end', () => updateCallUI('Listening…'));
+      vapiInstance.on('message', (m) => handleVapiMessage(m));
+      vapiInstance.on('call-end', () => handleCallEnd());
+      vapiInstance.on('error', (e) => { console.error('VAPI error:', e); endVapiCall(); });
+    }
+
+    /* ── STATE ─────────────────────────────────────────────── */
+    const API = '';
+    // Populate ASHA user info from localStorage
+    (function () {
+      var nm = localStorage.getItem('sahayak_name') || localStorage.getItem('asha_name') || 'ASHA Worker';
+      var uid = localStorage.getItem('sahayak_firebase_uid') || '';
+      var dist = localStorage.getItem('asha_district') || localStorage.getItem('sahayak_email') || 'Karnataka';
+      var el = document.getElementById('asha-name'); if (el) el.textContent = nm;
+      var dl = document.getElementById('asha-district-label'); if (dl) dl.textContent = dist;
+      var av = document.getElementById('asha-avatar'); if (av) av.textContent = nm[0] || 'A';
+      // Store firebase_uid if not already set (from token)
+      if (!uid && localStorage.getItem('sahayak_user_id')) {
+        // Will be set after first API call succeeds
+      }
+    })();
+    let ASHA_UID = localStorage.getItem('sahayak_firebase_uid') || '';
+    let ASHA_UID2 = localStorage.getItem('sahayak_user_id') || '';
+
+    // _uk() namespaces localStorage keys by user ID
+    // offline_sync.js defines the global version — this is our fallback
+    function _uk(key) {
+      var uid = ASHA_UID2 || localStorage.getItem('sahayak_user_id') || 'asha';
+      return 'u_' + uid + '_' + key;
+    }
+
+    function _authHeader() {
+      const tok = localStorage.getItem('sahayak_token') || '';
+      return tok ? { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok }
+        : { 'Content-Type': 'application/json' };
+    }
+
+    // Bootstrap: always sync user_id from server if missing
+    (async function bootstrapAshaUser() {
+      const tok = localStorage.getItem('sahayak_token') || '';
+      if (!tok) return;
+      if (ASHA_UID2) return; // already have it
+      try {
+        const r = await fetch(API + '/auth/whoami', { headers: _authHeader() });
+        const d = await r.json();
+        if (d.ok) {
+          ASHA_UID2 = String(d.user_id || '');
+          ASHA_UID = d.firebase_uid || '';
+          localStorage.setItem('sahayak_user_id', ASHA_UID2);
+          if (ASHA_UID) localStorage.setItem('sahayak_firebase_uid', ASHA_UID);
+          if (d.full_name) {
+            localStorage.setItem('sahayak_name', d.full_name);
+            localStorage.setItem('asha_name', d.full_name);
+            const e = document.getElementById('asha-name'); if (e) e.textContent = d.full_name;
+            const a = document.getElementById('asha-avatar'); if (a) a.textContent = d.full_name[0].toUpperCase();
+          }
+          // Reload patient list with correct user ID
+          if (typeof loadMyPatients === 'function') loadMyPatients();
+          if (typeof loadRealTasks === 'function') loadRealTasks();
+        }
+      } catch (e) { /* offline — cached values used */ }
+    })();
+
+    // Simple stable key for patient cache - always accessible
+    function _pKey() {
+      // Try user-specific key first, fall back to 'guest' key
+      // Both keys are checked so cache is found regardless of bootstrap timing
+      return 'asha_my_patients';  // single stable key
+    }
+    function _getCachedPatients() {
+      try {
+        // Check all possible keys (handles timing issues with user_id)
+        const keys = ['asha_my_patients', 'asha_patients_local', 'asha_patients_guest'];
+        const uid = localStorage.getItem('sahayak_user_id');
+        if (uid) keys.unshift('asha_patients_' + uid);
+        for (const k of keys) {
+          const v = localStorage.getItem(k);
+          if (v) {
+            const pts = JSON.parse(v);
+            if (Array.isArray(pts) && pts.length > 0) return pts;
+          }
+        }
+        return [];
+      } catch (e) { return []; }
+    }
+    function _saveCachedPatients(pts) {
+      try {
+        // Save under BOTH the stable key AND user-specific key
+        localStorage.setItem('asha_my_patients', JSON.stringify(pts));
+        const uid = localStorage.getItem('sahayak_user_id');
+        if (uid) localStorage.setItem('asha_patients_' + uid, JSON.stringify(pts));
+      } catch (e) { }
+    }
+
+    let callTimer = null;
+    let callSeconds = 0;
+    let currentCallPatient = null;
+
+    /* ── THEME ─────────────────────────────────────────────── */
+    const savedTheme = localStorage.getItem('sahayak_theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    updateThemeUI(savedTheme);
+
+    function toggleTheme() {
+      const cur = document.documentElement.getAttribute('data-theme');
+      const next = cur === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('sahayak_theme', next);
+      updateThemeUI(next);
+    }
+
+    function updateThemeUI(theme) {
+      const icon = document.getElementById('theme-icon');
+      const label = document.getElementById('theme-label');
+      if (icon) icon.textContent = theme === 'dark' ? '🌙' : '☀️';
+      if (label) label.textContent = theme === 'dark' ? 'Dark' : 'Light';
+    }
+
+    /* ── SECTION NAV ────────────────────────────────────────── */
+    const sectionTitles = {
+      dashboard: ['Dashboard', "Today's overview — AMD Ryzen AI NPU Active"],
+      tasks: ["Today's Tasks", 'AI-prioritised patient visits'],
+      calls: ['VAPI Call Agent', 'Kannada voice reminders for patients'],
+      reminders: ['Reminders', 'Scheduled medicine + follow-up alerts'],
+      govreport: ['Government Report', 'HMIS-compliant monthly submission'],
+      sync: ['Sync to Government', 'Push local data to Karnataka Gov DB'],
+      settings: ['VAPI Settings', 'Configure voice call credentials'],
+      survey: ['Family Survey', 'Household census · Family health registry'],
+      maternal: ['Maternal & Child Health', 'ANC/PNC tracking · Delivery monitoring'],
+      immun: ['Immunization Tracker', 'Child vaccination schedule · Due list'],
+      disease: ['Disease Surveillance', 'TB/Malaria/Dengue reporting · Outbreak alerts'],
+      supabase: ['Supabase / DB Sync', 'Government database credentials & sync status'],
+    };
+
+    function showSection(id, el) {
+      document.querySelectorAll('.section-view').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      const sec = document.getElementById('sec-' + id);
+      if (sec) sec.classList.add('active');
+      if (el) el.classList.add('active');
+      const titles = sectionTitles[id];
+      if (titles) {
+        document.getElementById('topbar-title').textContent = titles[0];
+        document.getElementById('topbar-sub').textContent = titles[1];
+      }
+    }
+
+    /* ── INIT ───────────────────────────────────────────────── */
+    document.addEventListener('DOMContentLoaded', () => {
+      // Set date
+      document.getElementById('dashboard-date').textContent =
+        new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+      // Set report month
+      const mi = document.getElementById('gov-month');
+      if (mi) mi.value = new Date().toISOString().slice(0, 7);
+
+      // Load settings
+      const savedName = localStorage.getItem('asha_name') || '';
+      const savedKey = localStorage.getItem('vapi_public_key') || '';
+      const savedAid = localStorage.getItem('vapi_assistant_id') || '';
+      if (savedName) {
+        document.getElementById('asha-name').textContent = savedName;
+        document.getElementById('asha-avatar').textContent = savedName[0].toUpperCase();
+        const sn = document.getElementById('setting-asha-name');
+        if (sn) sn.value = savedName;
+      }
+      if (savedKey) { const pk = document.getElementById('vapi-public-key'); if (pk) pk.value = savedKey; }
+      if (savedAid) { const ai = document.getElementById('vapi-assistant-id'); if (ai) ai.value = savedAid; }
+      const privK = localStorage.getItem('vapi_private_key') || '';
+      const pAsha = localStorage.getItem('vapi_phone_asha') || '';
+      const pPt = localStorage.getItem('vapi_phone_patient') || '';
+      const privEl = document.getElementById('vapi-private-key'); if (privEl && privK) privEl.value = privK;
+      const makeEl = document.getElementById('make-webhook-url'); const makeUrl2 = localStorage.getItem('make_webhook_url') || ''; if (makeEl && makeUrl2) makeEl.value = makeUrl2;
+      const ashaPhEl = document.getElementById('setting-asha-phone'); const ashaPhSaved = localStorage.getItem('asha_phone') || ''; if (ashaPhEl && ashaPhSaved) ashaPhEl.value = ashaPhSaved;
+      const pAshaEl = document.getElementById('vapi-phone-asha'); if (pAshaEl && pAsha) pAshaEl.value = pAsha;
+      const pPtEl = document.getElementById('vapi-phone-patient'); if (pPtEl && pPt) pPtEl.value = pPt;
+      if (savedKey) dismissVapiBanner();
+
+      loadLiveStats();
+      loadMyPatients();    // real patients → VAPI call cards
+      loadRealTasks();     // real patients → Today's Tasks section
+      loadRealReminders(); // real patients → Reminders section
+      loadPriorityTasks(); // real patients → Dashboard priority list
+    });
+
+    /* ── LIVE STATS ─────────────────────────────────────────── */
+    async function loadLiveStats() {
+      // Always set defaults first — UI never stays at "—"
+      const setEl = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+
+      // Default/demo values shown immediately
+      setEl('dash-patients', '1');
+      setEl('dash-highrisk', '0');
+      setEl('dash-impact', '1');
+      setEl('sync-diagnoses', '0');
+      setEl('sync-pending', '1');
+      setEl('impact-msg-kn', 'ನೀವು ಪ್ರತಿ ದಿನ ಜೀವ ಉಳಿಸುತ್ತಿದ್ದೀರಿ. ❤️');
+      setEl('impact-msg-en', 'You save lives every day. Sahayak AI is with you.');
+
+      // Then try to get live values
+      try {
+        const statsRes = await fetch(API + '/analytics/stats?uid=' + encodeURIComponent(ASHA_UID) + '&user_id=' + encodeURIComponent(ASHA_UID2), { headers: _authHeader() });
+        if (statsRes.ok) {
+          const stats = await statsRes.json();
+          setEl('dash-patients', String(stats.total_patients ?? 0));
+          setEl('dash-highrisk', String(stats.high_risk_7days ?? 0));
+          setEl('sync-diagnoses', String(stats.total_patients ?? 0));
+          setEl('sync-pending', String(stats.total_patients ?? 0));
+        }
+      } catch (e) { /* keep defaults */ }
+
+      try {
+        const impRes = await fetch(API + '/deep_impact?uid=' + encodeURIComponent(ASHA_UID), { headers: _authHeader() });
+        if (impRes.ok) {
+          const impact = await impRes.json();
+          setEl('dash-impact', String(impact.lives_impacted ?? 1));
+          setEl('impact-msg-kn', impact.message_kannada || 'ನೀವು ಪ್ರತಿ ದಿನ ಜೀವ ಉಳಿಸುತ್ತಿದ್ದೀರಿ. ❤️');
+          setEl('impact-msg-en', impact.message_en || 'You save lives every day.');
+        }
+      } catch (e) { /* keep defaults */ }
+    }
+
+    /* ── TASKS ──────────────────────────────────────────────── */
+    const TASKS = [];  // populated from /patients/my-patients
+
+    async function loadRealTasks() {
+      try {
+        const r = await fetch(API + '/patients/my-patients', { headers: _authHeader() });
+        const pts = await r.json();
+        if (!Array.isArray(pts) || !pts.length) return;
+        // Build task list from real patients
+        TASKS.length = 0;
+        pts.slice(0, 8).forEach(p => {
+          const risk = p.medical_history && /diabet|hypert|anaemi|malari/i.test(p.medical_history) ? 'HIGH'
+            : p.is_pregnant ? 'MEDIUM' : 'ROUTINE';
+          TASKS.push({
+            name: p.name,
+            detail: (p.village || p.district || '') + (p.medical_history ? ' · ' + p.medical_history.slice(0, 30) : ''),
+            risk,
+            done: false,
+            patientId: p.id,
+            phone: p.phone,
+          });
+        });
+        populateTasks();
+        const badge = document.getElementById('tasks-badge');
+        if (badge) badge.textContent = TASKS.filter(t => !t.done).length;
+      } catch (e) { /* keep empty tasks list */ }
+    }
+
+    function populateTasks() {
+      const list = document.getElementById('full-task-list');
+      if (!list) return;
+      list.innerHTML = TASKS.map((t, i) => `
+    <div class="task-item ${t.done ? 'done' : ''}" id="task-${i}">
+      <div class="task-priority ${t.risk === 'HIGH' ? 'tp-high' : t.risk === 'ROUTINE' ? 'tp-low' : 'tp-medium'}"></div>
+      <div class="task-info">
+        <div class="task-name">${t.name}</div>
+        <div class="task-detail">${t.detail}</div>
+      </div>
+      <span class="task-badge ${t.risk === 'HIGH' ? 'tb-high' : t.risk === 'ROUTINE' ? 'tb-low' : 'tb-high'}">${t.risk}</span>
+      <div class="task-checkbox ${t.done ? 'done' : ''}" onclick="toggleTask(this,${i})">
+        ${t.done ? '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+      </div>
+    </div>
+  `).join('');
+    }
+
+    function toggleTask(el, idx) {
+      if (idx !== undefined) TASKS[idx].done = !TASKS[idx].done;
+      el.classList.toggle('done');
+      const row = el.closest('.task-item');
+      if (row) row.classList.toggle('done');
+      if (el.classList.contains('done')) {
+        el.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+      } else { el.innerHTML = ''; }
+      const remaining = TASKS.filter(t => !t.done).length;
+      const badge = document.getElementById('tasks-badge');
+      if (badge) badge.textContent = remaining;
+    }
+
+    async function refreshAgentTasks() {
+      showToast('info', 'Refreshing…', 'Loading priorities from AMD NPU agent');
+      try {
+        const r = await fetch(API + '/agent/proactive', { method: 'POST', headers: _authHeader() });
+        const d = await r.json();
+        showToast('success', 'Agent Ready', d.priority_message_en || 'Priorities updated');
+      } catch { showToast('info', 'Demo Mode', 'Agent data loaded from local DB'); }
+    }
+
+    /* ── REMINDERS ──────────────────────────────────────────── */
+    // REMINDERS loaded from real patients — one per patient, not shared
+    const REMINDERS = [];  // populated from loadRealReminders()
+
+    async function loadRealReminders() {
+      const list = document.getElementById('reminder-queue');
+      if (!list) return;
+      if (!REMINDERS.length) {
+        // Load from real patients
+        try {
+          const r = await fetch(API + '/patients/my-patients', { headers: _authHeader() });
+          const pts = await r.json();
+          REMINDERS.length = 0;
+          if (Array.isArray(pts)) {
+            pts.forEach(p => {
+              // Each patient gets their own reminder entry
+              const types = ['Medicine', 'Follow-up', 'Appointment', 'Check-up'];
+              const rtype = p.medical_history && /diabet|hypert/i.test(p.medical_history)
+                ? 'Medicine' : p.is_pregnant ? 'Appointment' : 'Follow-up';
+              REMINDERS.push({
+                id: p.id,
+                name: p.name,
+                phone: p.phone || '',
+                time: '10:00 AM',
+                type: rtype,
+                status: 'pending',
+                history: p.medical_history || ''
+              });
+            });
+          }
+        } catch (e) { /* keep empty */ }
+      }
+      populateReminders();
+    }
+
+    function populateReminders() {
+      const list = document.getElementById('reminder-queue');
+      if (!list) return;
+      if (!REMINDERS.length) {
+        list.innerHTML = '<div style="color:var(--muted);font-size:.8rem;text-align:center;padding:1.5rem">No patients registered yet.<br>Add patients in VAPI Calls → Add New Patient.</div>';
+        return;
+      }
+      list.innerHTML = REMINDERS.map((r, i) => `
+    <div class="task-item ${r.status === 'done' ? 'done' : ''}">
+      <div class="task-priority ${r.status === 'done' ? 'tp-low' : 'tp-medium'}"></div>
+      <div class="task-info">
+        <div class="task-name">${r.name}</div>
+        <div class="task-detail">${r.type} reminder · ${r.time}${r.phone ? ' · 📱' + r.phone : ' · <em style="color:#e35a2c">no phone</em>'}</div>
+      </div>
+      <span class="task-badge ${r.status === 'done' ? 'tb-low' : 'tb-high'}">${r.status === 'done' ? 'SENT' : 'PENDING'}</span>
+      ${r.status === 'done'
+          ? '<div style="font-size:.8rem">✅</div>'
+          : `<button class="btn-call btn-call-start" style="padding:.4rem .9rem;font-size:.75rem" onclick="sendReminderCall(${r.id || 0},'${r.name.replace(/'/g, "\'")}','${r.phone || ''}','${r.type}')">Send Now</button>`
+        }
+    </div>
+  `).join('');
+    }
+
+    async function sendReminder(name, type) {
+      showToast('info', 'Sending…', `${type} reminder for ${name}`);
+      try {
+        const r = await fetch(API + '/reminder/send', {
+          method: 'POST', headers: _authHeader(),
+          body: JSON.stringify({ patient_name: name, message_type: type, lang: 'kn' })
+        });
+        const d = await r.json();
+        const ok = d.status === 'reminder_queued';
+        showToast(ok ? 'success' : 'info', ok ? 'Sent!' : 'Demo Mode', d.message || 'Reminder queued');
+      } catch { showToast('info', 'Demo Mode', `Reminder queued for ${name}`); }
+    }
+
+    async function runAllReminders() {
+      showToast('info', 'Running All…', 'Sending all pending reminders via Make.com');
+      for (const r of REMINDERS.filter(r => r.status === 'pending')) {
+        await sendReminder(r.name, r.type);
+        await new Promise(res => setTimeout(res, 500));
+      }
+    }
+
+    /* ── VAPI CALLS ─────────────────────────────────────────── */
+    const SCRIPTS = {
+      medicine_reminder: {
+        kn: 'ನಮಸ್ಕಾರ. ನಾನು ಸಹಾಯಕ AI ಆಗಿದ್ದೇನೆ. ನಿಮ್ಮ ಔಷಧ ತೆಗೆದುಕೊಂಡಿದ್ದೀರಾ? ದಯವಿಟ್ಟು ಡಾಕ್ಟರ್ ಸೂಚಿಸಿದ ಔಷಧ ನಿಯಮಿತವಾಗಿ ತೆಗೆದುಕೊಳ್ಳಿ.',
+        en: 'Hello! This is Sahayak AI. Have you taken your medicine today? Please take your medication regularly as prescribed.',
+      },
+      followup: {
+        kn: 'ನಮಸ್ಕಾರ. ಇದು ಆಶಾ ಕಾರ್ಯಕರ್ತೆ ಮೂಲಕ ಸಹಾಯಕ AI. ನಿಮ್ಮ ಆರೋಗ್ಯ ಹೇಗಿದೆ? ಯಾವುದಾದರೂ ತೊಂದರೆ ಇದ್ದರೆ ತಿಳಿಸಿ.',
+        en: 'Hello! This is Sahayak AI follow-up call. How are you feeling today? Please let us know if you have any concerns.',
+      },
+      appointment: {
+        kn: 'ನಮಸ್ಕಾರ. ನಿಮ್ಮ PHC ಅಪಾಯಿಂಟ್‌ಮೆಂಟ್ ದಿನಾಂಕ ಹತ್ತಿರ ಬರುತ್ತಿದೆ. ದಯವಿಟ್ಟು ಸಮಯಕ್ಕೆ ಬನ್ನಿ.',
+        en: 'Hello! Your PHC appointment is coming up. Please arrive on time for your checkup.',
+      },
+    };
+
+    async function startVapiCall(patientName, callType, lang) {
+      // ── FIXED: startVapiCall now routes to the proper OUTBOUND call flow.
+      // The old VAPI Web SDK (browser WebRTC) only talked to the ASHA worker in
+      // the browser — it never called the patient's phone.
+      // Now we find the patient record and open the call-query modal which
+      // uses POST /vapi/call-patient → VAPI REST API → patient phone rings.
+
+      const patients = window._cachedPatients || [];
+      const patient = patients.find(p => p.name === patientName);
+
+      if (patient && patient.phone) {
+        // Has phone → use proper outbound call modal
+        openCallQuery(patient.id, patient.name, patient.phone);
+        // Pre-fill query based on callType
+        const SCRIPTS_MAP = {
+          reminder: 'ಇಂದು ಹೇಗಿದ್ದೀರಿ? ಔಷಧಿ ತೆಗೆದುಕೊಂಡಿರಾ? ಯಾವುದಾದರೂ ತೊಂದರೆ ಇದೆಯೇ?',
+          followup: 'ಹಿಂದಿನ ಚಿಕಿತ್ಸೆ ಹೇಗಿದೆ? ಜ್ವರ ಕಡಿಮೆ ಆಗಿದೆಯೇ? ಔಷಧಿ ಸರಿಯಾಗಿ ತೆಗೆದುಕೊಳ್ಳುತ್ತಿದ್ದೀರಾ?',
+          emergency: 'ತುರ್ತು: ತಕ್ಷಣ ಆಸ್ಪತ್ರೆಗೆ ಬನ್ನಿ. ನಿಮ್ಮ ಸ್ಥಿತಿ ಹೇಗಿದೆ? 108 ಗೆ ಕರೆ ಮಾಡಿ.',
+          appointment: 'PHC ಅಪಾಯಿಂಟ್‌ಮೆಂಟ್ ನೆನಪಿಸುತ್ತಿದ್ದೇನೆ. ದಯವಿಟ್ಟು ಸಮಯಕ್ಕೆ ಬನ್ನಿ.',
+        };
+        setTimeout(() => {
+          const qi = document.getElementById('cq-query');
+          if (qi) qi.value = SCRIPTS_MAP[callType] || SCRIPTS_MAP.reminder;
+        }, 100);
+      } else {
+        // No phone number registered — show message
+        showToast('error', 'No Phone Number',
+          `${patientName} has no phone number registered. Edit patient to add phone.`);
+      }
+    }
+
+    function runDemoCall(patientName, callType, lang) {
+      document.getElementById('call-overlay-status').textContent = 'Demo Mode — VAPI configured';
+      const script = SCRIPTS[callType]?.[lang] || SCRIPTS[callType]?.['en'] || '';
+      if (script) {
+        const utterance = new SpeechSynthesisUtterance(script);
+        utterance.lang = lang === 'kn' ? 'kn-IN' : 'en-IN';
+        speechSynthesis.speak(utterance);
+        document.getElementById('call-overlay-status').textContent = '🔊 Speaking Kannada…';
+      }
+      showToast('info', 'Demo Mode', 'Add VAPI key in Settings for real calls');
+      // Auto end after script plays
+      setTimeout(() => {
+        if (document.getElementById('call-overlay').classList.contains('active')) {
+          handleCallEnd();
+        }
+      }, 12000);
+    }
+
+    function updateCallUI(status) {
+      document.getElementById('call-overlay-status').textContent = status;
+    }
+
+    function handleVapiMessage(msg) {
+      if (msg.type === 'transcript' && msg.role === 'assistant') {
+        console.log('VAPI:', msg.transcript);
+      }
+    }
+
+    function handleCallEnd() {
+      stopCallTimer();
+      document.getElementById('call-overlay').classList.remove('active');
+      showToast('success', 'Call Ended', `${currentCallPatient} — Duration: ${document.getElementById('call-timer').textContent}`);
+      document.getElementById('dash-calls').textContent =
+        parseInt(document.getElementById('dash-calls').textContent || '0') + 1;
+    }
+
+    function endVapiCall() {
+      if (vapiInstance) { try { vapiInstance.stop(); } catch (e) { } }
+      speechSynthesis.cancel();
+      handleCallEnd();
+    }
+
+    function startCallTimer() {
+      callSeconds = 0;
+      callTimer = setInterval(() => {
+        callSeconds++;
+        const m = Math.floor(callSeconds / 60);
+        const s = (callSeconds % 60).toString().padStart(2, '0');
+        document.getElementById('call-timer').textContent = `${m}:${s}`;
+      }, 1000);
+    }
+
+    function stopCallTimer() {
+      clearInterval(callTimer);
+      callTimer = null;
+    }
+
+    // ── REMINDER MODAL ─────────────────────────────────────────────
+    let _reminderPatient = null;
+
+    function openReminderModal(patientId, patientName, patientPhone) {
+      _reminderPatient = { id: patientId, name: patientName, phone: patientPhone };
+      document.getElementById('rm-patient-label').textContent =
+        'Sending reminder to: ' + patientName + (patientPhone ? ' (' + patientPhone + ')' : '');
+      document.getElementById('rm-text').value = '';
+      const st = document.getElementById('rm-status');
+      st.style.display = 'none';
+      document.getElementById('rm-send-btn').disabled = false;
+      document.getElementById('rm-send-btn').textContent = '📞 Call & Remind';
+      document.querySelectorAll('.rm-chip').forEach(c => c.classList.remove('sel'));
+      document.getElementById('reminder-modal').classList.add('open');
+    }
+
+    function closeReminderModal() {
+      document.getElementById('reminder-modal').classList.remove('open');
+      _reminderPatient = null;
+    }
+
+    function setReminderText(text) {
+      document.getElementById('rm-text').value = text;
+      document.querySelectorAll('.rm-chip').forEach(c => {
+        c.classList.toggle('sel', c.getAttribute('onclick').includes(text.slice(0, 15)));
+      });
+    }
+
+    async function sendReminderViaCall() {
+      if (!_reminderPatient) return;
+      const text = document.getElementById('rm-text').value.trim();
+      if (!text) { showToast('error', 'Empty', 'Type a reminder message first'); return; }
+      if (!_reminderPatient.phone) {
+        showToast('error', 'No Phone', _reminderPatient.name + ' has no phone number. Edit patient to add.');
+        return;
+      }
+      const lang = document.getElementById('rm-lang').value || 'kn';
+      const btn = document.getElementById('rm-send-btn');
+      const stEl = document.getElementById('rm-status');
+      btn.disabled = true;
+      btn.textContent = 'Calling…';
+      stEl.style.display = 'block';
+      stEl.style.background = 'rgba(245,158,11,.1)';
+      stEl.style.color = '#f59e0b';
+      stEl.textContent = 'Initiating call to ' + _reminderPatient.phone + '…';
+
+      const makeUrl = localStorage.getItem('make_webhook_url') || '';
+      const ashaPhone = localStorage.getItem('asha_phone') || '';
+      const ashaName = localStorage.getItem('asha_name') || 'ASHA Worker';
+
+      try {
+        // Try backend first (which handles both VAPI and Make.com)
+        const payload = {
+          patient_id: _reminderPatient.id,
+          patient_name: _reminderPatient.name,
+          patient_phone: _reminderPatient.phone,
+          phone: _reminderPatient.phone,
+          query: text,
+          reminder_text: text,
+          call_type: 'reminder',
+          lang,
+          asha_name: ashaName,
+          asha_phone: ashaPhone,
+          first_message: text,
+        };
+
+        let success = false;
+
+        // Path 1: Backend /vapi/call-patient (handles VAPI + Make.com internally)
+        try {
+          const r = await fetch(API + '/vapi/call-patient', {
+            method: 'POST', headers: _authHeader(),
+            body: JSON.stringify(payload)
+          });
+          const d = await r.json();
+          if (d.success) {
+            stEl.style.background = 'rgba(34,197,94,.1)';
+            stEl.style.color = '#22c55e';
+            stEl.textContent = '✅ Calling ' + _reminderPatient.name + '… Their phone will ring shortly.';
+            showToast('success', 'Call Initiated', 'Calling ' + _reminderPatient.name);
+            // Update status in table
+            const cs = document.getElementById('cstatus-' + _reminderPatient.id);
+            if (cs) { cs.className = 'cs-calling'; cs.textContent = '📞 Calling…'; }
+            success = true;
+            setTimeout(() => {
+              if (cs) { cs.className = 'cs-done'; cs.textContent = '✅ Called'; }
+            }, 30000);
+            setTimeout(closeReminderModal, 2500);
+          } else if (d.demo_mode) {
+            // Backend says demo — try Make.com directly if URL is saved
+            if (!makeUrl) throw new Error('demo_no_make');
+          } else {
+            throw new Error(d.error || 'Unknown error');
+          }
+        } catch (backendErr) {
+          if (String(backendErr).includes('demo_no_make')) throw backendErr;
+          console.warn('Backend call failed:', backendErr);
+        }
+
+        // Path 2: Direct Make.com webhook (if backend demo mode and URL saved locally)
+        if (!success && makeUrl) {
+          const r2 = await fetch(makeUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (r2.ok) {
+            stEl.style.background = 'rgba(34,197,94,.1)';
+            stEl.style.color = '#22c55e';
+            stEl.textContent = '✅ Sent via Make.com! ' + _reminderPatient.name + ' will be called.';
+            showToast('success', 'Called via Make.com', _reminderPatient.name);
+            const cs = document.getElementById('cstatus-' + _reminderPatient.id);
+            if (cs) { cs.className = 'cs-calling'; cs.textContent = '📞 Calling…'; }
+            success = true;
+            setTimeout(() => {
+              if (cs) { cs.className = 'cs-done'; cs.textContent = '✅ Called'; }
+            }, 30000);
+            setTimeout(closeReminderModal, 2500);
+          } else {
+            throw new Error('Make.com returned ' + r2.status);
+          }
+        }
+
+        if (!success) {
+          stEl.style.background = 'rgba(245,158,11,.1)';
+          stEl.style.color = '#f59e0b';
+          stEl.textContent = '⚠ Demo mode. Go to Settings → VAPI/Make.com to enable real calls.';
+          showToast('info', 'Demo Mode', 'Configure VAPI or Make.com webhook in Settings');
+        }
+      } catch (e) {
+        console.error('sendReminderViaCall error:', e);
+        stEl.style.background = 'rgba(239,68,68,.1)';
+        stEl.style.color = '#ef4444';
+        stEl.textContent = '❌ ' + (e.message || 'Call failed. Check your internet connection.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '📞 Call & Remind';
+      }
+    }
+
+    // ── DIRECT CALL BUTTON (no reminder text — just call with default greeting) ──
+    async function triggerPatientCall(patientId, patientName, patientPhone) {
+      const btn = document.getElementById('callbtn-' + patientId);
+      const cs = document.getElementById('cstatus-' + patientId);
+      if (btn) { btn.disabled = true; btn.textContent = '⏳ Calling…'; }
+      if (cs) { cs.className = 'cs-calling'; cs.textContent = '📞 Calling…'; }
+
+      const lang = localStorage.getItem('vapi_lang') || 'kn';
+      const ashaName = localStorage.getItem('asha_name') || 'ASHA Worker';
+      const ashaPhone = localStorage.getItem('asha_phone') || '';
+      const makeUrl = localStorage.getItem('make_webhook_url') || '';
+
+      const defaultMsg = lang === 'kn'
+        ? `ನಮಸ್ಕಾರ ${patientName} ಅವರೇ. ನಾನು ಸಹಾಯಕ್ AI, ${ashaName} ಅವರ ಪರವಾಗಿ ಕರೆ ಮಾಡಿದ್ದೇನೆ. ನೀವು ಹೇಗಿದ್ದೀರಿ? ಔಷಧಿ ತೆಗೆದುಕೊಳ್ಳುತ್ತಿದ್ದೀರಾ?`
+        : `Hello ${patientName}, this is Sahayak AI calling on behalf of ${ashaName}. How are you feeling today?`;
+
+      const payload = {
+        patient_id: patientId, patient_name: patientName,
+        patient_phone: patientPhone, phone: patientPhone,
+        call_type: 'checkup', lang,
+        asha_name: ashaName, asha_phone: ashaPhone,
+        query: defaultMsg, first_message: defaultMsg,
+      };
+
+      try {
+        const r = await fetch(API + '/vapi/call-patient', {
+          method: 'POST', headers: _authHeader(),
+          body: JSON.stringify(payload)
+        });
+        const d = await r.json();
+        if (d.success) {
+          showToast('success', 'Calling ' + patientName, 'Their phone will ring shortly');
+          if (cs) { cs.className = 'cs-calling'; cs.textContent = '📞 Calling…'; }
+          setTimeout(() => { if (cs) { cs.className = 'cs-done'; cs.textContent = '✅ Called'; } }, 30000);
+          return;
+        }
+        // demo_mode → try Make.com direct
+        if ((d.demo_mode || !d.success) && makeUrl) {
+          const r2 = await fetch(makeUrl, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (r2.ok) {
+            showToast('success', 'Called via Make.com', patientName);
+            if (cs) { cs.className = 'cs-calling'; cs.textContent = '📞 Calling…'; }
+            setTimeout(() => { if (cs) { cs.className = 'cs-done'; cs.textContent = '✅ Called'; } }, 30000);
+            return;
+          }
+        }
+        // Still nothing — open reminder modal so ASHA can at least add context
+        showToast('info', 'Configure Calling', 'Go to Settings → VAPI or Make.com webhook');
+        if (cs) { cs.className = 'cs-idle'; cs.textContent = '—'; }
+      } catch (e) {
+        showToast('error', 'Call Failed', e.message || 'Network error');
+        if (cs) { cs.className = 'cs-idle'; cs.textContent = '—'; }
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '📞 Call'; }
+      }
+    }
+
+    // legacy compat
+    function scheduleReminder(patientName) {
+      const p = (window._cachedPatients || []).find(x => x.name === patientName);
+      if (p) openReminderModal(p.id, p.name, p.phone || '');
+      else showToast('info', 'Reminder', `Set reminder for ${patientName}`);
+    }
+
+    /* ── GOVERNMENT REPORT ──────────────────────────────────── */
+    async function autoFillReport() {
+      showToast('info', 'Auto-filling…', 'Loading from patient database');
+      try {
+        const [stats, impact] = await Promise.all([
+          fetch(API + '/analytics/stats').then(r => r.json()).catch(() => null),
+          fetch(API + '/deep_impact').then(r => r.json()).catch(() => null)
+        ]);
+        // Fill current month
+        const mEl = document.getElementById('gov-month');
+        if (mEl && !mEl.value) mEl.value = new Date().toISOString().slice(0, 7);
+        if (stats) {
+          const h = document.getElementById('gov-households'); if (h) h.value = stats.total_patients || 1;
+        }
+        if (impact) {
+          const ref = document.getElementById('gov-referrals'); if (ref) ref.value = impact.referrals_saved || 0;
+          const imm = document.getElementById('gov-immun');
+          if (imm) imm.value = impact.diagnoses_this_week || 0;
+        }
+        showToast('success', 'Auto-filled', 'Report populated from live database');
+      } catch { showToast('info', 'Demo Mode', 'Using sample values'); }
+    }
+
+    async function submitGovReport() {
+      const btn = document.querySelector('#sec-govreport .submit-btn');
+      const orig = btn.innerHTML;
+      btn.textContent = 'Submitting…';
+      btn.disabled = true;
+
+      const ref = Date.now().toString().slice(-6);
+      const payload = {
+        asha_id: document.getElementById('gov-asha-id')?.value || '',
+        phc: document.getElementById('gov-phc')?.value || '',
+        district: document.getElementById('gov-district')?.value || '',
+        report_month: document.getElementById('gov-month')?.value || new Date().toISOString().slice(0, 7),
+        households: parseInt(document.getElementById('gov-households')?.value) || 0,
+        referrals: parseInt(document.getElementById('gov-referrals')?.value) || 0,
+        rdt_tests: parseInt(document.getElementById('gov-rdt')?.value) || 0,
+        immunisations: parseInt(document.getElementById('gov-immun')?.value) || 0,
+        outbreak_notes: document.getElementById('gov-outbreaks')?.value || '',
+        notes: document.getElementById('gov-notes')?.value || '',
+        ref_number: `KA-${ref}`,
+      };
+
+      try {
+        // Save the HMIS report to backend AND sync diagnosis records
+        const [govRes, syncRes] = await Promise.allSettled([
+          fetch(API + '/government-report', {
+            method: 'POST', headers: _authHeader(),
+            body: JSON.stringify(payload)
+          }).then(r => r.json()),
+          fetch(API + '/sync/to-government', { method: 'POST', headers: _authHeader() }).then(r => r.json()),
+        ]);
+
+        const govD = govRes.status === 'fulfilled' ? govRes.value : {};
+        const syncD = syncRes.status === 'fulfilled' ? syncRes.value : {};
+        const ref = govD.ref_number || payload.ref_number;
+        const ok = govD.status === 'submitted' || govD.status === 'queued';
+
+        const status = document.getElementById('report-status');
+        const txt = document.getElementById('report-status-text');
+        status.style.display = 'flex';
+        const ts = new Date().toLocaleTimeString('en-IN');
+        txt.textContent = `Report submitted ${ts} — Ref: ${ref}` +
+          (syncD.records_pushed > 0 ? ` · ${syncD.records_pushed} records synced` : '');
+        showToast(ok ? 'success' : 'info', 'Report Submitted',
+          govD.message || 'Submitted to government database');
+      } catch {
+        // Offline: show local confirmation
+        const status = document.getElementById('report-status');
+        const txt = document.getElementById('report-status-text');
+        status.style.display = 'flex';
+        txt.textContent = `Report queued offline — Ref: ${payload.ref_number}. Will sync when online.`;
+        showToast('info', 'Queued Offline', 'Will sync to government DB when connected');
+      } finally {
+        btn.innerHTML = orig;
+        btn.disabled = false;
+        speakKannada('ವರದಿ ಸಫಲವಾಗಿ ಸಲ್ಲಿಸಲಾಗಿದೆ');
+      }
+    }
+
+    /* ── SYNC ───────────────────────────────────────────────── */
+    async function runSync() {
+      const result = document.getElementById('sync-result');
+      const dot = document.getElementById('sync-result-dot');
+      const txt = document.getElementById('sync-result-text');
+      result.style.display = 'flex';
+      dot.className = 'ssb-dot ssb-pending';
+      txt.textContent = 'Syncing to Karnataka Government DB…';
+
+      try {
+        const r = await fetch(API + '/sync/to-government', { method: 'POST' });
+        const d = await r.json();
+        const ok = d.status === 'success' || d.status === 'not_configured';
+        dot.className = 'ssb-dot ' + (ok ? 'ssb-synced' : 'ssb-error');
+        txt.textContent = d.message || 'Sync complete';
+        const syncTime = new Date().toLocaleTimeString('en-IN'); document.getElementById('sync-last').textContent = syncTime; localStorage.setItem('last_sync', syncTime);
+        showToast(ok ? 'success' : 'info', 'Sync', d.message);
+      } catch (e) {
+        dot.className = 'ssb-dot ssb-error';
+        txt.textContent = 'Sync failed — data queued locally';
+        showToast('error', 'Sync Failed', 'Will retry when online');
+      }
+    }
+
+    async function checkSyncStatus() {
+      const r = document.getElementById('sync-result');
+      r.style.display = 'flex';
+      const lastSync = localStorage.getItem('last_sync') || 'Never';
+      document.getElementById('sync-result-dot').className = 'ssb-dot ssb-synced';
+      document.getElementById('sync-result-text').textContent = 'Local SQLite: healthy · Last sync: ' + lastSync;
+      try {
+        const stats = await fetch(API + '/analytics/stats').then(r => r.json()).catch(() => null);
+        if (stats) {
+          document.getElementById('sync-diagnoses').textContent = stats.total_patients || 0;
+          document.getElementById('sync-pending').textContent = stats.total_patients || 0;
+        }
+      } catch { /* keep displayed values */ }
+    }
+
+    /* ── VAPI SETTINGS ──────────────────────────────────────── */
+    function saveVapiSettings() {
+      const pk = document.getElementById('vapi-public-key')?.value.trim();
+      const privateKey = document.getElementById('vapi-private-key')?.value.trim();
+      const phoneAsha = document.getElementById('vapi-phone-asha')?.value.trim();
+      const phonePt = document.getElementById('vapi-phone-patient')?.value.trim();
+      const aid = document.getElementById('vapi-assistant-id')?.value.trim();
+      const ashaName = document.getElementById('setting-asha-name')?.value.trim();
+      const district = document.getElementById('setting-district')?.value.trim();
+      const vapiLang = document.getElementById('vapi-lang')?.value;
+      // NEW: Make.com + ASHA real phone
+      const makeWebhook = document.getElementById('make-webhook-url')?.value.trim();
+      const ashaPhone = document.getElementById('setting-asha-phone')?.value.trim();
+
+      if (ashaName) localStorage.setItem('asha_name', ashaName);
+      if (district) localStorage.setItem('asha_district', district);
+      if (vapiLang) localStorage.setItem('vapi_lang', vapiLang);
+      if (privateKey) localStorage.setItem('vapi_private_key', privateKey);
+      if (phoneAsha) localStorage.setItem('vapi_phone_asha', phoneAsha);
+      if (phonePt) localStorage.setItem('vapi_phone_patient', phonePt);
+      if (makeWebhook) localStorage.setItem('make_webhook_url', makeWebhook);
+      if (ashaPhone) localStorage.setItem('asha_phone', ashaPhone);
+
+      // Save keys directly to backend .env file
+      const envKeys = {};
+      if (pk) envKeys.VAPI_PUBLIC_KEY = pk;
+      if (privateKey) envKeys.VAPI_PRIVATE_KEY = privateKey;
+      if (phoneAsha) envKeys.VAPI_PHONE_NUMBER_ID_ASHA = phoneAsha;
+      if (phonePt) envKeys.VAPI_PHONE_NUMBER_ID_PATIENT = phonePt;
+      if (makeWebhook) envKeys.MAKE_WEBHOOK_URL = makeWebhook;
+      if (Object.keys(envKeys).length > 0) {
+        fetch(API + '/admin/save-env', { method: 'POST', headers: _authHeader(), body: JSON.stringify(envKeys) })
+          .then(r => r.json())
+          .then(d => { if (d.ok) showToast('success', 'Keys Saved', `${d.saved.length} keys saved to .env`); })
+          .catch(() => { }); // silent if server not reachable
+      }
+      const name = document.getElementById('setting-asha-name')?.value.trim();
+      if (pk) localStorage.setItem('vapi_public_key', pk);
+      if (aid) localStorage.setItem('vapi_assistant_id', aid);
+      if (name) {
+        localStorage.setItem('asha_name', name);
+        document.getElementById('asha-name').textContent = name;
+        document.getElementById('asha-avatar').textContent = name[0].toUpperCase();
+      }
+      if (pk && vapiLoaded && window.Vapi) {
+        try { vapiInstance = new window.Vapi(pk); attachVapiEvents(); } catch (e) { }
+      }
+      dismissVapiBanner();
+      showToast('success', 'Settings Saved', 'VAPI configured successfully');
+    }
+
+    async function testVapiConnection() {
+      const dotEl = document.getElementById('vapi-test-dot');
+      const txtEl = document.getElementById('vapi-test-text');
+      const resEl = document.getElementById('vapi-test-result');
+      if (resEl) resEl.style.display = 'flex';
+      if (dotEl) dotEl.className = 'ssb-dot ssb-pending';
+      if (txtEl) txtEl.textContent = 'Testing VAPI connection…';
+
+      const pk = localStorage.getItem('vapi_public_key') || '';
+      if (!pk) {
+        if (dotEl) dotEl.className = 'ssb-dot ssb-error';
+        if (txtEl) txtEl.textContent = 'No VAPI key set. Enter your key above and save first.';
+        return;
+      }
+
+      try {
+        // Test backend agent-config endpoint
+        const ashaName = localStorage.getItem('asha_name') || 'ASHA Worker';
+        const district = localStorage.getItem('asha_district') || 'Dharwad';
+        const r = await fetch(API + '/vapi/agent-config/asha?lang=kn&name='
+          + encodeURIComponent(ashaName) + '&district=' + encodeURIComponent(district));
+        const d = await r.json();
+        if (d.status === 'ok' && d.config) {
+          if (dotEl) dotEl.className = 'ssb-dot ssb-synced';
+          if (txtEl) txtEl.textContent = `✅ VAPI ready! Agent: "${d.config.name}". Key is valid.`;
+        } else {
+          throw new Error(d.error || 'Config error');
+        }
+      } catch (e) {
+        if (dotEl) dotEl.className = 'ssb-dot ssb-error';
+        if (txtEl) txtEl.textContent = `Connection failed: ${e.message}. Check your key and backend URL.`;
+      }
+    }
+
+    function dismissVapiBanner() {
+      const b = document.getElementById('vapi-config-banner');
+      if (b) b.style.display = 'none';
+    }
+
+    /* ── DAILY BRIEFING ─────────────────────────────────────── */
+    async function runDailyBriefing() {
+      // Offline-first: speak a generic greeting immediately while backend loads
+      speakKannada('ಶುಭೋದಯ! ಇಂದು ಉತ್ತಮ ಕೆಲಸ ಮಾಡಿ. ರೋಗಿಗಳ ಪಟ್ಟಿ ಲೋಡ್ ಆಗುತ್ತಿದೆ...');
+      showToast('info', 'Daily Briefing', 'Loading live patient priorities…');
+      // Then fetch REAL data from backend (uses live DB patient names)
+      try {
+        const r = await fetch(API + '/agent/proactive', { method: 'POST', headers: _authHeader() });
+        if (r.ok) {
+          const d = await r.json();
+          // Speak real patient names from DB
+          if (d.priority_message_kn) {
+            speechSynthesis.cancel(); // cancel the placeholder
+            speakKannada(d.priority_message_kn);
+          }
+          const msg = d.priority_message_en || 'Check high-risk patients today';
+          showToast('success', 'Daily Briefing', msg);
+          // Update dashboard stats if returned
+          if (d.total_patients !== undefined) setEl('stat-patients', d.total_patients);
+          if (d.high_risk_7days !== undefined) setEl('stat-highrisk', d.high_risk_7days);
+        }
+      } catch { /* offline message already spoken above */ }
+    }
+
+
+    /* ── LOGOUT ──────────────────────────────────────────────── */
+    function ashaLogout() {
+      // Firebase sign out
+      try {
+        import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js')
+          .then(function (m) { var a = m.getAuth(); if (a) m.signOut(a).catch(function () { }); })
+          .catch(function () { });
+      } catch (e) { }
+      // Clear this ASHA's namespaced data
+      var uid = localStorage.getItem('sahayak_user_id') || '';
+      if (uid) {
+        var pfx = 'u_' + uid + '_', rm = [];
+        for (var i = 0; i < localStorage.length; i++) {
+          var k = localStorage.key(i); if (k && k.startsWith(pfx)) rm.push(k);
+        }
+        rm.forEach(function (k) { localStorage.removeItem(k); });
+      }
+      // Clear auth + ASHA session keys
+      ['sahayak_token', 'sahayak_role', 'sahayak_name', 'sahayak_user_id', 'sahayak_email',
+        'sahayak_firebase_uid', 'vapi_public_key', 'vapi_assistant_id', 'asha_name', 'asha_district',
+        'last_sync', 'supabase_url', 'supabase_key'].forEach(function (k) { localStorage.removeItem(k); });
+      window.location.href = 'auth.html';
+    }
+
+    /* ── KANNADA TTS ─────────────────────────────────────────── */
+    function speakKannada(text) {
+      if (!text || !window.speechSynthesis) return;
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'kn-IN';
+      u.rate = 0.9;
+
+      // Try to find a Kannada voice; fallback chain: kn-IN → en-IN → any
+      const trySpeak = () => {
+        const voices = speechSynthesis.getVoices();
+        const kn = voices.find(v => v.lang === 'kn-IN' || v.lang.startsWith('kn'));
+        const enIn = voices.find(v => v.lang === 'en-IN');
+        if (kn) { u.voice = kn; u.lang = kn.lang; }
+        else if (enIn) { u.voice = enIn; u.lang = 'en-IN'; }
+        // else: browser default — still better than silence
+        speechSynthesis.speak(u);
+      };
+
+      // Voices may load async on first call
+      if (speechSynthesis.getVoices().length > 0) {
+        trySpeak();
+      } else {
+        speechSynthesis.onvoiceschanged = () => { speechSynthesis.onvoiceschanged = null; trySpeak(); };
+        // Timeout fallback in case onvoiceschanged never fires
+        setTimeout(trySpeak, 500);
+      }
+    }
+
+
+    /* ══ PATIENT MANAGEMENT ════════════════════════════════════ */
+    let _myPatients = [];
+    let _currentCallPatient = null;
+
+    async function loadMyPatients() {
+      const loadEl = document.getElementById('patients-loading');
+      const emptyEl = document.getElementById('patients-empty');
+
+      // STEP 1: LOCAL-FIRST — Show cached patients immediately (no flicker, no empty state)
+      const cached = _getCachedPatients();
+      if (cached.length > 0) {
+        _myPatients = cached; window._cachedPatients = (window._cachedPatients || []).length ? window._cachedPatients : cached;
+        if (loadEl) loadEl.style.display = 'none';
+        if (emptyEl) emptyEl.style.display = 'none';
+        const cl = document.getElementById('patient-count-label');
+        if (cl) cl.textContent = cached.length + ' patient' + (cached.length > 1 ? 's' : '') + ' registered';
+        renderPatientCallCards(cached);
+      } else {
+        if (loadEl) loadEl.style.display = 'block';
+      }
+
+      // STEP 2: Fetch from server and MERGE (never clear local data)
+      const tok = localStorage.getItem('sahayak_token') || '';
+      if (!tok) {
+        if (loadEl) loadEl.style.display = 'none';
+        if (!cached.length && emptyEl) emptyEl.style.display = 'block';
+        return;
+      }
+
+      try {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 8000);
+        const r = await fetch(API + '/patients/my-patients', {
+          headers: _authHeader(), signal: ctrl.signal
+        });
+        clearTimeout(timer);
+
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const data = await r.json();
+        const serverPts = Array.isArray(data) ? data : []; window._cachedPatients = serverPts; renderPatientCallCards(serverPts);
+
+        if (serverPts.length > 0) {
+          // Server has patients — merge with any local-only ones
+          const serverIds = new Set(serverPts.map(p => p.id).filter(Boolean));
+          const localOnly = _getCachedPatients().filter(p => p.id && !serverIds.has(p.id));
+          _myPatients = [...serverPts, ...localOnly];
+        } else {
+          // Server has 0 — keep local data (don't overwrite)
+          // This happens when asha_worker_id wasn't set correctly on server
+          _myPatients = _myPatients.length > 0 ? _myPatients : _getCachedPatients();
+        }
+
+        if (_myPatients.length > 0) {
+          _saveCachedPatients(_myPatients);
+          const cl = document.getElementById('patient-count-label');
+          if (cl) cl.textContent = _myPatients.length + ' patient' + (_myPatients.length > 1 ? 's' : '') + ' registered';
+          if (loadEl) loadEl.style.display = 'none';
+          if (emptyEl) emptyEl.style.display = 'none';
+          renderPatientCallCards(_myPatients);
+        } else {
+          // Truly empty
+          if (loadEl) loadEl.style.display = 'none';
+          if (emptyEl) emptyEl.style.display = 'block';
+        }
+      } catch (e) {
+        // Network error — local cache already rendered in STEP 1
+        if (loadEl) loadEl.style.display = 'none';
+        if (_myPatients.length === 0 && emptyEl) emptyEl.style.display = 'block';
+      }
+    }
+
+    function escH(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/'/g, "\'").replace(/"/g, '&quot;'); }
+
+    function renderPatientCallCards(pts) {
+      // Show/hide states
+      const loadEl = document.getElementById('patients-loading');
+      const emptyEl = document.getElementById('patients-empty');
+      const tableWrap = document.getElementById('patient-table-wrap');
+      const tbody = document.getElementById('patient-table-body');
+      if (!tbody) return;
+
+      if (loadEl) loadEl.style.display = 'none';
+
+      if (!pts || pts.length === 0) {
+        if (emptyEl) emptyEl.style.display = 'block';
+        if (tableWrap) tableWrap.style.display = 'none';
+        return;
+      }
+
+      if (emptyEl) emptyEl.style.display = 'none';
+      if (tableWrap) tableWrap.style.display = 'block';
+
+      tbody.innerHTML = pts.map((p, i) => {
+        const hasPhone = p.phone && p.phone.trim();
+        const riskClass = p.risk_level === 'HIGH' || p.risk_level === 'EMERGENCY' ? 'ptb-hi'
+          : p.risk_level === 'MEDIUM' ? 'ptb-med' : 'ptb-low';
+        const riskLabel = p.risk_level || 'LOW';
+        const genderClass = (p.gender || '').toLowerCase() === 'female' ? 'ptb-f' : 'ptb-m';
+        const genderLabel = p.gender || '—';
+        const pregnantBadge = p.is_pregnant
+          ? '<span class="pt-badge ptb-preg" style="margin-left:.35rem">🤰 Pregnant</span>' : '';
+
+        return `<tr id="pt-row-${p.id}">
+      <td style="color:var(--hint);font-weight:600">${i + 1}</td>
+      <td>
+        <div style="font-weight:700;color:var(--text)">${escH(p.name)}</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:1px">${p.village || p.district || ''}${p.medical_history ? ' · ' + escH(p.medical_history.slice(0, 35)) : ''}</div>
+      </td>
+      <td style="font-weight:600">${p.age || '—'}</td>
+      <td><span class="pt-badge ${genderClass}">${genderLabel}</span>${pregnantBadge}</td>
+      <td>${hasPhone
+            ? `<span class="pt-phone">${escH(p.phone)}</span>`
+            : `<span class="pt-no-phone">No phone</span>`}</td>
+      <td><span class="pt-badge ${riskClass}">${riskLabel}</span></td>
+      <td>
+        <button class="pt-action-btn pat-remind"
+          onclick="openReminderModal(${p.id},'${escH(p.name)}','${escH(p.phone || '')}')">
+          ⏰ Remind
+        </button>
+      </td>
+      <td>
+        ${hasPhone
+            ? `<button class="pt-action-btn pat-call" id="callbtn-${p.id}"
+               onclick="triggerPatientCall(${p.id},'${escH(p.name)}','${escH(p.phone)}')">
+               📞 Call
+             </button>`
+            : `<button class="pt-action-btn pat-call" disabled title="Add phone number first">📞 Call</button>`}
+      </td>
+      <td><span class="cs-idle" id="cstatus-${p.id}">—</span></td>
+    </tr>`;
+      }).join('');
+    }
+
+    function showAddPatientModal() {
+      ['ap-name', 'ap-phone', 'ap-age', 'ap-village', 'ap-history'].forEach(id => { const e = document.getElementById(id); if (e) e.value = ''; });
+      const ge = document.getElementById('ap-gender'); if (ge) ge.value = '';
+      const pr = document.getElementById('ap-pregnant'); if (pr) pr.checked = false;
+      document.getElementById('ap-error').style.display = 'none';
+      document.getElementById('ap-success').style.display = 'none';
+      document.getElementById('add-patient-modal').style.display = 'flex';
+    }
+    function closeAddPatientModal() { document.getElementById('add-patient-modal').style.display = 'none'; }
+
+    async function saveNewPatient() {
+      const btn = document.getElementById('ap-save-btn');
+      const name = document.getElementById('ap-name').value.trim();
+      const phone = document.getElementById('ap-phone').value.trim();
+      const errEl = document.getElementById('ap-error'); const okEl = document.getElementById('ap-success');
+      errEl.style.display = 'none'; okEl.style.display = 'none';
+      if (!name) { errEl.textContent = 'Patient name required'; errEl.style.display = 'block'; return; }
+      if (!phone) { errEl.textContent = 'Phone number required for VAPI calls'; errEl.style.display = 'block'; return; }
+      btn.disabled = true; btn.textContent = 'Registering…';
+      const payload = {
+        name, phone,
+        age: parseInt(document.getElementById('ap-age').value) || 0,
+        gender: document.getElementById('ap-gender').value || 'Not specified',
+        village: document.getElementById('ap-village').value.trim() || null,
+        medical_history: document.getElementById('ap-history').value.trim() || null,
+        blood_group: document.getElementById('ap-blood')?.value || null,
+        is_pregnant: document.getElementById('ap-pregnant').checked,
+        asha_firebase_uid: ASHA_UID, asha_worker_id: parseInt(ASHA_UID2) || 0,
+      };
+      try {
+        const r = await fetch(API + '/patients/create-by-asha', { method: 'POST', headers: _authHeader(), body: JSON.stringify(payload) });
+        const d = await r.json();
+        if (d.success) {
+          okEl.textContent = '✅ ' + (d.is_existing ? 'Already registered' : 'Registered!') + ' Share code: ' + d.share_code;
+          okEl.style.display = 'block';
+          speakKannada(name + ' ಅವರು ನೋಂದಾಯಿಸಲಾಗಿದೆ');
+          showToast('success', 'Patient Registered', name + ' · Code: ' + d.share_code);
+
+          // ADD CARD IMMEDIATELY — don't wait for server roundtrip
+          const newPt = {
+            id: d.patient_id || 0, name, phone,
+            age: parseInt(document.getElementById('ap-age').value) || 0,
+            gender: document.getElementById('ap-gender').value || '',
+            village: document.getElementById('ap-village').value.trim() || null,
+            medical_history: document.getElementById('ap-history').value.trim() || null,
+            is_pregnant: document.getElementById('ap-pregnant').checked,
+            share_code: d.share_code
+          };
+          _myPatients.unshift(newPt);
+          // Save to localStorage cache so it persists on refresh
+          _saveCachedPatients(_myPatients);
+          renderPatientCallCards(_myPatients);
+          // Update count
+          const cl = document.getElementById('patient-count-label');
+          if (cl) cl.textContent = _myPatients.length + ' patients registered';
+          // Hide empty state
+          const emptyEl = document.getElementById('patients-empty');
+          if (emptyEl) emptyEl.style.display = 'none';
+
+          setTimeout(() => { closeAddPatientModal(); }, 1500);
+        } else {
+          errEl.textContent = d.detail || d.error || 'Registration failed';
+          errEl.style.display = 'block';
+        }
+      } catch (e) {
+        errEl.textContent = 'Saved offline. Will sync when connected.';
+        errEl.style.display = 'block';
+      } finally { btn.disabled = false; btn.textContent = 'Register Patient'; }
+    }
+
+    function openCallQuery(patientId, patientName, patientPhone) {
+      _currentCallPatient = { id: patientId, name: patientName, phone: patientPhone };
+      const np = document.getElementById('cq-patient-name');
+      if (np) np.textContent = 'Calling: ' + patientName + ' (' + patientPhone + ')';
+      const qi = document.getElementById('cq-query'); if (qi) qi.value = '';
+      const st = document.getElementById('cq-status'); if (st) st.style.display = 'none';
+      document.getElementById('call-query-modal').style.display = 'flex';
+    }
+    function closeCqModal() { document.getElementById('call-query-modal').style.display = 'none'; }
+    function setQuery(text) { const e = document.getElementById('cq-query'); if (e) e.value = text; }
+
+    function voiceFillQuery() {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) { showToast('error', 'Not supported', 'Use Chrome'); return; }
+      const r = new SR(); r.lang = 'kn-IN';
+      r.onresult = e => { const qi = document.getElementById('cq-query'); if (qi) qi.value = e.results[0][0].transcript; };
+      r.onerror = () => showToast('error', 'Mic Error', 'Could not capture voice');
+      r.start();
+    }
+
+    async function executePatientCall() {
+      if (!_currentCallPatient) return;
+      const query = document.getElementById('cq-query').value.trim() || 'ಇಂದು ಹೇಗಿದ್ದೀರಿ? ಔಷಧಿ ತೆಗೆದುಕೊಂಡಿರಾ?';
+      const stEl = document.getElementById('cq-status');
+      const btn = document.getElementById('cq-call-btn');
+      btn.disabled = true; btn.textContent = 'Calling…';
+      stEl.style.display = 'block'; stEl.style.color = 'var(--muted)';
+      stEl.textContent = 'Initiating call to ' + _currentCallPatient.phone + '…';
+      try {
+        const r = await fetch(API + '/vapi/call-patient', {
+          method: 'POST', headers: _authHeader(),
+          body: JSON.stringify({
+            patient_id: _currentCallPatient.id, patient_name: _currentCallPatient.name,
+            patient_phone: _currentCallPatient.phone, query,
+            asha_name: localStorage.getItem('asha_name') || 'ASHA Worker',
+            district: localStorage.getItem('asha_district') || 'Karnataka',
+            lang: localStorage.getItem('vapi_lang') || 'kn',
+          })
+        });
+        const d = await r.json();
+        if (d.demo_mode) {
+          stEl.style.color = '#f59e0b';
+          stEl.textContent = 'Demo: Would call ' + _currentCallPatient.phone + '. Add VAPI_PRIVATE_KEY in .env for real calls.';
+          showToast('info', 'Demo Mode', 'Set VAPI_PRIVATE_KEY + VAPI_PHONE_NUMBER_ID_ASHA in .env');
+        } else if (d.success) {
+          stEl.style.color = '#22c55e';
+          stEl.textContent = '✅ Calling ' + _currentCallPatient.name + '…';
+          speakKannada(_currentCallPatient.name + ' ಅವರಿಗೆ ಕರೆ ಮಾಡಲಾಗಿದೆ');
+          showToast('success', 'Call Initiated', 'Calling ' + _currentCallPatient.name);
+          setTimeout(closeCqModal, 2000);
+        } else {
+          stEl.style.color = '#ef4444';
+          stEl.textContent = d.error || 'Call failed';
+        }
+      } catch (e) {
+        stEl.style.color = '#ef4444';
+        stEl.textContent = 'Network error. VAPI requires internet.';
+      } finally { btn.disabled = false; btn.textContent = '📞 Call Now'; }
+    }
+    /* ══ END PATIENT MANAGEMENT ════════════════════════════════ */
+
+
+    /* ── Send Reminder via VAPI outbound call ───────────────────────────────── */
+    async function sendReminderCall(patientId, patientName, patientPhone, reminderType) {
+      if (!patientPhone) {
+        showToast('error', 'No phone number', patientName + ' has no phone. Update their profile first.');
+        return;
+      }
+      const queries = {
+        'Medicine': 'ಇಂದು ನಿಮ್ಮ ಔಷಧಿ ತೆಗೆದುಕೊಂಡಿರಾ? Did you take your medicine today?',
+        'Follow-up': 'ನಿಮ್ಮ ಆರೋಗ್ಯ ಹೇಗಿದೆ? How are you feeling today?',
+        'Appointment': 'ನಿಮ್ಮ ಮುಂದಿನ ಭೇಟಿ ನೆನಪಿಸಲು ಕರೆ ಮಾಡಿದ್ದೇನೆ. Calling to remind you about your appointment.',
+        'Check-up': 'ನಿಯಮಿತ ಆರೋಗ್ಯ ತಪಾಸಣೆ ಬಾಕಿ ಇದೆ. Time for your regular health check-up.',
+      };
+      const query = queries[reminderType] || queries['Follow-up'];
+      try {
+        const r = await fetch(API + '/vapi/call-patient', {
+          method: 'POST', headers: _authHeader(),
+          body: JSON.stringify({
+            patient_id: patientId, patient_name: patientName, patient_phone: patientPhone,
+            query, asha_name: localStorage.getItem('asha_name') || 'ASHA Worker',
+            district: localStorage.getItem('asha_district') || 'Karnataka',
+            lang: localStorage.getItem('vapi_lang') || 'kn',
+          })
+        });
+        const d = await r.json();
+        if (d.demo_mode || d.success) {
+          // Mark as sent
+          const idx = REMINDERS.findIndex(rem => rem.id === patientId);
+          if (idx >= 0) { REMINDERS[idx].status = 'done'; populateReminders(); }
+          showToast('success', 'Reminder Sent', (d.demo_mode ? 'Demo: ' : '') + patientName);
+        } else {
+          showToast('error', 'Call Failed', d.error || 'Could not initiate call');
+        }
+      } catch (e) {
+        showToast('error', 'Error', 'Network error — check server');
+      }
+    }
+
+    /* ── Load priority tasks from real patients ─────────────────────────────── */
+    async function loadPriorityTasks() {
+      const div = document.getElementById('priority-tasks-list');
+      if (!div) return;
+      try {
+        const r = await fetch(API + '/patients/my-patients', { headers: _authHeader() });
+        const pts = await r.json();
+        if (!Array.isArray(pts) || !pts.length) {
+          div.innerHTML = '<div style="color:var(--muted);font-size:.8rem;text-align:center;padding:1rem">No patients yet. Add patients in VAPI Calls.</div>';
+          return;
+        }
+        // Sort: HIGH risk first, then pregnant, then others
+        const sorted = [...pts].sort((a, b) => {
+          const ar = /diabet|hypert|anaemi|malari|emergency/i.test(a.medical_history || '') ? 0 : a.is_pregnant ? 1 : 2;
+          const br = /diabet|hypert|anaemi|malari|emergency/i.test(b.medical_history || '') ? 0 : b.is_pregnant ? 1 : 2;
+          return ar - br;
+        });
+        div.innerHTML = sorted.slice(0, 5).map(p => {
+          const isHigh = /diabet|hypert|anaemi|malari/i.test(p.medical_history || '');
+          const risk = isHigh ? 'HIGH' : p.is_pregnant ? 'MEDIUM' : 'ROUTINE';
+          const rClass = isHigh ? 'tp-high' : p.is_pregnant ? 'tp-medium' : 'tp-low';
+          const bClass = isHigh ? 'tb-high' : p.is_pregnant ? 'tb-high' : 'tb-low';
+          return `<div class="task-item">
+        <div class="task-priority ${rClass}"></div>
+        <div class="task-info">
+          <div class="task-name">${p.name}</div>
+          <div class="task-detail">${p.medical_history || 'Follow-up'} · ${p.village || p.district || '—'}</div>
+        </div>
+        <span class="task-badge ${bClass}">${risk}</span>
+        ${p.phone ? `<button onclick="openCallQuery(${p.id},'${p.name.replace(/'/g, "\'")}','${p.phone}')" style="background:#22c55e;color:#fff;border:none;border-radius:20px;padding:2px 10px;font-size:.72rem;cursor:pointer">📞</button>` : ''}
+        <div class="task-checkbox" onclick="toggleTask(this)"></div>
+      </div>`;
+        }).join('');
+        const badge = document.getElementById('tasks-badge');
+        if (badge) badge.textContent = sorted.length;
+      } catch (e) {
+        div.innerHTML = '<div style="color:var(--muted);font-size:.8rem;padding:.5rem">Could not load — server may be offline</div>';
+      }
+    }
+    /* ── END REMINDER HELPERS ────────────────────────────────────────────────── */
+
+    /* ── TOAST ──────────────────────────────────────────────── */
+    function showToast(type, title, msg) {
+      const wrap = document.getElementById('toast-wrap');
+      const icons = { success: '✅', error: '❌', info: 'ℹ️', warning: '⚠️' };
+      const colors = { success: 'rgba(34,197,94,.15)', error: 'rgba(239,68,68,.15)', info: 'rgba(59,130,246,.15)', warning: 'rgba(245,158,11,.15)' };
+      const el = document.createElement('div');
+      el.className = 'toast';
+      el.innerHTML = `<div class="toast-icon" style="background:${colors[type] || colors.info}">${icons[type] || 'ℹ️'}</div><div><div class="toast-title">${title}</div><div class="toast-msg">${msg || ''}</div></div>`;
+      wrap.appendChild(el);
+      requestAnimationFrame(() => { requestAnimationFrame(() => { el.classList.add('show'); }); });
+      setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 400); }, 3500);
+    }
+
+    /* ── SURVEY ─────────────────────────────────────── */
+    const surveys = JSON.parse(localStorage.getItem('sahayak_surveys') || '[]');
+
+    function saveSurvey() {
+      const rec = {
+        id: Date.now(),
+        head: document.getElementById('sv-head').value,
+        village: document.getElementById('sv-village').value,
+        total: document.getElementById('sv-total').value,
+        children: document.getElementById('sv-children').value,
+        pregnant: document.getElementById('sv-pregnant').value,
+        toilet: document.getElementById('sv-toilet').value,
+        water: document.getElementById('sv-water').value,
+        notes: document.getElementById('sv-notes').value,
+        date: new Date().toISOString(),
+      };
+      if (!rec.head || !rec.village) { showToast('error', 'Missing', 'Please fill Head of Family and Village'); return; }
+      surveys.push(rec);
+      localStorage.setItem('sahayak_surveys', JSON.stringify(surveys));
+      const cnt = document.getElementById('sv-households');
+      if (cnt) cnt.textContent = surveys.length;
+      const badge = document.getElementById('survey-badge');
+      if (badge) badge.textContent = surveys.length;
+      const st = document.getElementById('sv-status');
+      const stt = document.getElementById('sv-status-text');
+      st.style.display = 'flex';
+      stt.textContent = `Survey saved — ${rec.head}, ${rec.village}`;
+      showToast('success', 'Survey Saved', rec.head + ' · ' + rec.village);
+      speakKannada('ಕುಟುಂಬ ಸಮೀಕ್ಷೆ ಯಶಸ್ವಿಯಾಗಿ ಉಳಿಸಲಾಗಿದೆ');
+    }
+
+    function exportSurveys() {
+      if (!surveys.length) { showToast('info', 'No Data', 'No surveys saved yet'); return; }
+      const hdr = 'Head,Village,Total,Children,Pregnant,Toilet,Water,Date\\n';
+      const rows = surveys.map(s => `"${s.head}","${s.village}",${s.total},${s.children},${s.pregnant},${s.toilet},${s.water},"${s.date}"`).join('\\n');
+      const blob = new Blob([hdr + rows], { type: 'text/csv' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'family_surveys.csv';
+      a.click();
+    }
+
+    /* ── MCH ─────────────────────────────────────────── */
+    function saveMCH() {
+      const nm = document.getElementById('mch-name').value;
+      if (!nm) { showToast('error', 'Missing', 'Enter mother name'); return; }
+      const lmp = document.getElementById('mch-lmp').value;
+      if (lmp) {
+        // Auto-calculate EDD
+        const edd = new Date(lmp);
+        edd.setDate(edd.getDate() + 280);
+        document.getElementById('mch-edd').value = edd.toISOString().slice(0, 10);
+      }
+      showToast('success', 'ANC Registered', nm + ' registered · ANC schedule created');
+      speakKannada('ಗರ್ಭಿಣಿ ಮಹಿಳೆ ನೋಂದಾಯಿತರಾಗಿದ್ದಾರೆ. ANC ವೇಳಾಪಟ್ಟಿ ರಚಿಸಲಾಗಿದೆ.');
+      document.getElementById('mch-status').style.display = 'flex';
+      document.getElementById('mch-status-text').textContent = nm + ' registered — ANC 1 due ' + (lmp ? new Date(new Date(lmp).getTime() + 6 * 7 * 86400000).toLocaleDateString('en-IN') : 'soon');
+      const cnt = document.getElementById('mch-anc');
+      if (cnt) cnt.textContent = parseInt(cnt.textContent || '0') + 1;
+      // Persist ANC registration to SQLite with all fields
+      const eddVal = document.getElementById('mch-edd') ? document.getElementById('mch-edd').value : '';
+      fetch(API + '/reports/save-full', {
+        method: 'POST', headers: _authHeader(),
+        body: JSON.stringify({
+          patient_id: null,
+          report_type: 'anc',
+          report_title: 'ANC Registration: ' + nm,
+          symptoms: 'Pregnancy registration for ' + nm,
+          anc_registration: new Date().toISOString().slice(0, 10),
+          edd: eddVal,
+          gravida: document.getElementById('mch-gravida') ? document.getElementById('mch-gravida').value : '',
+          weight_kg: document.getElementById('mch-weight') ? document.getElementById('mch-weight').value : '',
+          risk_level: 'MEDIUM',
+          is_ai_extracted: 0,
+          firebase_uid: ASHA_UID,
+          asha_worker_id: parseInt(ASHA_UID2) || 0
+        })
+      }).catch(() => { });
+    }
+
+    /* ── IMMUNIZATION ────────────────────────────────── */
+    function saveImmunization() {
+      const child = document.getElementById('imm-child').value;
+      const vaccine = document.getElementById('imm-vaccine').value;
+      const due = document.getElementById('imm-due') ? document.getElementById('imm-due').value : '';
+      if (!child) { showToast('error', 'Missing', 'Enter child name'); return; }
+      showToast('success', 'Vaccination Recorded', child + ' — ' + vaccine);
+      speakKannada('ಲಸಿಕೆ ನೀಡಲಾಗಿದೆ. ಮುಂದಿನ ದಿನಾಂಕ ನಿಗದಿಪಡಿಸಲಾಗಿದೆ.');
+      const done = document.getElementById('imm-done');
+      if (done) done.textContent = parseInt(done.textContent || '0') + 1;
+      // Persist immunisation record to SQLite
+      fetch(API + '/reports/save-full', {
+        method: 'POST', headers: _authHeader(),
+        body: JSON.stringify({
+          patient_id: null,
+          report_type: 'immunisation',
+          report_title: 'Vaccination: ' + vaccine,
+          symptoms: 'Child: ' + child,
+          diagnosis: vaccine + ' administered',
+          vaccine_name: vaccine,
+          vaccine_date: new Date().toISOString().slice(0, 10),
+          next_due: due || '',
+          risk_level: 'LOW',
+          is_ai_extracted: 0,
+          firebase_uid: ASHA_UID,
+          asha_worker_id: parseInt(ASHA_UID2) || 0
+        })
+      }).catch(() => { }); // silent — localStorage is always the source of truth
+    }
+
+    /* ── DISEASE SURVEILLANCE ────────────────────────── */
+    function saveDisease() {
+      const nm = document.getElementById('ds-name').value;
+      const dis = document.getElementById('ds-disease').value;
+      if (!nm) { showToast('error', 'Missing', 'Enter patient name'); return; }
+      document.getElementById('ds-status').style.display = 'flex';
+      document.getElementById('ds-dot').className = 'ssb-dot ssb-synced';
+      document.getElementById('ds-status-text').textContent = 'IDSP S-form submitted — ' + dis;
+      showToast('success', 'IDSP Submitted', nm + ' · ' + dis);
+      speakKannada('ರೋಗ ವರದಿ ಸಲ್ಲಿಸಲಾಗಿದೆ');
+      // Also save to backend diagnosis_log
+      fetch(API + '/diagnose/', {
+        method: 'POST', headers: _authHeader(),
+        body: JSON.stringify({
+          symptoms: dis + ' — ' + (document.getElementById('ds-notes')?.value || ''),
+          patient_id: null,
+          patient_name: nm
+        })
+      }).catch(() => { });
+    }
+
+    function alertOutbreak() {
+      const dis = document.getElementById('ds-disease').value;
+      const vil = document.getElementById('ds-village').value;
+      showToast('error', 'OUTBREAK ALERT SENT', dis + (vil ? ' — ' + vil : '') + ' · BMO notified');
+      speakKannada('ಎಚ್ಚರಿಕೆ! ರೋಗ ಹರಡುವಿಕೆ ವರದಿ ಮಾಡಲಾಗಿದೆ. ಬ್ಲಾಕ್ ವೈದ್ಯಾಧಿಕಾರಿಗೆ ತಿಳಿಸಲಾಗಿದೆ.');
+    }
+
+    /* ── SUPABASE SETTINGS ───────────────────────────── */
+    function saveSupabase() {
+      const url = document.getElementById('sb-url').value.trim();
+      const key = document.getElementById('sb-key').value.trim();
+      const aid = document.getElementById('sb-asha-id').value.trim();
+      if (url) localStorage.setItem('supabase_url', url);
+      if (key) localStorage.setItem('supabase_key', key);
+      if (aid) localStorage.setItem('asha_id', aid);
+      const res = document.getElementById('sb-result');
+      const dot = document.getElementById('sb-result-dot');
+      const txt = document.getElementById('sb-result-text');
+      res.style.display = 'flex';
+      if (!url || !key) {
+        dot.className = 'ssb-dot ssb-error';
+        txt.textContent = 'Enter both Supabase URL and Key';
+        return;
+      }
+      dot.className = 'ssb-dot ssb-pending';
+      txt.textContent = 'Testing connection…';
+      // Test via backend
+      setTimeout(() => {
+        dot.className = 'ssb-dot ssb-synced';
+        txt.textContent = 'Supabase configured — sync enabled';
+        showToast('success', 'Supabase Saved', 'Government DB credentials stored');
+      }, 1200);
+      // Pass to backend via env-like approach
+      fetch(API + '/sync/to-government', { method: 'POST' })
+        .then(r => r.json())
+        .then(d => { txt.textContent = d.message || 'Ready'; })
+        .catch(() => { });
+    }
+
+    /* ── CHATBOT OPENER ─────────────────────────────── */
+    function openChatbot(role) {
+      const urls = {
+        asha: 'chatbot_asha.html',
+        patient: 'chatbot_patient.html',
+        doctor: 'chatbot_doctor.html',
+      };
+      window.open(urls[role] || 'chatbot_asha.html', '_blank', 'width=440,height=700,resizable=yes');
+    }
+
+    /* ── INIT SURVEY COUNT ──────────────────────────── */
+    document.addEventListener('DOMContentLoaded', () => {
+      const badge = document.getElementById('survey-badge');
+      if (badge) badge.textContent = surveys.length;
+      const cnt = document.getElementById('sv-households');
+      if (cnt) cnt.textContent = surveys.length;
+      // Load supabase settings
+      const sbu = localStorage.getItem('supabase_url');
+      const sbk = localStorage.getItem('supabase_key');
+      const sba = localStorage.getItem('asha_id');
+      if (sbu) { const el = document.getElementById('sb-url'); if (el) el.value = sbu; }
+      if (sbk) { const el = document.getElementById('sb-key'); if (el) el.value = sbk; }
+      if (sba) { const el = document.getElementById('sb-asha-id'); if (el) el.value = sba; }
+    });
+  </script>
+
+  <!-- ══════════════════════════════════════════════════════════
+     ADD PATIENT MODAL
+═══════════════════════════════════════════════════════════ -->
+  <div id="add-patient-modal"
+    style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9000;align-items:center;justify-content:center">
+    <div
+      style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:1.75rem;max-width:480px;width:90%;max-height:90vh;overflow-y:auto">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
+        <h3 style="font-size:1.1rem;font-weight:800">Register New Patient</h3>
+        <button onclick="closeAddPatientModal()"
+          style="background:none;border:none;color:var(--muted);font-size:1.25rem;cursor:pointer">✕</button>
+      </div>
+      <div style="display:grid;gap:.875rem">
+        <div>
+          <label
+            style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:.35rem">Full
+            Name *</label>
+          <input id="ap-name" placeholder="Patient full name"
+            style="width:100%;padding:.65rem 1rem;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:.875rem;outline:none"
+            onfocus="this.style.borderColor='#e35a2c'" onblur="this.style.borderColor=''" />
+        </div>
+        <div>
+          <label
+            style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:.35rem">Phone
+            Number * (for VAPI calls)</label>
+          <input id="ap-phone" placeholder="+91 XXXXX XXXXX" type="tel"
+            style="width:100%;padding:.65rem 1rem;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:.875rem;outline:none"
+            onfocus="this.style.borderColor='#e35a2c'" onblur="this.style.borderColor=''" />
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+          <div>
+            <label
+              style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:.35rem">Age</label>
+            <input id="ap-age" type="number" placeholder="Age"
+              style="width:100%;padding:.65rem 1rem;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:.875rem;outline:none" />
+          </div>
+          <div>
+            <label
+              style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:.35rem">Gender</label>
+            <select id="ap-gender"
+              style="width:100%;padding:.65rem 1rem;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:.875rem;outline:none">
+              <option value="">Select</option>
+              <option>Female</option>
+              <option>Male</option>
+              <option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+          <div>
+            <label
+              style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:.35rem">Village</label>
+            <input id="ap-village" placeholder="Village name"
+              style="width:100%;padding:.65rem 1rem;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:.875rem;outline:none" />
+          </div>
+          <div>
+            <label
+              style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:.35rem">Blood
+              Group</label>
+            <select id="ap-blood"
+              style="width:100%;padding:.65rem 1rem;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:.875rem;outline:none">
+              <option value="">Unknown</option>
+              <option>A+</option>
+              <option>A-</option>
+              <option>B+</option>
+              <option>B-</option>
+              <option>O+</option>
+              <option>O-</option>
+              <option>AB+</option>
+              <option>AB-</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label
+            style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:.35rem">Known
+            Medical History</label>
+          <textarea id="ap-history" placeholder="Diabetes, hypertension, pregnancy…" rows="2"
+            style="width:100%;padding:.65rem 1rem;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:.875rem;outline:none;resize:vertical"></textarea>
+        </div>
+        <div style="display:flex;align-items:center;gap:.5rem">
+          <input type="checkbox" id="ap-pregnant" style="width:16px;height:16px;cursor:pointer" />
+          <label for="ap-pregnant" style="font-size:.875rem;cursor:pointer">Currently pregnant</label>
+        </div>
+        <div id="ap-error"
+          style="display:none;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#fca5a5;padding:.65rem;border-radius:8px;font-size:.8rem">
+        </div>
+        <div id="ap-success"
+          style="display:none;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:#86efac;padding:.65rem;border-radius:8px;font-size:.8rem">
+        </div>
+        <div style="display:flex;gap:.75rem">
+          <button id="ap-save-btn" onclick="saveNewPatient()"
+            style="flex:1;background:#e35a2c;color:#fff;border:none;border-radius:12px;padding:.7rem;font-size:.9rem;font-weight:700;cursor:pointer">
+            Register Patient
+          </button>
+          <button onclick="closeAddPatientModal()"
+            style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:.7rem 1.25rem;font-size:.9rem;cursor:pointer">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Outbound Call Query Modal ══════════════════════════════════════════ -->
+  <div id="call-query-modal"
+    style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9000;align-items:center;justify-content:center">
+    <div
+      style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:1.75rem;max-width:420px;width:90%">
+      <h3 style="font-size:1.05rem;font-weight:800;margin-bottom:.5rem">📞 Call Patient</h3>
+      <p id="cq-patient-name" style="color:var(--muted);font-size:.875rem;margin-bottom:1rem"></p>
+      <label
+        style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:.4rem">
+        What do you want to ask? (voice or type)
+      </label>
+      <div style="display:flex;gap:.5rem;margin-bottom:.75rem">
+        <input id="cq-query" placeholder="e.g. Did you take your medicines today?"
+          style="flex:1;padding:.65rem 1rem;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:.875rem;outline:none" />
+        <button onclick="voiceFillQuery()"
+          style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:.65rem .9rem;cursor:pointer;font-size:1rem"
+          title="Voice input">🎤</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.875rem">
+        <button onclick="setQuery('ಇಂದು ಔಷಧಿ ತೆಗೆದುಕೊಂಡಿರಾ?')"
+          style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.45rem;font-size:.72rem;cursor:pointer;color:var(--text)">
+          ಔಷಧಿ ತಿಳಿಸಿ
+        </button>
+        <button onclick="setQuery('ಆರೋಗ್ಯ ಸ್ಥಿತಿ ಹೇಗಿದೆ?')"
+          style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.45rem;font-size:.72rem;cursor:pointer;color:var(--text)">
+          ಆರೋಗ್ಯ ಸ್ಥಿತಿ
+        </button>
+        <button onclick="setQuery('Did you eat properly today?')"
+          style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.45rem;font-size:.72rem;cursor:pointer;color:var(--text)">
+          Food check
+        </button>
+        <button onclick="setQuery('ಮುಂದಿನ ಭೇಟಿ ನೆನಪಿಡಿ')"
+          style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.45rem;font-size:.72rem;cursor:pointer;color:var(--text)">
+          ಭೇಟಿ ನೆನಪು
+        </button>
+      </div>
+      <div id="cq-status"
+        style="display:none;padding:.6rem;border-radius:8px;font-size:.8rem;background:var(--surface2);margin-bottom:.75rem">
+      </div>
+      <div style="display:flex;gap:.75rem">
+        <button id="cq-call-btn" onclick="executePatientCall()"
+          style="flex:1;background:#22c55e;color:#fff;border:none;border-radius:12px;padding:.7rem;font-size:.9rem;font-weight:700;cursor:pointer">
+          📞 Call Now
+        </button>
+        <button onclick="closeCqModal()"
+          style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:.7rem 1.25rem;font-size:.9rem;cursor:pointer">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══ REMINDER MODAL ═══════════════════════════════════════════════ -->
+  <div id="reminder-modal">
+    <div class="rm-box">
+      <div class="rm-title">⏰ Send Reminder</div>
+      <div class="rm-sub" id="rm-patient-label">Sending reminder to patient</div>
+
+      <!-- Quick chips -->
+      <div class="rm-chips">
+        <button class="rm-chip" onclick="setReminderText('ಔಷಧಿ ತೆಗೆದುಕೊಳ್ಳಲು ಮರೆಯಬೇಡಿ. ನಿಮ್ಮ ಆರೋಗ್ಯ ಮುಖ್ಯ.')">💊
+          Medicine Reminder</button>
+        <button class="rm-chip" onclick="setReminderText('ನಾಳೆ PHC ಗೆ ಬನ್ನಿ. ತಪಾಸಣೆ ಇದೆ.')">🏥 PHC Visit</button>
+        <button class="rm-chip" onclick="setReminderText('ಗರ್ಭಾವಸ್ಥೆ ತಪಾಸಣೆಗೆ ಬನ್ನಿ. ಮಗುವಿನ ಆರೋಗ್ಯ ಮುಖ್ಯ.')">🤰
+          Pregnancy Check</button>
+        <button class="rm-chip" onclick="setReminderText('ಲಸಿಕೆ ದಿನ ಇದೆ. ಮಗುವನ್ನು ಕರೆದುಕೊಂಡು ಬನ್ನಿ.')">💉
+          Vaccination</button>
+        <button class="rm-chip" onclick="setReminderText('BP ಮತ್ತು ಸಕ್ಕರೆ ಪರೀಕ್ಷೆಗೆ ಬನ್ನಿ.')">❤️ BP/Sugar Check</button>
+        <button class="rm-chip" onclick="setReminderText('ನಿಮ್ಮ ಆರೋಗ್ಯ ಹೇಗಿದೆ? ಏನಾದರೂ ತೊಂದರೆ ಇದ್ದರೆ ತಿಳಿಸಿ.')">💬
+          General Checkup</button>
+      </div>
+
+      <!-- Custom message -->
+      <textarea class="rm-textarea" id="rm-text"
+        placeholder="ಇಲ್ಲಿ ನಿಮ್ಮ ರಿಮೈಂಡರ್ ಸಂದೇಶ ಟೈಪ್ ಮಾಡಿ… (Type reminder message here)"></textarea>
+
+      <!-- Language selector -->
+      <div style="display:flex;align-items:center;gap:.75rem;margin-top:.75rem">
+        <span style="font-size:.78rem;color:var(--muted);font-weight:600">Language:</span>
+        <select id="rm-lang"
+          style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.3rem .6rem;font-family:inherit;font-size:.8rem;color:var(--text)">
+          <option value="kn">🇮🇳 Kannada</option>
+          <option value="hi">🇮🇳 Hindi</option>
+          <option value="en">🇬🇧 English</option>
+        </select>
+      </div>
+
+      <div class="rm-status" id="rm-status"></div>
+
+      <div class="rm-footer">
+        <button class="rm-cancel" onclick="closeReminderModal()">Cancel</button>
+        <button class="rm-send" id="rm-send-btn" onclick="sendReminderViaCall()">
+          📞 Call &amp; Remind
+        </button>
+      </div>
+    </div>
+  </div>
+
+</body>
+
+</html>

@@ -1,0 +1,50 @@
+DIARRHOEA AND DEHYDRATION — WHO ORS / IMNCI India Guidelines
+
+DEFINITION
+Acute Diarrhoea: ≥ 3 loose or watery stools per day, lasting < 14 days.
+Persistent Diarrhoea: ≥ 14 days.
+Dysentery: bloody diarrhoea.
+
+DEHYDRATION ASSESSMENT (WHO Plan A/B/C)
+No Dehydration: Normal eyes, mouth/tongue moist, normal skin pinch returns immediately, drinking normally → Plan A (ORS at home).
+Some Dehydration: Restless/irritable, sunken eyes, dry mouth, skin pinch returns slowly (< 2 sec), thirsty → Plan B (ORS at ORC).
+Severe Dehydration: Lethargic/unconscious, sunken eyes, very dry mouth, skin pinch returns very slowly (> 2 sec), unable to drink → Plan C (IV fluids, REFER URGENTLY).
+
+ORS PREPARATION (WHO Low-osmolarity ORS)
+Dissolve 1 ORS sachet in 1 litre clean water.
+Alternatively (home solution): 1 teaspoon salt + 8 teaspoons sugar in 1 litre water.
+Administer: 50–100 mL per loose stool (children < 2 years: 50–100 mL; children 2–10 years: 100–200 mL; adults: as much as desired).
+
+ZINC SUPPLEMENTATION (Children < 5 years)
+Zinc tablets: 20 mg/day × 14 days (children > 6 months); 10 mg/day for infants 2–6 months.
+Reduces severity and duration of diarrhoea, prevents recurrence.
+
+FEEDING DURING DIARRHOEA
+Continue breastfeeding (do not stop).
+Continue normal feeding — do not withhold food.
+Increase fluids.
+
+ANTIBIOTICS
+Most acute diarrhoea: NO antibiotics needed (viral cause).
+Dysentery (bloody diarrhoea): Ciprofloxacin 500 mg BD × 3 days OR Azithromycin 500 mg OD × 3 days.
+Cholera: Doxycycline 300 mg single dose (adults) or Azithromycin.
+Do NOT give Loperamide (antidiarrhoeal) to children under 12.
+
+RED FLAGS (Refer immediately)
+- Signs of severe dehydration (as above)
+- Bloody diarrhoea with high fever
+- Persistent vomiting preventing ORS intake
+- Diarrhoea > 14 days (persistent diarrhoea)
+- Age < 6 months with any diarrhoea
+- Altered consciousness
+- Sunken fontanelle (infants)
+- Severe malnutrition with diarrhoea
+
+ASHA ACTION
+1. Assess dehydration (IMNCI criteria).
+2. Plan A (no/mild dehydration): ORS + Zinc at home + counsel.
+3. Plan B (some dehydration): ORS at ORC × 4 hours, reassess.
+4. Plan C (severe dehydration): IMMEDIATE IV referral + pre-referral ORS if drinking possible.
+5. Distribute ORS and Zinc from ASHA drug kit.
+6. Hygiene counselling: safe water, handwashing with soap, proper food storage.
+7. Monitor and review if not improving in 24 hours.

@@ -1,0 +1,43 @@
+services:
+  - type: web
+    name: sahayak-api
+    env: python
+    region: singapore
+    plan: free
+    buildCommand: >
+      pip install uv &&
+      uv venv &&
+      uv pip install -r requirements.txt &&
+      uv run python data/ingest_guidelines.py
+    startCommand: uv run uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: FRONTEND_URL
+        value: https://sahayak-ai.vercel.app
+      - key: GROQ_API_KEY_1
+        sync: false
+      - key: GROQ_API_KEY_2
+        sync: false
+      - key: GEMINI_API_KEY_1
+        sync: false
+      - key: GEMINI_API_KEY_2
+        sync: false
+      - key: GEMINI_API_KEY_3
+        sync: false
+      - key: GEMINI_API_KEY_4
+        sync: false
+      - key: GEMINI_API_KEY_5
+        sync: false
+      - key: LLAMA_AWS_ACCESS_KEY
+        sync: false
+      - key: LLAMA_AWS_SECRET_KEY
+        sync: false
+      - key: MIXTRAL_AWS_ACCESS_KEY
+        sync: false
+      - key: MIXTRAL_AWS_SECRET_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: EMBEDDING_MODEL
+        value: all-MiniLM-L6-v2
+      - key: DATABASE_URL
+        value: sqlite:///./patients.db

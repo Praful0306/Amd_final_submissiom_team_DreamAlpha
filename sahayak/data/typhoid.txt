@@ -1,0 +1,38 @@
+TYPHOID FEVER — ICMR India Guidelines
+
+CLINICAL FEATURES
+Week 1: Stepladder fever (rising each day to 39–40°C), headache, malaise, dry cough, constipation (adults) or diarrhoea (children).
+Week 2: Sustained high fever, relative bradycardia (pulse lower than expected for fever), hepatosplenomegaly, rose spots (faint salmon-coloured spots on trunk — rare, seen in fair skin).
+Week 3–4: Complications risk peaks — intestinal perforation, haemorrhage, encephalopathy.
+
+DIAGNOSIS
+Blood culture (gold standard, highest yield week 1): Salmonella Typhi or Paratyphi.
+Widal test: H and O agglutinins — baseline titre varies by region; single titre ≥ 1:160 suspicious (serial rising titre more meaningful). Note: Widal has low specificity in endemic areas.
+Typhidot IgM: rapid serology, positive from day 4–5.
+CBC: leukopenia (low WBC), thrombocytopenia, mild anaemia.
+LFT: mildly elevated transaminases.
+
+TREATMENT
+Drug of Choice: Azithromycin 500 mg OD × 7 days (uncomplicated, oral, outpatient).
+Alternative: Cefixime 400 mg OD × 14 days.
+For MDR Typhoid (Nalidixic acid resistant): Ceftriaxone IV or Azithromycin.
+XDR Typhoid (resistant to ceftriaxone + azithromycin): Carbapenem — refer to tertiary hospital.
+Fever relief: Paracetamol (avoid NSAIDs — risk of GI bleeding).
+Steroids (Dexamethasone): ONLY for severe typhoid with altered sensorium at hospital.
+
+RED FLAGS (Refer immediately)
+- Intestinal perforation: sudden severe abdominal pain, guarding, rigidity, shock
+- GI bleeding: blood per rectum, melaena
+- Encephalopathy: altered sensorium, confusion
+- Temperature > 40°C not responding to treatment
+- Ileus (no bowel sounds, abdominal distension)
+- Myocarditis/pericarditis
+
+ASHA ACTION
+1. Suspect: fever > 5 days + headache + no obvious focus.
+2. Refer to PHC for blood test (blood culture / Widal / Typhidot).
+3. Ensure strict hygiene while awaiting diagnosis.
+4. Start Azithromycin only after confirmation (do not give empirically for every fever).
+5. Ensure complete antibiotic course (risk of relapse if stopped early).
+6. Hygiene counselling: safe drinking water (boil or chlorinate), hand washing before meals and after toilet, avoid raw foods/street food.
+7. Typhoid conjugate vaccine (TCV): available for children 6 months–15 years under NIS.

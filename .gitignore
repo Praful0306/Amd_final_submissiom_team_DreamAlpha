@@ -1,0 +1,63 @@
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# ── Secrets & credentials ────────────────────────────────────────────────────
+*.env
+.env
+.env.local
+.env.*.local
+firebase-service-account.json
+service-account*.json
+*credentials*.json
+*secret*.json
+
+# ── Database (local data — set up fresh on server) ───────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.sqlite-journal
+*.sqlite3-journal
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+backend_restart.log
+
+# ── Node / Frontend ──────────────────────────────────────────────────────────
+node_modules/
+dist/
+.vite/
+
+# ── Test & temp files ────────────────────────────────────────────────────────
+test_*.py
+test_*.txt
+test_*.pdf
+*.tmp
+write_test.txt
+pack_*.py
+check_*.py
+fix_*.py
+
+# ── Uploads (user data) ──────────────────────────────────────────────────────
+sahayak/uploads/
+sahayak/static/uploads/
+
+# ── OS ───────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── IDE ──────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp

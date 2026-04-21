@@ -1,0 +1,46 @@
+DIABETES MELLITUS — ICMR / RSSDI India Guidelines
+
+DIAGNOSTIC CRITERIA (ICMR 2018)
+Fasting Blood Glucose: Normal < 100, Pre-diabetes 100–125, Diabetes ≥ 126 mg/dL.
+Post-meal (2-hour OGTT 75g): Normal < 140, Pre-diabetes 140–199, Diabetes ≥ 200 mg/dL.
+Random blood glucose ≥ 200 mg/dL + symptoms = Diabetes.
+HbA1c: Normal < 5.7%, Pre-diabetes 5.7–6.4%, Diabetes ≥ 6.5%.
+
+CLINICAL FEATURES
+Classic symptoms: Polyuria (excessive urination), polydipsia (excessive thirst), polyphagia (excessive hunger), unexplained weight loss, fatigue.
+Complications: blurred vision, tingling/numbness in feet (neuropathy), non-healing wounds, recurrent infections, foot ulcers.
+
+TYPES
+Type 1: Absolute insulin deficiency, onset < 30 years, needs insulin always.
+Type 2: Insulin resistance + relative deficiency, commonest type, lifestyle-modifiable.
+Gestational Diabetes (GDM): diabetes diagnosed in pregnancy.
+
+TREATMENT
+Type 2 (mild, newly diagnosed): Lifestyle modification — diet control, exercise, weight loss.
+Pharmacotherapy: Metformin 500 mg with meals (first-line, avoid in renal failure).
+Escalate: Sulfonylurea (Glibenclamide), DPP-4 inhibitor, SGLT2 inhibitor.
+Type 1 / Severe Type 2: Insulin therapy.
+GDM: diet + insulin (Metformin if diet fails and specialist approval).
+Target HbA1c: < 7% for most patients.
+
+MONITORING
+Self-monitoring blood glucose (SBGM) diary.
+HbA1c every 3 months until controlled, then every 6 months.
+Annual: fundus examination (diabetic retinopathy), urine microalbumin (nephropathy), foot examination.
+BP target: < 130/80 mmHg.
+
+RED FLAGS (Emergency)
+- Blood glucose < 50 mg/dL (hypoglycaemia) — sweating, tremor, altered sensorium → immediate sugar/glucose
+- Blood glucose > 400 mg/dL with vomiting, ketosis (fruity breath) → DKA — emergency
+- Foot ulcer with signs of infection, cellulitis, gangrene
+- Altered consciousness, unconsciousness
+- Hyperosmolar hyperglycaemic state (HHS) — extreme thirst, high glucose, no ketones
+
+ASHA ACTION
+1. Screen high-risk adults (obese, family history, age > 45, gestational history) with glucometer.
+2. Counsel on diet: reduce white rice/sugar/maida, increase vegetables, whole grains.
+3. Encourage 30 minutes brisk walking daily.
+4. Ensure medication adherence — check tablet stock.
+5. Refer new diagnosis to PHC/doctor for workup and treatment initiation.
+6. Foot care education: daily inspection, proper footwear, no barefoot walking.
+7. Emergency: hypoglycaemia — give sugar water immediately → refer.

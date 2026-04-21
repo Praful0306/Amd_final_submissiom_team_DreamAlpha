@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Patient Care Assistant — Sahayak AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{--or:#e35a2c;--orl:#f97316;--accent:#e35a2c;}
+[data-theme="dark"]{--bg:#0d0d0f;--surface:#141418;--surface2:#1c1c22;--text:#f0f0f4;--muted:#8b8b9a;--border:rgba(255,255,255,.08);}
+[data-theme="light"]{--bg:#f5f4f0;--surface:#ffffff;--surface2:#fafaf8;--text:#1a1a1a;--muted:#6b7280;--border:rgba(0,0,0,.065);}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden;transition:background .3s,color .3s}
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:.75rem 1.125rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.brand{display:flex;align-items:center;gap:.625rem}
+.brand-icon{width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,#e35a2c,#f97316);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.brand-name{font-size:.9375rem;font-weight:700;color:var(--text)}
+.brand-sub{font-size:.7rem;color:var(--muted);margin-top:1px}
+.header-right{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.sb{display:flex;align-items:center;gap:.375rem;font-size:.7rem;font-weight:600;padding:.3rem .75rem;border-radius:100px}
+.sb-r{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);color:#22c55e}
+.sb-c{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#ef4444;animation:sbc 1s infinite}
+@keyframes sbc{0%,100%{opacity:1}50%{opacity:.5}}
+.sb-d{width:6px;height:6px;border-radius:50%;background:currentColor;animation:sbd 1.8s infinite}
+@keyframes sbd{0%,100%{opacity:1}50%{opacity:.3}}
+.hb{background:var(--surface2);border:1px solid var(--border);border-radius:100px;padding:.3rem .75rem;font-family:inherit;font-size:.72rem;font-weight:600;color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap}
+.hb:hover{border-color:var(--accent);color:var(--accent)}
+.hb-call{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);color:#22c55e}
+.hb-end{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#ef4444;display:none}
+.call-bar{display:none;background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.18);margin:.5rem 1rem;border-radius:10px;padding:.6rem 1rem;align-items:center;justify-content:space-between}
+.call-bar.show{display:flex}
+.cb-info{font-size:.78rem;font-weight:700;color:#22c55e}
+.cb-timer{font-size:1.1rem;font-weight:800;color:#22c55e;letter-spacing:-.5px}
+.cb-end{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#ef4444;border-radius:100px;padding:.3rem .875rem;font-family:inherit;font-size:.72rem;font-weight:700;cursor:pointer}
+.chat{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.625rem}
+.chat::-webkit-scrollbar{width:4px}
+.chat::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.msg{display:flex;gap:.5rem;max-width:92%}
+.msg.user{flex-direction:row-reverse;align-self:flex-end}
+.av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0}
+.av-ai{background:linear-gradient(135deg,#e35a2c,#f97316);color:#fff}
+.av-u{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.bubble{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:.625rem .875rem;font-size:.8375rem;line-height:1.65;color:var(--text)}
+.msg.user .bubble{background:rgba(227,90,44,.08);border-color:rgba(227,90,44,.2)}
+.ts{font-size:.6rem;color:var(--muted);margin-top:.2rem;padding:0 .25rem}
+.msg.user .ts{text-align:right}
+.typing .bubble{display:flex;align-items:center;gap:.25rem;padding:.5rem .875rem}
+.td{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:tda .9s infinite}
+.td:nth-child(2){animation-delay:.15s}
+.td:nth-child(3){animation-delay:.3s}
+@keyframes tda{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+.tool-card{background:rgba(227,90,44,.06);border:1px solid rgba(227,90,44,.15);border-radius:10px;padding:.5rem .875rem;font-size:.72rem;color:var(--accent);font-style:italic;margin:.2rem 0}
+.qr-wrap{display:flex;flex-wrap:wrap;gap:.4rem;padding:.5rem 1rem}
+.qr{background:var(--surface2);border:1px solid var(--border);border-radius:100px;padding:.35rem .75rem;font-family:inherit;font-size:.72rem;font-weight:600;color:var(--text);cursor:pointer;transition:all .2s;white-space:nowrap}
+.qr:hover{border-color:var(--accent);color:var(--accent)}
+.bar{background:var(--surface);border-top:1px solid var(--border);padding:.625rem 1rem;display:flex;gap:.5rem;flex-shrink:0}
+.inp{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:100px;padding:.55rem 1rem;font-family:inherit;font-size:.8375rem;color:var(--text);outline:none;transition:all .2s}
+.inp::placeholder{color:var(--muted)}
+.inp:focus{border-color:var(--accent)}
+.sbtn,.vbtn{width:36px;height:36px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;font-size:.95rem}
+.sbtn{background:linear-gradient(135deg,#e35a2c,#f97316);color:#fff}
+.sbtn:hover{opacity:.85;transform:scale(1.05)}
+.vbtn{background:var(--surface2);border:1px solid var(--border);color:var(--muted)}
+.vbtn:hover,.vbtn.active{border-color:var(--accent);color:var(--accent)}
+.disc{font-size:.63rem;color:var(--muted);text-align:center;padding:.375rem;border-top:1px solid var(--border);flex-shrink:0}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="brand">
+    <div class="brand-icon">❤️</div>
+    <div>
+      <div class="brand-name">Patient Care Assistant</div>
+      <div class="brand-sub">Personal health AI · Medicines · Diet · Red flags</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="sb sb-r" id="sb"><div class="sb-d"></div><span id="sb-txt">Ready</span></div>
+    <button class="hb hb-call" onclick="startCall()" id="call-btn">📞 Voice Call</button>
+    <button class="hb hb-end" onclick="endCall()" id="end-btn">⏹ End</button>
+    <button class="hb" onclick="clearChat()">Clear</button>
+    <button class="hb" onclick="window.close()">✕</button>
+  </div>
+</div>
+<div class="call-bar" id="call-bar">
+  <div class="cb-info">🎙 VAPI Call Active</div>
+  <div class="cb-timer" id="call-timer">0:00</div>
+  <button class="cb-end" onclick="endCall()">End</button>
+</div>
+<div class="chat" id="chat">
+  <div class="msg" id="welcome-msg">
+    <div class="av av-ai">🤖</div>
+    <div>
+      <div class="bubble">
+        <strong>Hello! I'm your Sahayak AI Health Assistant 🏥</strong><br><br>
+        I can help you with:<br>
+        • Understanding your blood test results<br>
+        • Medicine reminders and dosage questions<br>
+        • What your diagnosis means in simple words<br>
+        • When to visit the doctor urgently<br>
+        • Diet and health tips<br><br>
+        Type in <strong>Hindi, Kannada, or English</strong> — I understand all.<br>
+        📞 Press <strong>Voice Call</strong> to speak instead of typing!
+      </div>
+      <div class="ts">Ready</div>
+    </div>
+  </div>
+</div>
+<div class="qr-wrap" id="qrs"></div>
+<div class="bar">
+  <button class="vbtn" id="vbtn" onclick="toggleVoice()">🎤</button>
+  <input class="inp" id="inp" placeholder="Ask about your health, medicines, diet…" onkeydown="if(event.key==='Enter')send()"/>
+  <button class="sbtn" onclick="send()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+  </button>
+</div>
+<div class="disc">AI-assisted health guidance only · Always consult your doctor · Sahayak AI</div>
+<script>
+const ROLE='patient',
+  API=(window.location.hostname==='localhost'||window.location.protocol==='file:')?'http://localhost:8000':'',
+  LANG='hi-IN';
+// Read patient context from URL params
+const _params = new URLSearchParams(window.location.search);
+const _pid  = _params.get('pid') || localStorage.getItem('sahayak_patient_id') || '';
+const _pname= _params.get('name') || localStorage.getItem('sahayak_name') || 'Patient';
+const QRS=["My diabetes medicines?", "BP is high — what to do?", "Pregnancy diet tips", "When to go to hospital?", "Iron tablet side effects", "Sugar level 200 — dangerous?", "Free government treatment?", "Medicine reminder setup", "ನನ್ನ ಔಷಧ ಯಾವಾಗ?", "Ayushman Bharat eligibility"];
+const WELCOME="Hello! I'm your Sahayak health assistant. 😊\n\n**I can help you with:**\n• Understanding your blood reports and vitals\n• Your medicines — timing, side effects, diet\n• When to go to hospital (warning signs)\n• Healthy diet for your condition\n• Government health schemes (Ayushman Bharat, JSSK)\n• How to use Sahayak AI to share records with your doctor\n\nJust type or speak your question in any language!";
+
+function getAuthHeader() {
+  const tok = localStorage.getItem('sahayak_token') || '';
+  return tok
+    ? {'Content-Type':'application/json','Authorization':'Bearer '+tok}
+    : {'Content-Type':'application/json'};
+}
+// Build personalised system prompt using URL params
+const SYSTEM_BASE="You are the Sahayak AI Patient Care Assistant.\nYou help rural patients in India understand their health in simple, friendly language.\nRespond in whatever language the patient uses (Hindi, Kannada, English, Telugu, etc).\nBe warm and supportive, avoid medical jargon without explanation.\nSAHAYAK AI SYSTEM: patients can upload blood reports (AI extracts all values), get ICMR-grounded diagnosis, share records with doctor via share code, book medicine reminders, access health history offline on any device.\nNormal ranges (ICMR): BP 90-120/60-80 mmHg, Sugar fasting 70-100 mg/dL, Hb Men 13-17 g/dL Women 12-16, SpO2 95-100%.\nEmergency signs: chest pain/breathlessness, sugar >400 or <50, BP >180/110 with headache, fever >5 days with confusion, pregnancy heavy bleeding.\nAlways end medical advice with: \"Please consult your doctor or ASHA worker to confirm.\" ";
+
+let SYSTEM = SYSTEM_BASE + `\nPATIENT: ${_pname}${_pid ? ' (ID: '+_pid+')' : ''}.`;
+
+// Fetch live patient data to personalise the chat
+if (_pid) {
+  fetch(API + '/vapi/patient-context/' + _pid)
+    .then(r => r.json())
+    .then(d => {
+      if (d && !d.error) {
+        SYSTEM = SYSTEM_BASE + `\nPATIENT PROFILE:\n- Name: ${d.patient_name || _pname}\n- Age: ${d.age || 'unknown'}\n- Risk: ${d.latest_risk || 'unknown'}\n- Medications: ${(d.current_medications||[]).join(', ') || 'none recorded'}\n- Last diagnosis: ${d.latest_diagnosis || 'none'}\n- Last visit: ${d.last_visit || 'none'}\nUse this information to give personalised answers.`;
+      }
+    }).catch(() => {});
+}
+// Dummy to avoid redeclaration:
+const __SYSTEM_ORIG = '';
+
+let vapi=null,callTimer=null,callSecs=0,hist=[],busy=false,voiceOn=false,recog=null;
+
+/* ── VAPI ── */
+async function startCall(){
+  const key=localStorage.getItem('vapi_public_key');
+  if(!key){addM('To enable voice calls, add VAPI Public Key in ASHA Portal → Settings (vapi.ai free tier).\nFor now answering in text — what do you need?','ai');return;}
+  await new Promise(r=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@vapi-ai/web@latest/dist/vapi.js';s.onload=r;s.onerror=r;document.head.appendChild(s);});
+  if(!window.Vapi){addM('VAPI SDK unavailable — check internet.','ai');return;}
+  try{
+    if(!vapi){
+      vapi=new window.Vapi(key);
+      vapi.on('speech-start',()=>setS('🎙 Speaking…',true));
+      vapi.on('speech-end',()=>setS('👂 Listening…',true));
+      vapi.on('call-end',()=>handleEnd());
+      vapi.on('message',m=>{
+        if(m.type==='transcript'&&m.role==='assistant'&&m.transcript)addM(m.transcript,'ai');
+        if(m.type==='tool-call-result')addTool('🔧 Tool used: '+JSON.stringify(m).slice(0,80));
+      });
+      vapi.on('error',e=>{addM('Call error: '+(e?.message||'check keys'),'ai');handleEnd();});
+    }
+    let cfg=null;
+    try{const r=await fetch(API+'/vapi/agent-config/'+ROLE+'?lang='+LANG.split('-')[0]);const d=await r.json();if(d.config)cfg=d.config;}catch(e){}
+    await vapi.start(cfg?{assistant:cfg}:{assistantId:localStorage.getItem('vapi_assistant_id')});
+    document.getElementById('call-bar').classList.add('show');
+    document.getElementById('call-btn').style.display='none';
+    document.getElementById('end-btn').style.display='flex';
+    setS('📞 Active',true);callSecs=0;
+    callTimer=setInterval(()=>{callSecs++;const m=Math.floor(callSecs/60),s=(callSecs%60).toString().padStart(2,'0');document.getElementById('call-timer').textContent=m+':'+s;},1000);
+  }catch(e){addM('Could not start call: '+e.message,'ai');}
+}
+function endCall(){if(vapi){try{vapi.stop();}catch(e){}}speechSynthesis.cancel();handleEnd();}
+function handleEnd(){clearInterval(callTimer);document.getElementById('call-bar').classList.remove('show');document.getElementById('call-btn').style.display='flex';document.getElementById('end-btn').style.display='none';setS('Ready',false);}
+function setS(t,a){document.getElementById('sb-txt').textContent=t;document.getElementById('sb').className='sb '+(a?'sb-c':'sb-r');}
+
+/* ── CHAT ── */
+function addM(text,role){
+  const c=document.getElementById('chat'),ts=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+  const d=document.createElement('div');d.className='msg '+(role==='user'?'user':'');
+  const fmt=text.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/
+/g,'<br>');
+  d.innerHTML=`<div class="av ${role==='user'?'av-u':'av-ai'}">${role==='user'?'👤':'🤖'}</div><div><div class="bubble">${fmt}</div><div class="ts">${ts}</div></div>`;
+  c.appendChild(d);c.scrollTop=c.scrollHeight;
+}
+function addTool(t){const c=document.getElementById('chat'),d=document.createElement('div');d.className='tool-card';d.textContent=t;c.appendChild(d);c.scrollTop=c.scrollHeight;}
+function showT(){const c=document.getElementById('chat'),d=document.createElement('div');d.className='msg typing';d.id='ty';d.innerHTML='<div class="av av-ai">🤖</div><div class="bubble"><div class="td"></div><div class="td"></div><div class="td"></div></div>';c.appendChild(d);c.scrollTop=c.scrollHeight;}
+function hideT(){const e=document.getElementById('ty');if(e)e.remove();}
+function showQRs(){document.getElementById('qrs').innerHTML=QRS.map(q=>`<button class="qr" onclick="sendQ('${q.replace(/'/g,\"\\'\")}')">${q}</button>`).join('');}
+function sendQ(t){document.getElementById('inp').value=t;send();}
+async function send(){
+  const el=document.getElementById('inp'),text=el.value.trim();
+  if(!text||busy)return;el.value='';addM(text,'user');hist.push({role:'user',content:text});
+  document.getElementById('qrs').innerHTML='';busy=true;showT();
+  try{
+    const r=await fetch(API+'/chat',{method:'POST',headers:getAuthHeader(),
+      body:JSON.stringify({system:SYSTEM,messages:hist.slice(-8),max_tokens:800,role:ROLE})});
+    const d=await r.json();const rep=d.content?.[0]?.text||'';hideT();
+    if(rep){addM(rep,'ai');hist.push({role:'assistant',content:rep});
+      if(LANG.startsWith('kn')&&/[ಕ-ೲ]/.test(rep)){const u=new SpeechSynthesisUtterance(rep.replace(/<[^>]*>/g,'').slice(0,250));u.lang='kn-IN';u.rate=0.9;speechSynthesis.speak(u);}
+    }
+  }catch{
+    try{const r2=await fetch(API+'/diagnose/',{method:'POST',headers:getAuthHeader(),body:JSON.stringify({symptoms:text})});
+      const d2=await r2.json();hideT();const rep=d2.summary||d2.clinical_summary||d2.diagnosis||'Please consult a doctor.';
+      addM(rep+'\n\n*AI-assisted — consult doctor.*','ai');hist.push({role:'assistant',content:rep});
+    }catch{hideT();addM('Offline — please check your connection or try voice call.','ai');}
+  }finally{busy=false;showQRs();}
+}
+function toggleVoice(){
+  if(voiceOn){if(recog)recog.stop();return;}
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){addM('Voice input works in Chrome. Please use Chrome browser.','ai');return;}
+  recog=new SR();recog.lang=LANG;
+  recog.onstart=()=>{voiceOn=true;document.getElementById('vbtn').classList.add('active');};
+  recog.onresult=e=>{document.getElementById('inp').value=e.results[0][0].transcript;send();};
+  recog.onend=()=>{voiceOn=false;document.getElementById('vbtn').classList.remove('active');};
+  recog.start();
+}
+function clearChat(){hist=[];document.getElementById('chat').innerHTML='';document.getElementById('qrs').innerHTML='';init();}
+function init(){showQRs();}
+document.documentElement.setAttribute('data-theme',localStorage.getItem('sahayak_theme')||'dark');
+let _initDone=false;
+function safeInit(){if(_initDone)return;const c=document.getElementById('chat');if(!c)return;_initDone=true;init();}
+if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',safeInit);}else{safeInit();}
+window.addEventListener('load',safeInit);
+setTimeout(safeInit,200);
+</script>
+</body>
+</html>

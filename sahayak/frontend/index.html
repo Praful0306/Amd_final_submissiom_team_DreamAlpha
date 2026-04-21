@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sahayak AI — Intelligent Health Assistant for Rural India</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+/* ── Root ─────────────────────────────────────────────────── */
+:root {
+  --or:#e35a2c; --orl:#f97316; --pale:#fff7f4; --or-b:rgba(227,90,44,.14);
+  --text:#1a1a1a; --muted:#6b7280; --hint:#9ca3af;
+  --border:rgba(0,0,0,.065); --shadow:0 12px 40px -8px rgba(0,0,0,.08);
+  --t:all .35s cubic-bezier(.23,1,.32,1); --r:18px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Outfit',sans-serif;background:#fff;color:var(--text);overflow-x:hidden}
+
+/* ── Animated background orbs ─────────────────────────────── */
+.bg-orb{position:fixed;border-radius:50%;pointer-events:none;z-index:-1;filter:blur(80px)}
+.orb1{width:700px;height:700px;top:-200px;right:-150px;background:radial-gradient(circle,rgba(227,90,44,.09),transparent 65%)}
+.orb2{width:500px;height:500px;bottom:-100px;left:-100px;background:radial-gradient(circle,rgba(249,115,22,.06),transparent 70%)}
+
+/* ── Navbar ──────────────────────────────────────────────── */
+nav{position:sticky;top:0;z-index:900;height:66px;background:rgba(255,255,255,.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 4rem}
+.nav-brand{display:flex;align-items:center;gap:.625rem;font-size:1.25rem;font-weight:800;letter-spacing:-.3px;text-decoration:none;color:var(--text)}
+.nav-logo-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--or),var(--orl));border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-ai{color:var(--or)}
+.nav-links{display:flex;align-items:center;gap:2.5rem;list-style:none}
+.nav-links a{text-decoration:none;color:var(--muted);font-size:.9375rem;font-weight:500;transition:var(--t)}
+.nav-links a:hover{color:var(--or)}
+.nav-actions{display:flex;align-items:center;gap:.875rem}
+.offline-dot{display:flex;align-items:center;gap:.375rem;font-size:.75rem;font-weight:600;color:#15803d;background:rgba(22,163,74,.07);border:1px solid rgba(22,163,74,.2);padding:5px 12px;border-radius:100px}
+.dot-pulse{width:6px;height:6px;background:#16a34a;border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.8)}}
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.75rem 1.625rem;border-radius:100px;font-family:inherit;font-size:.9375rem;font-weight:700;cursor:pointer;border:none;text-decoration:none;transition:var(--t)}
+.btn-primary{background:var(--or);color:#fff;box-shadow:0 4px 18px rgba(227,90,44,.3)}
+.btn-primary:hover{background:#c94d23;transform:translateY(-2px);box-shadow:0 8px 28px rgba(227,90,44,.38)}
+.btn-outline{background:#fff;border:1.5px solid var(--border);color:var(--text)}
+.btn-outline:hover{border-color:var(--or);color:var(--or);background:var(--pale)}
+.btn-ghost{background:transparent;color:var(--text);padding:.625rem 1.25rem}
+.btn-ghost:hover{background:rgba(0,0,0,.03)}
+.btn-lg{padding:1.0625rem 2.375rem;font-size:1.0625rem}
+
+/* ── Hero ────────────────────────────────────────────────── */
+.hero{max-width:1200px;margin:0 auto;padding:6rem 2rem 4rem;display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center}
+.hero-tag{display:inline-flex;align-items:center;gap:.5rem;background:var(--pale);border:1px solid var(--or-b);color:var(--or);font-size:.75rem;font-weight:700;padding:.425rem 1rem;border-radius:100px;margin-bottom:1.625rem;text-transform:uppercase;letter-spacing:.06em}
+.hero-tag::before{content:'●';font-size:.55rem}
+h1{font-size:4rem;font-weight:800;line-height:1.08;letter-spacing:-2.5px;margin-bottom:1.5rem}
+h1 em{font-style:normal;color:var(--or)}
+.hero-sub{font-size:1.1rem;color:var(--muted);line-height:1.75;margin-bottom:2.25rem;max-width:480px}
+.hero-cta{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:2.5rem}
+.trust-row{display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap}
+.trust-item{display:flex;align-items:center;gap:.5rem;font-size:.8rem;color:var(--muted);font-weight:500}
+.trust-item svg{opacity:.5}
+
+/* Hero Right — floating dashboard cards */
+.hero-right{position:relative;height:500px}
+.hero-mockup{position:absolute;inset:0;background:linear-gradient(135deg,#fafafa,#fff);border:1px solid var(--border);border-radius:24px;box-shadow:0 32px 80px -16px rgba(0,0,0,.12);overflow:hidden}
+.mockup-header{background:#fff;border-bottom:1px solid var(--border);padding:.875rem 1.25rem;display:flex;align-items:center;gap:.625rem}
+.mockup-traffic{display:flex;gap:.4rem}
+.mockup-dot{width:10px;height:10px;border-radius:50%}
+.d-red{background:#ff5f57}
+.d-yellow{background:#ffbd2e}
+.d-green{background:#28c840}
+.mockup-title{font-size:.8rem;font-weight:600;color:var(--muted);margin-left:.5rem}
+.mockup-body{padding:1.25rem;display:flex;flex-direction:column;gap:1rem}
+.m-risk-card{background:linear-gradient(135deg,#fef2f2,#fff7f4);border:1px solid #fecaca;border-radius:14px;padding:1rem 1.25rem;display:flex;align-items:center;gap:.875rem}
+.m-risk-pill{background:#e35a2c;color:#fff;font-size:.65rem;font-weight:700;padding:3px 9px;border-radius:100px}
+.m-risk-name{font-weight:700;font-size:.9375rem}
+.m-risk-conf{font-size:.75rem;color:var(--muted);margin-top:1px}
+.m-chart-row{display:grid;grid-template-columns:1fr 1fr;gap:.875rem}
+.m-chart-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:.875rem}
+.m-chart-label{font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem}
+.m-chart-value{font-size:1.375rem;font-weight:800;letter-spacing:-1px;margin-bottom:.25rem}
+.m-chart-change{font-size:.7rem;font-weight:600}
+.m-green{color:#16a34a}
+.m-red{color:#dc2626}
+.m-chart-bar{height:32px;display:flex;align-items:flex-end;gap:3px;margin-top:.5rem}
+.m-bar{border-radius:3px 3px 0 0;background:var(--or);opacity:.25;transition:all .5s}
+.m-bar.active{opacity:1}
+.m-stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem}
+.m-stat-mini{background:#fff;border:1px solid var(--border);border-radius:10px;padding:.75rem;text-align:center}
+.m-stat-val{font-size:1.1rem;font-weight:800;letter-spacing:-.5px}
+.m-stat-lbl{font-size:.65rem;color:var(--muted);margin-top:2px}
+
+/* Floating badge overlays on hero */
+.hero-float{position:absolute;background:#fff;border:1px solid var(--border);border-radius:14px;padding:.875rem 1.125rem;box-shadow:0 12px 32px -8px rgba(0,0,0,.1);display:flex;align-items:center;gap:.75rem;animation:floatY 4s ease-in-out infinite}
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.hf1{top:-1.5rem;right:2rem;animation-delay:0s}
+.hf2{bottom:5rem;left:-2rem;animation-delay:1.5s}
+.float-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.fi-green{background:rgba(22,163,74,.08);color:#16a34a}
+.fi-or{background:var(--pale);color:var(--or)}
+.float-val{font-size:1.0625rem;font-weight:800;letter-spacing:-.5px}
+.float-lbl{font-size:.7rem;color:var(--muted)}
+
+/* ── Mission Band ────────────────────────────────────────── */
+.mission-band{background:var(--text);color:#fff;padding:1.5rem 4rem}
+.mission-band-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:2rem;flex-wrap:wrap}
+.mission-stat{text-align:center}
+.mission-num{font-size:2rem;font-weight:800;letter-spacing:-1px;color:var(--or)}
+.mission-lbl{font-size:.8rem;color:rgba(255,255,255,.55);margin-top:.2rem}
+.mission-divider{width:1px;height:48px;background:rgba(255,255,255,.1)}
+
+/* ── Section base ────────────────────────────────────────── */
+.section{padding:5rem 2rem;max-width:1200px;margin:0 auto}
+.s-label{font-size:.7rem;font-weight:700;letter-spacing:.12em;color:var(--or);text-transform:uppercase;margin-bottom:.75rem;display:block}
+.s-title{font-size:2.75rem;font-weight:800;letter-spacing:-1.5px;line-height:1.12;margin-bottom:1rem}
+.s-sub{font-size:1rem;color:var(--muted);line-height:1.75;max-width:560px;margin-bottom:3rem}
+.text-center{text-align:center}
+.text-center .s-sub{margin-left:auto;margin-right:auto}
+
+/* ── Problem Section ─────────────────────────────────────── */
+.problem-grid{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center}
+.problem-stats{display:flex;flex-direction:column;gap:1.5rem}
+.ps-item{display:flex;gap:1.25rem;align-items:flex-start}
+.ps-num-wrap{flex-shrink:0}
+.ps-num{font-size:2.5rem;font-weight:800;letter-spacing:-1.5px;color:var(--or);line-height:1}
+.ps-unit{font-size:.875rem;color:var(--muted);font-weight:500}
+.ps-label{font-size:.9375rem;font-weight:600;margin-bottom:.25rem}
+.ps-desc{font-size:.875rem;color:var(--muted);line-height:1.65}
+.problem-visual{position:relative;background:linear-gradient(160deg,#1a1a1a,#2d1a10);border-radius:28px;padding:2.5rem;overflow:hidden}
+.pv-inner{position:relative;z-index:1}
+.pv-quote{font-size:1.125rem;color:rgba(255,255,255,.85);line-height:1.75;font-style:italic;margin-bottom:2rem;border-left:3px solid var(--or);padding-left:1.25rem}
+.pv-person{display:flex;align-items:center;gap:.875rem}
+.pv-avatar{width:44px;height:44px;background:linear-gradient(135deg,var(--or),var(--orl));border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:1rem}
+.pv-name{color:#fff;font-weight:600;font-size:.9375rem}
+.pv-location{color:rgba(255,255,255,.45);font-size:.8rem}
+.pv-glow{position:absolute;top:-80px;right:-80px;width:300px;height:300px;background:radial-gradient(circle,rgba(227,90,44,.3),transparent 65%);pointer-events:none}
+
+/* ── Features Grid ───────────────────────────────────────── */
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem}
+.feat-card{background:#fff;border:1px solid var(--border);border-radius:22px;padding:2rem;transition:var(--t)}
+.feat-card:hover{transform:translateY(-6px);border-color:var(--or-b);box-shadow:0 24px 60px -12px rgba(227,90,44,.1)}
+.feat-card.feat-accent{background:linear-gradient(135deg,var(--or),var(--orl));border:none}
+.feat-card.feat-accent .feat-title,.feat-card.feat-accent .feat-desc,.feat-card.feat-accent .feat-icon{color:#fff}
+.feat-card.feat-accent .feat-icon{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.2)}
+.feat-icon{width:48px;height:48px;border-radius:14px;background:var(--pale);border:1px solid var(--or-b);display:flex;align-items:center;justify-content:center;color:var(--or);margin-bottom:1.375rem;flex-shrink:0}
+.feat-title{font-size:1.0625rem;font-weight:700;margin-bottom:.625rem;letter-spacing:-.2px}
+.feat-desc{font-size:.875rem;color:var(--muted);line-height:1.7}
+.feat-tag{display:inline-block;margin-top:1rem;font-size:.7rem;font-weight:700;background:rgba(255,255,255,.15);color:rgba(255,255,255,.9);padding:3px 10px;border-radius:100px}
+
+/* ── How It Works ────────────────────────────────────────── */
+.hiw-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;position:relative}
+.hiw-grid::before{content:'';position:absolute;top:32px;left:10%;right:10%;height:1px;background:repeating-linear-gradient(90deg,var(--or-b),var(--or-b) 8px,transparent 8px,transparent 18px);z-index:0}
+.hiw-step{position:relative;z-index:1;text-align:center}
+.hiw-num{width:64px;height:64px;border-radius:50%;background:var(--or);color:#fff;font-size:1.375rem;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;box-shadow:0 8px 24px rgba(227,90,44,.3)}
+.hiw-icon-ring{width:64px;height:64px;border-radius:50%;border:2px solid var(--or-b);background:var(--pale);color:var(--or);display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem}
+.hiw-title{font-size:.9375rem;font-weight:700;margin-bottom:.5rem;letter-spacing:-.2px}
+.hiw-desc{font-size:.8125rem;color:var(--muted);line-height:1.65}
+
+/* ── Platform Preview ─────────────────────────────────────── */
+.preview-section{background:var(--text);padding:5rem 2rem;margin:3rem 0}
+.preview-inner{max-width:1200px;margin:0 auto}
+.preview-inner .s-title,.preview-inner .s-label{color:#fff}
+.preview-inner .s-sub{color:rgba(255,255,255,.5)}
+.preview-tabs{display:flex;gap:.5rem;margin-bottom:2.5rem;flex-wrap:wrap}
+.prev-tab{padding:.5625rem 1.25rem;border:1px solid rgba(255,255,255,.12);border-radius:100px;background:rgba(255,255,255,.05);color:rgba(255,255,255,.55);font-size:.8125rem;font-weight:600;cursor:pointer;transition:var(--t);font-family:inherit}
+.prev-tab.active{background:var(--or);border-color:var(--or);color:#fff}
+.prev-tab:hover:not(.active){background:rgba(255,255,255,.1);color:#fff}
+.preview-frame{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:24px;padding:1.5rem;display:grid;grid-template-columns:220px 1fr;gap:1.25rem;min-height:380px}
+.prev-sidebar{border-right:1px solid rgba(255,255,255,.08);padding-right:1.25rem}
+.prev-brand{display:flex;align-items:center;gap:.5rem;font-weight:700;color:#fff;font-size:.875rem;margin-bottom:1.5rem}
+.prev-nav-item{display:flex;align-items:center;gap:.625rem;padding:.5rem .75rem;border-radius:8px;font-size:.8rem;color:rgba(255,255,255,.5);margin-bottom:2px}
+.prev-nav-item.active{background:rgba(227,90,44,.2);color:var(--or)}
+.prev-nav-item svg{width:14px;height:14px;flex-shrink:0}
+.prev-content{display:flex;flex-direction:column;gap:.875rem}
+.prev-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.875rem}
+.prev-stat{background:rgba(255,255,255,.06);border-radius:10px;padding:.875rem;border:1px solid rgba(255,255,255,.07)}
+.prev-stat-val{font-size:1.375rem;font-weight:800;color:#fff;letter-spacing:-.5px}
+.prev-stat-lbl{font-size:.7rem;color:rgba(255,255,255,.4);margin-top:2px}
+.prev-chart-area{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:1rem;height:140px;display:flex;flex-direction:column}
+.prev-chart-title{font-size:.75rem;font-weight:700;color:rgba(255,255,255,.7);margin-bottom:.75rem}
+.prev-bars{display:flex;align-items:flex-end;gap:6px;flex:1}
+.prev-bar{flex:1;border-radius:4px 4px 0 0;background:var(--or);opacity:.5}
+.prev-bar.hi{opacity:1}
+
+/* ── Trust Section ───────────────────────────────────────── */
+.trust-section{padding:4rem 2rem;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.trust-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;gap:2rem}
+.trust-card{display:flex;gap:1.25rem;align-items:flex-start}
+.trust-icon-box{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.5rem}
+.tc-1{background:rgba(59,130,246,.08)}
+.tc-2{background:rgba(22,163,74,.08)}
+.tc-3{background:var(--pale)}
+.trust-card-title{font-size:.9375rem;font-weight:700;margin-bottom:.35rem}
+.trust-card-text{font-size:.8125rem;color:var(--muted);line-height:1.65}
+
+/* ── Testimonials ────────────────────────────────────────── */
+.testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
+.testi-card{background:#fff;border:1px solid var(--border);border-radius:22px;padding:1.75rem;transition:var(--t)}
+.testi-card:hover{box-shadow:var(--shadow)}
+.testi-stars{color:var(--or);font-size:.875rem;margin-bottom:1rem;letter-spacing:2px}
+.testi-text{font-size:.9375rem;line-height:1.75;color:var(--text);margin-bottom:1.25rem;font-style:italic}
+.testi-person{display:flex;align-items:center;gap:.75rem}
+.testi-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--or),var(--orl));color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.875rem}
+.testi-name{font-weight:700;font-size:.875rem}
+.testi-loc{font-size:.75rem;color:var(--muted)}
+
+/* ── CTA Section ─────────────────────────────────────────── */
+.cta-section{margin:0 2rem 5rem;background:linear-gradient(135deg,#1a1a1a 0%,#2d1a10 60%,#1a1a1a 100%);border-radius:32px;padding:5rem 4rem;text-align:center;position:relative;overflow:hidden}
+.cta-glow1{position:absolute;top:-100px;right:-100px;width:450px;height:450px;background:radial-gradient(circle,rgba(227,90,44,.25),transparent 65%);pointer-events:none}
+.cta-glow2{position:absolute;bottom:-80px;left:-80px;width:350px;height:350px;background:radial-gradient(circle,rgba(249,115,22,.15),transparent 70%);pointer-events:none}
+.cta-section h2{font-size:3rem;font-weight:800;color:#fff;letter-spacing:-1.5px;line-height:1.1;margin-bottom:1rem;position:relative;z-index:1}
+.cta-section p{font-size:1.0625rem;color:rgba(255,255,255,.6);margin-bottom:2.5rem;position:relative;z-index:1}
+.cta-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;position:relative;z-index:1}
+.cta-note{font-size:.8rem;color:rgba(255,255,255,.35);margin-top:1.25rem;position:relative;z-index:1}
+
+/* ── Footer ──────────────────────────────────────────────── */
+footer{background:#fff;border-top:1px solid var(--border);padding:3rem 4rem}
+.footer-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:3rem}
+.footer-brand p{font-size:.8125rem;color:var(--muted);margin-top:.75rem;line-height:1.65;max-width:260px}
+.footer-col-title{font-size:.8125rem;font-weight:700;margin-bottom:1rem;letter-spacing:.02em}
+.footer-links{list-style:none;display:flex;flex-direction:column;gap:.5rem}
+.footer-links a{text-decoration:none;color:var(--muted);font-size:.8125rem;transition:var(--t)}
+.footer-links a:hover{color:var(--or)}
+.footer-bottom{border-top:1px solid var(--border);margin-top:2.5rem;padding-top:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+.footer-bottom p{font-size:.75rem;color:var(--hint)}
+.footer-warning{font-size:.7rem;color:var(--hint);max-width:480px;line-height:1.6}
+
+/* ── Animations ──────────────────────────────────────────── */
+@keyframes slideUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+.au{animation:slideUp .8s cubic-bezier(.23,1,.32,1) both}
+.d1{animation-delay:.1s}.d2{animation-delay:.2s}.d3{animation-delay:.3s}.d4{animation-delay:.4s}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media(max-width:1024px){
+  .hero{grid-template-columns:1fr;gap:3rem;padding:4rem 2rem 3rem}
+  .hero-right{height:380px}
+  .feat-grid{grid-template-columns:1fr 1fr}
+  nav{padding:0 1.5rem}
+  .nav-links{display:none}
+}
+@media(max-width:768px){
+  h1{font-size:2.75rem;letter-spacing:-1.5px}
+  .s-title{font-size:2rem}
+  .hiw-grid{grid-template-columns:1fr 1fr}
+  .problem-grid,.trust-inner,.testi-grid{grid-template-columns:1fr}
+  .feat-grid{grid-template-columns:1fr}
+  .preview-frame{grid-template-columns:1fr}
+  .prev-sidebar{display:none}
+  footer{padding:2.5rem 1.5rem}
+  .footer-inner{grid-template-columns:1fr 1fr}
+  .cta-section{padding:3rem 2rem}
+  .cta-section h2{font-size:2rem}
+  .mission-band{padding:1.5rem}
+  .prev-row{grid-template-columns:1fr 1fr}
+}
+  </style>
+</head>
+<body>
+
+<div class="bg-orb orb1"></div>
+<div class="bg-orb orb2"></div>
+
+<!-- ── NAVBAR ─────────────────────────────────────────────── -->
+<nav>
+  <a href="index.html" class="nav-brand">
+    <div class="nav-logo-icon">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 4v4m0 8v4M4 12h4m8 0h4" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/><circle cx="12" cy="12" r="3" fill="#fff"/></svg>
+    </div>
+    Sahayak <span class="logo-ai">AI</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#how-it-works">How It Works</a></li>
+    <li><a href="asha_demo.html" style="color:var(--or);font-weight:700">🎯 Live Demo</a></li>
+    <li><a href="asha_portal.html" style="color:var(--or);font-weight:700">ASHA Portal</a></li>
+    <li><a href="vitals.html">Vitals Analyzer</a></li>
+    <li><a href="#technology">Technology</a></li>
+  </ul>
+  <div class="nav-actions">
+    <div class="offline-dot"><span class="dot-pulse"></span>Offline-Ready</div>
+    <a href="auth.html" class="btn btn-ghost">Sign In</a>
+    <a href="auth.html#signup" class="btn btn-primary">Get Started Free</a>
+  </div>
+</nav>
+
+<!-- ── HERO ───────────────────────────────────────────────── -->
+<div class="hero">
+  <div>
+    <div class="hero-tag au">Sahayak AI 2.0 — AMD Slingshot Hackathon</div>
+    <h1 class="au d1">
+      Healthcare AI<br>built for <em>Bharat</em>,<br>not Silicon Valley.
+    </h1>
+    <p class="hero-sub au d2">
+      Voice-first, offline clinical AI assistant for ASHA workers and rural patients.
+      Powered by ICMR/WHO guidelines, LLaMA 70B, and AMD Ryzen AI — runs without internet.
+    </p>
+    <div class="hero-cta au d3">
+      <a href="asha_demo.html" class="btn btn-primary btn-lg">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+        🎯 Watch Live Demo
+      </a>
+      <a href="vitals.html" class="btn btn-outline btn-lg">
+        Vitals Analyzer →
+      </a>
+    </div>
+    <div class="trust-row au d4">
+      <div class="trust-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>No credit card needed</div>
+      <div class="trust-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Data stays on your device</div>
+      <div class="trust-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Works offline</div>
+    </div>
+  </div>
+
+  <!-- Hero right: live dashboard mockup -->
+  <div class="hero-right au d2">
+    <div class="hero-float hf1">
+      <div class="float-icon fi-green">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div>
+        <div class="float-val" style="color:#16a34a">LOW RISK</div>
+        <div class="float-lbl">AI Confidence: 87%</div>
+      </div>
+    </div>
+    <div class="hero-float hf2">
+      <div class="float-icon fi-or">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      </div>
+      <div>
+        <div class="float-val">Blood Sugar</div>
+        <div class="float-lbl">96 mg/dL — Normal</div>
+      </div>
+    </div>
+    <div class="hero-mockup">
+      <div class="mockup-header">
+        <div class="mockup-traffic">
+          <div class="mockup-dot d-red"></div>
+          <div class="mockup-dot d-yellow"></div>
+          <div class="mockup-dot d-green"></div>
+        </div>
+        <div class="mockup-title">Sahayak AI — Clinical Dashboard</div>
+      </div>
+      <div class="mockup-body">
+        <div class="m-risk-card">
+          <span class="m-risk-pill">MEDIUM RISK</span>
+          <div>
+            <div class="m-risk-name">Suspected Viral Fever</div>
+            <div class="m-risk-conf">Based on ICMR STG · 79% confidence</div>
+          </div>
+        </div>
+        <div class="m-chart-row">
+          <div class="m-chart-card">
+            <div class="m-chart-label">Blood Sugar (mg/dL)</div>
+            <div class="m-chart-value">126</div>
+            <div class="m-chart-change m-red">↑ 12 from last visit</div>
+            <div class="m-chart-bar">
+              <div class="m-bar" style="height:40%"></div>
+              <div class="m-bar" style="height:55%"></div>
+              <div class="m-bar" style="height:48%"></div>
+              <div class="m-bar" style="height:62%"></div>
+              <div class="m-bar active" style="height:78%"></div>
+            </div>
+          </div>
+          <div class="m-chart-card">
+            <div class="m-chart-label">Hemoglobin (g/dL)</div>
+            <div class="m-chart-value">11.2</div>
+            <div class="m-chart-change m-green">↑ 0.8 improved</div>
+            <div class="m-chart-bar">
+              <div class="m-bar" style="height:65%"></div>
+              <div class="m-bar" style="height:58%"></div>
+              <div class="m-bar" style="height:70%"></div>
+              <div class="m-bar" style="height:75%"></div>
+              <div class="m-bar active" style="height:85%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="m-stats-row">
+          <div class="m-stat-mini"><div class="m-stat-val">98%</div><div class="m-stat-lbl">SpO2</div></div>
+          <div class="m-stat-mini"><div class="m-stat-val">118/76</div><div class="m-stat-lbl">BP</div></div>
+          <div class="m-stat-mini"><div class="m-stat-val">38.4°C</div><div class="m-stat-lbl">Temp</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MISSION BAND ───────────────────────────────────────── -->
+<div class="mission-band">
+  <div class="mission-band-inner">
+    <div class="mission-stat"><div class="mission-num">120 Cr</div><div class="mission-lbl">Indians need affordable healthcare</div></div>
+    <div class="mission-divider"></div>
+    <div class="mission-stat"><div class="mission-num">65%</div><div class="mission-lbl">Live in rural areas — far from hospitals</div></div>
+    <div class="mission-divider"></div>
+    <div class="mission-stat"><div class="mission-num">1:11K</div><div class="mission-lbl">Doctor to patient ratio in rural India</div></div>
+    <div class="mission-divider"></div>
+    <div class="mission-stat"><div class="mission-num">₹0</div><div class="mission-lbl">Sahayak AI cost to rural communities</div></div>
+  </div>
+</div>
+
+<!-- ── THE PROBLEM ────────────────────────────────────────── -->
+<div class="section problem-grid">
+  <div>
+    <span class="s-label">Why Sahayak AI exists</span>
+    <h2 class="s-title">The healthcare<br>gap is a crisis.</h2>
+    <div class="problem-stats">
+      <div class="ps-item">
+        <div class="ps-num-wrap"><div class="ps-num">4.8 Cr</div><div class="ps-unit">ASHA Workers</div></div>
+        <div><div class="ps-label">Lack clinical decision support</div><div class="ps-desc">ASHA workers have basic training but no tool to help diagnose or triage — leading to missed and delayed treatment.</div></div>
+      </div>
+      <div class="ps-item">
+        <div class="ps-num-wrap"><div class="ps-num">72%</div><div class="ps-unit">No connectivity</div></div>
+        <div><div class="ps-label">Rural areas have no reliable internet</div><div class="ps-desc">Existing health apps require constant cloud connectivity — useless in the villages that need help most.</div></div>
+      </div>
+      <div class="ps-item">
+        <div class="ps-num-wrap"><div class="ps-num">8 Lac</div><div class="ps-unit">Annual deaths</div></div>
+        <div><div class="ps-label">Preventable with early diagnosis</div><div class="ps-desc">Malaria, TB, sepsis, pre-eclampsia — diseases that can be caught early but aren't, because of delayed care.</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="problem-visual">
+    <div class="pv-glow"></div>
+    <div class="pv-inner">
+      <p class="pv-quote">"I walk 8 km to visit patients. Before Sahayak AI, I had no way to know if a fever was malaria or typhoid. Now I get a structured triage in 30 seconds — in my own language."</p>
+      <div class="pv-person">
+        <div class="pv-avatar">S</div>
+        <div>
+          <div class="pv-name">Sunita Devi</div>
+          <div class="pv-location">ASHA Worker, Munger District, Bihar</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── FEATURES ────────────────────────────────────────────── -->
+<div id="features" style="background:#fafafa;padding:5rem 0">
+  <div class="section" style="padding-top:0;padding-bottom:0">
+    <div class="text-center">
+      <span class="s-label">Everything you need</span>
+      <h2 class="s-title">Clinical intelligence.<br>Built for the field.</h2>
+      <p class="s-sub">Every feature of Sahayak AI is designed to save time, reduce errors, and protect lives — for both patients and healthcare workers.</p>
+    </div>
+    <div class="feat-grid">
+      <div class="feat-card feat-accent">
+        <div class="feat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg></div>
+        <div class="feat-title">Voice-First, 10 Languages</div>
+        <div class="feat-desc">Speak symptoms in Hindi, Kannada, Tamil, Telugu, Marathi, Bengali and 4 more. Whisper AI transcribes locally on AMD NPU.</div>
+        <span class="feat-tag">100% Offline</span>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+        <div class="feat-title">ICMR / WHO RAG Engine</div>
+        <div class="feat-desc">Symptoms cross-referenced against 12 disease protocols stored locally using FAISS vector search. No cloud required.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+        <div class="feat-title">Structured Clinical Triage</div>
+        <div class="feat-desc">Instant risk level (Emergency/High/Medium/Low), confidence score, action items, and warning signs for every patient.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/></svg></div>
+        <div class="feat-title">AI Report Extraction (OCR)</div>
+        <div class="feat-desc">Upload any PDF, X-ray, blood test, or ECG report. LLaMA 70B automatically extracts all vitals, lab values, and history.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></div>
+        <div class="feat-title">AI-Generated Referral Reports</div>
+        <div class="feat-desc">Doctor-quality PDF reports with full history, charts, comparisons, medications. Download and share instantly.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/></svg></div>
+        <div class="feat-title">Secure Doctor Sharing</div>
+        <div class="feat-desc">Share your complete health history with any doctor via a one-time code. Doctor gets read-only access instantly.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── HOW IT WORKS ────────────────────────────────────────── -->
+<div id="how-it-works" class="section text-center">
+  <span class="s-label">Simple by design</span>
+  <h2 class="s-title">From symptoms to action<br>in under 30 seconds</h2>
+  <p class="s-sub">Designed for ASHA workers with basic training. No medical degree needed to use Sahayak AI.</p>
+  <div class="hiw-grid">
+    <div class="hiw-step">
+      <div class="hiw-num">1</div>
+      <div class="hiw-title">Register Patient</div>
+      <div class="hiw-desc">Add patient details, village, history. Takes 60 seconds.</div>
+    </div>
+    <div class="hiw-step">
+      <div class="hiw-num">2</div>
+      <div class="hiw-title">Speak or Type Symptoms</div>
+      <div class="hiw-desc">Use voice in local language or type. Upload existing reports too.</div>
+    </div>
+    <div class="hiw-step">
+      <div class="hiw-num">3</div>
+      <div class="hiw-title">AI Analyzes + Triages</div>
+      <div class="hiw-desc">LLaMA 70B cross-references ICMR/WHO guidelines. Returns structured risk assessment.</div>
+    </div>
+    <div class="hiw-step">
+      <div class="hiw-num">4</div>
+      <div class="hiw-title">Share Report + Refer</div>
+      <div class="hiw-desc">Download referral PDF. Share with any doctor using a secure code. Track all visits.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── PLATFORM PREVIEW ───────────────────────────────────── -->
+<div id="platform" class="preview-section">
+  <div class="preview-inner">
+    <span class="s-label">Platform overview</span>
+    <h2 class="s-title">Two portals. One mission.</h2>
+    <p class="s-sub">Patients manage their complete health history. Doctors access it with full AI-generated insights and charts.</p>
+    <div class="preview-tabs">
+      <button class="prev-tab active" onclick="switchPreview('patient',this)">Patient Portal</button>
+      <button class="prev-tab" onclick="switchPreview('doctor',this)">Doctor Portal</button>
+    </div>
+    <div class="preview-frame" id="preview-frame">
+      <div class="prev-sidebar">
+        <div class="prev-brand">
+          <div style="width:26px;height:26px;background:linear-gradient(135deg,#e35a2c,#f97316);border-radius:7px;display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 4v4m0 8v4M4 12h4m8 0h4" stroke="#fff" stroke-width="2.5"/></svg></div>
+          Sahayak AI
+        </div>
+        <div class="prev-nav-item active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span>Dashboard</span>
+        </div>
+        <div class="prev-nav-item" id="pn2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-4-4H8"/></svg><span id="pn2-txt">My Information</span></div>
+        <div class="prev-nav-item" id="pn3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16"/></svg><span id="pn3-txt">My Reports</span></div>
+        <div class="prev-nav-item" id="pn4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/></svg><span id="pn4-txt">Records</span></div>
+        <div class="prev-nav-item" id="pn5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/></svg><span id="pn5-txt">Diagnosis</span></div>
+      </div>
+      <div class="prev-content">
+        <div class="prev-row">
+          <div class="prev-stat"><div class="prev-stat-val">4</div><div class="prev-stat-lbl">Total Reports</div></div>
+          <div class="prev-stat"><div class="prev-stat-val">LOW</div><div class="prev-stat-lbl">Risk Level</div></div>
+          <div class="prev-stat"><div class="prev-stat-val">2</div><div class="prev-stat-lbl">Visits</div></div>
+          <div class="prev-stat"><div class="prev-stat-val">Mar 28</div><div class="prev-stat-lbl">Next Checkup</div></div>
+        </div>
+        <div class="prev-chart-area">
+          <div class="prev-chart-title">Blood Sugar Trend (mg/dL)</div>
+          <div class="prev-bars">
+            <div class="prev-bar" style="height:40%"></div>
+            <div class="prev-bar" style="height:55%"></div>
+            <div class="prev-bar" style="height:48%"></div>
+            <div class="prev-bar" style="height:72%"></div>
+            <div class="prev-bar hi" style="height:65%"></div>
+            <div class="prev-bar" style="height:60%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── TECHNOLOGY TRUST ───────────────────────────────────── -->
+<div id="technology" class="trust-section">
+  <div class="trust-inner">
+    <div class="trust-card">
+      <div class="trust-icon-box tc-1" style="font-size:1.25rem">🏛️</div>
+      <div>
+        <div class="trust-card-title">ICMR / WHO Guidelines</div>
+        <div class="trust-card-text">All clinical suggestions are cross-referenced against official Indian Council of Medical Research and WHO Standard Treatment Guidelines stored locally on-device.</div>
+      </div>
+    </div>
+    <div class="trust-card">
+      <div class="trust-icon-box tc-2">⚡</div>
+      <div>
+        <div class="trust-card-title">AMD Ryzen AI NPU</div>
+        <div class="trust-card-text">AI models run locally on AMD Neural Processing Unit. Whisper ASR and RAG inference require zero cloud connectivity — true offline intelligence at the edge.</div>
+      </div>
+    </div>
+    <div class="trust-card">
+      <div class="trust-icon-box tc-3">🔒</div>
+      <div>
+        <div class="trust-card-title">Zero Cloud Sync of PII</div>
+        <div class="trust-card-text">Patient data is stored only in local SQLite. Nothing leaves the device unless the patient explicitly shares a one-time doctor access code.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── TESTIMONIALS ───────────────────────────────────────── -->
+<div class="section text-center" style="padding-bottom:0">
+  <span class="s-label">Community voices</span>
+  <h2 class="s-title">Trusted by those on<br>the frontlines of rural health</h2>
+  <div class="testi-grid" style="margin-top:2.5rem;text-align:left">
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text">"Sahayak AI told me the patient's fever was a pattern for malaria. I sent her to the PHC and it turned out to be P. falciparum. Without this tool, we may have missed the window."</p>
+      <div class="testi-person">
+        <div class="testi-avatar">A</div>
+        <div><div class="testi-name">Asha Kumari</div><div class="testi-loc">ASHA Worker · Muzaffarpur, Bihar</div></div>
+      </div>
+    </div>
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text">"My previous 3 doctors all gave different medicines. When I showed the Sahayak AI report to a new doctor, she immediately understood my complete history. She said the report was better than hospital records."</p>
+      <div class="testi-person">
+        <div class="testi-avatar">R</div>
+        <div><div class="testi-name">Ravi Shankar</div><div class="testi-loc">Patient · Kalaburagi, Karnataka</div></div>
+      </div>
+    </div>
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text">"The blood sugar and hemoglobin charts across all my visits — in one screen — helped me understand my own health for the first time. The doctor was also impressed."</p>
+      <div class="testi-person">
+        <div class="testi-avatar">P</div>
+        <div><div class="testi-name">Priya Nair</div><div class="testi-loc">Patient · Palakkad, Kerala</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CTA ────────────────────────────────────────────────── -->
+<div class="section" style="padding-bottom:0">
+  <div class="cta-section">
+    <div class="cta-glow1"></div>
+    <div class="cta-glow2"></div>
+    <h2>Your health story,<br>understood by AI.</h2>
+    <p>Register in 60 seconds. Upload your first report. Get instant AI analysis.</p>
+    <div class="cta-btns">
+      <a href="auth.html" class="btn btn-primary btn-lg">
+        Create Patient Account — Free
+      </a>
+      <a href="auth.html?role=doctor" class="btn btn-outline btn-lg" style="border-color:rgba(255,255,255,.2);color:#fff">
+        I'm a Doctor →
+      </a>
+    </div>
+    <div class="cta-note">No cloud. No data selling. All patient records stay on your device.</div>
+  </div>
+</div>
+
+<!-- ── FOOTER ─────────────────────────────────────────────── -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="nav-brand" style="font-size:1.0625rem">
+        <div class="nav-logo-icon" style="width:28px;height:28px;border-radius:8px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 4v4m0 8v4M4 12h4m8 0h4" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>
+        </div>
+        Sahayak <span class="logo-ai">AI</span>
+      </div>
+      <p>Offline, voice-first clinical AI assistant for ASHA workers and rural patients in India. Powered by AMD Ryzen AI and ICMR/WHO guidelines.</p>
+    </div>
+    <div>
+      <div class="footer-col-title">Patient</div>
+      <ul class="footer-links">
+        <li><a href="auth.html">Register Free</a></li>
+        <li><a href="patient.html">Dashboard</a></li>
+        <li><a href="#">Upload Reports</a></li>
+        <li><a href="#">Share with Doctor</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Doctor</div>
+      <ul class="footer-links">
+        <li><a href="auth.html?role=doctor">Doctor Portal</a></li>
+        <li><a href="#">Patient Records</a></li>
+        <li><a href="#">Access via Code</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Technology</div>
+      <ul class="footer-links">
+        <li><a href="#">AMD Ryzen AI</a></li>
+        <li><a href="#">LLaMA 3.1 70B</a></li>
+        <li><a href="#">ICMR Guidelines</a></li>
+        <li><a href="#">Offline Architecture</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom" style="max-width:1200px;margin:0 auto">
+    <p>© 2026 Sahayak AI — Team DreamAlpha · AMD Slingshot Hackathon</p>
+    <p class="footer-warning">⚠ AI-assisted triage only — not a substitute for qualified medical consultation. Always refer emergency cases to a doctor immediately.</p>
+  </div>
+</footer>
+
+<script>
+function switchPreview(type, btn) {
+  document.querySelectorAll('.prev-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  const isDoctor = type === 'doctor';
+  document.getElementById('pn2-txt').textContent = isDoctor ? 'My Patients' : 'My Information';
+  document.getElementById('pn3-txt').textContent = isDoctor ? 'Patient Access' : 'My Reports';
+  document.getElementById('pn4-txt').textContent = isDoctor ? 'Records' : 'Checkup History';
+  document.getElementById('pn5-txt').textContent = isDoctor ? 'Profile' : 'AI Diagnosis';
+}
+
+// Intersection observer for scroll animations
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.style.opacity = 1; });
+}, { threshold: 0.1 });
+document.querySelectorAll('.feat-card,.hiw-step,.testi-card,.trust-card').forEach(el => {
+  el.style.opacity = 0;
+  el.style.transform = 'translateY(20px)';
+  el.style.transition = 'opacity .6s ease, transform .6s ease';
+  obs.observe(el);
+});
+const obs2 = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.style.opacity = 1; e.target.style.transform = 'translateY(0)'; }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.feat-card,.hiw-step,.testi-card,.trust-card').forEach(el => obs2.observe(el));
+</script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+.uv/
+*.egg-info/
+dist/
+build/
+
+# Environment — NEVER commit secrets
+.env
+
+# Database — never commit patient data
+*.db
+*.sqlite
+*.sqlite3
+
+# FAISS index (regenerated from data/)
+data/faiss_index/
+
+# HuggingFace cache (large)
+.hf_cache/
+
+# Static generated files
+static/audio/
+static/referrals/
+static/reports/
+
+# Zip archives — never in repo
+*.zip
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Logs
+*.log

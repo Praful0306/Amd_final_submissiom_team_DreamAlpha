@@ -1,0 +1,59 @@
+# Sahayak AI — Complete requirements (all dependencies)
+
+# Web framework
+fastapi>=0.109.2
+uvicorn[standard]>=0.27.1
+python-multipart>=0.0.9
+
+# Database
+sqlalchemy>=2.0.27
+
+# Auth
+passlib[bcrypt]>=1.7.4
+python-jose[cryptography]>=3.3.0
+
+# Validation & config
+pydantic>=2.6.1
+python-dotenv>=1.0.1
+
+# AWS Bedrock (two models, two key pairs)
+boto3>=1.34.0
+botocore>=1.34.0
+
+# Groq fallback
+groq>=0.9.0
+openai>=1.12.0
+
+# AI / ML (RAG — runs on AMD NPU in production)
+faiss-cpu>=1.9.0
+sentence-transformers>=2.3.1
+
+# PDF extraction (server-side, reliable)
+PyMuPDF>=1.23.0
+pytesseract>=0.3.10
+Pillow>=10.0.0
+
+# Document & PDF generation
+fpdf2>=2.7.8
+
+# TTS
+gTTS>=2.5.1
+
+# Utilities
+aiofiles>=23.2.1
+numpy>=1.26.4
+firebase-admin>=6.4.0
+
+# HTTP client (used for Make.com webhooks and VAPI calls)
+httpx>=0.27.0
+twilio>=9.3.0
+
+# EasyOCR (multilingual — Kannada, Hindi, English)
+# Install separately if not using Gemini: pip install easyocr
+# easyocr>=1.7.0   # uncomment if NOT using Gemini for OCR
+
+# Supabase client (government DB sync)
+supabase>=2.15.3
+
+# AWS Lambda handler (optional — for serverless deployment)
+# mangum>=0.17.0    # uncomment for Lambda deployment

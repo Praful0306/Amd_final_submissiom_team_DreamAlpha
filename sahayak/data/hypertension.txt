@@ -1,0 +1,58 @@
+HYPERTENSION — ICMR / NHM India Guidelines
+
+BLOOD PRESSURE CLASSIFICATION (ICMR 2022)
+Normal: < 120/80 mmHg
+Elevated: 120–129 / < 80 mmHg
+Stage 1 HTN: 130–139 / 80–89 mmHg
+Stage 2 HTN: ≥ 140 / ≥ 90 mmHg
+Hypertensive Urgency: ≥ 180/110 mmHg (no organ damage)
+Hypertensive Emergency: ≥ 180/120 mmHg with organ damage (chest pain, altered sensorium, severe headache, visual changes)
+
+CLINICAL FEATURES
+Most hypertension is ASYMPTOMATIC ("silent killer").
+Symptoms when severe: headache (occipital, morning), visual disturbances, nausea/vomiting, palpitations, nose bleeds (epistaxis).
+Complications: stroke, myocardial infarction, heart failure, renal failure, retinopathy.
+
+RISK FACTORS
+Non-modifiable: age, male sex, family history.
+Modifiable: obesity, high salt diet, physical inactivity, smoking, alcohol, stress.
+Secondary causes: kidney disease, thyroid disorders, adrenal tumours.
+
+DIAGNOSIS
+Measure BP on 2–3 separate occasions (2 weeks apart) for confirmation.
+Use validated digital BP monitor; correct cuff size.
+Both arms on first visit — use higher reading.
+Check for target organ damage: urine (proteinuria), creatinine, ECG, fundus.
+
+TREATMENT
+Non-pharmacological (all stages): DASH diet (low salt ≤ 5g/day, fruits, vegetables), weight loss (BMI target 18.5–24.9), exercise 30 min/day, stop smoking/alcohol.
+Stage 1 with low CV risk: lifestyle × 3–6 months, then drug if no response.
+Stage 1 with high CV risk / Stage 2: Drug therapy + lifestyle.
+
+First-line drugs (NHM free supply):
+Amlodipine 5–10 mg OD (CCB, first choice)
+Losartan 50–100 mg OD (ARB, especially with diabetes/proteinuria)
+Atenolol 50–100 mg OD (beta-blocker — avoid in asthma)
+Hydrochlorothiazide 12.5–25 mg OD (thiazide)
+
+Target: BP < 130/80 mmHg (< 130/80 in diabetes/CKD).
+
+HYPERTENSIVE EMERGENCY PROTOCOL
+BP ≥ 180/120 + organ damage → IV Labetalol or IV Nicardipine (hospital only) → Refer IMMEDIATELY.
+Do NOT lower BP too fast (risk of stroke from hypoperfusion).
+
+RED FLAGS
+- BP ≥ 180/120 mmHg on any reading
+- Severe headache + altered sensorium
+- Chest pain / breathlessness with high BP
+- Visual disturbances (papilloedema)
+- Pregnancy with BP ≥ 140/90 (pre-eclampsia)
+
+ASHA ACTION
+1. Screen BP for all adults > 30 years, and all pregnant women.
+2. BP ≥ 140/90 on two readings → refer to PHC.
+3. Ensure daily antihypertensive medication adherence.
+4. Counsel on salt reduction: no added salt, avoid pickles/papads/fast food.
+5. Encourage daily walking and weight reduction.
+6. BP ≥ 180/120 → immediate referral (do not wait).
+7. Pregnancy + high BP → same-day referral to PHC/hospital.

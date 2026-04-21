@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Sahayak AI — Sign In</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{--or:#e35a2c;--bg:#0f0f13;--surface:#1a1a22;--surface2:#22222e;
+      --border:rgba(255,255,255,.08);--text:#f1f1f3;--muted:#8b8b9e;--green:#22c55e;--red:#ef4444}
+    body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+      min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem}
+    .wrap{width:100%;max-width:440px}
+    .brand{text-align:center;margin-bottom:2rem}
+    .brand-logo{width:56px;height:56px;background:linear-gradient(135deg,var(--or),#f47a50);
+      border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem}
+    .brand-name{font-size:1.6rem;font-weight:800;letter-spacing:-.5px}
+    .brand-name span{color:var(--or)}
+    .brand-sub{color:var(--muted);font-size:.875rem;margin-top:.25rem}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2rem}
+    .tabs{display:flex;background:var(--surface2);border-radius:12px;padding:4px;margin-bottom:1.75rem}
+    .tab{flex:1;padding:.55rem;border:none;background:none;color:var(--muted);
+      font-size:.875rem;font-weight:600;cursor:pointer;border-radius:9px;transition:.2s}
+    .tab.active{background:var(--or);color:#fff}
+    .role-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem;margin-bottom:1.25rem}
+    .role-card{border:1.5px solid var(--border);border-radius:12px;padding:.75rem .5rem;
+      text-align:center;cursor:pointer;transition:.2s;background:none;color:var(--text)}
+    .role-card:hover{border-color:var(--or)}
+    .role-card.active{border-color:var(--or);background:rgba(227,90,44,.1)}
+    .role-icon{font-size:1.4rem;margin-bottom:.3rem}
+    .role-label{font-size:.72rem;font-weight:700;display:block}
+    .form-group{margin-bottom:1rem}
+    label{display:block;font-size:.78rem;font-weight:600;color:var(--muted);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.04em}
+    input,select{width:100%;padding:.7rem 1rem;background:var(--surface2);border:1.5px solid var(--border);
+      border-radius:10px;color:var(--text);font-size:.9rem;outline:none;transition:.2s}
+    input:focus,select:focus{border-color:var(--or)}
+    input::placeholder{color:var(--muted)}
+    .btn{width:100%;padding:.8rem;background:var(--or);color:#fff;border:none;
+      border-radius:12px;font-size:.95rem;font-weight:700;cursor:pointer;transition:.2s;
+      display:flex;align-items:center;justify-content:center;gap:.5rem}
+    .btn:hover{filter:brightness(1.1)}
+    .btn:disabled{opacity:.55;cursor:not-allowed}
+    .btn-ghost{background:var(--surface2);color:var(--text);border:1.5px solid var(--border)}
+    .btn-ghost:hover{border-color:var(--or);color:var(--or)}
+    .divider{display:flex;align-items:center;gap:.75rem;margin:1.25rem 0;color:var(--muted);font-size:.8rem}
+    .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+    .err{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);
+      color:#fca5a5;border-radius:10px;padding:.7rem 1rem;font-size:.85rem;margin-bottom:1rem;display:none}
+    .ok{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);
+      color:#86efac;border-radius:10px;padding:.7rem 1rem;font-size:.85rem;margin-bottom:1rem;display:none}
+    .spin{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;
+      border-radius:50%;animation:spin .7s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .reset-link{text-align:center;margin-top:1rem;font-size:.825rem;color:var(--muted)}
+    .reset-link a{color:var(--or);text-decoration:none;font-weight:600}
+    .firebase-badge{display:flex;align-items:center;gap:.4rem;font-size:.72rem;
+      color:var(--muted);justify-content:center;margin-top:1.25rem}
+    .demo-skip{margin-top:.75rem;text-align:center;font-size:.8rem;color:var(--muted)}
+    .demo-skip a{color:var(--or);cursor:pointer;font-weight:600;text-decoration:none}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">
+    <div class="brand-logo">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+        <path d="M12 4v4m0 8v4M4 12h4m8 0h4" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="12" cy="12" r="3" fill="#fff"/>
+      </svg>
+    </div>
+    <div class="brand-name">Sahayak <span>AI</span></div>
+    <div class="brand-sub">Voice-first clinical support for rural India</div>
+  </div>
+
+  <div class="card">
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" id="tabSignin" onclick="showTab('signin')">Sign In</button>
+      <button class="tab" id="tabRegister" onclick="showTab('register')">Create Account</button>
+    </div>
+
+    <!-- Error / Success -->
+    <div class="err" id="err"></div>
+    <div class="ok"  id="ok"></div>
+
+    <!-- SIGN IN PANEL -->
+    <div id="signinPanel">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="si-email" placeholder="you@example.com" autocomplete="email"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="si-pass" placeholder="••••••••" autocomplete="current-password"
+               onkeydown="if(event.key==='Enter') doSignIn()"/>
+      </div>
+      <button class="btn" id="si-btn" onclick="doSignIn()">
+        <span id="si-btn-text">Sign In</span>
+      </button>
+      <div class="reset-link">
+        <a onclick="doPasswordReset()">Forgot password?</a>
+      </div>
+    </div>
+
+    <!-- REGISTER PANEL -->
+    <div id="registerPanel" style="display:none">
+      <div class="role-row">
+        <button class="role-card active" id="role-patient" onclick="setRole('patient')">
+          <div class="role-icon">🧑‍⚕️</div>
+          <span class="role-label">Patient</span>
+        </button>
+        <button class="role-card" id="role-doctor" onclick="setRole('doctor')">
+          <div class="role-icon">👨‍⚕️</div>
+          <span class="role-label">Doctor</span>
+        </button>
+        <button class="role-card" id="role-asha" onclick="setRole('asha')">
+          <div class="role-icon">🌿</div>
+          <span class="role-label">ASHA</span>
+        </button>
+      </div>
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="reg-name" placeholder="Your full name"/>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="reg-email" placeholder="you@example.com" autocomplete="email"/>
+      </div>
+      <div class="form-group">
+        <label>Password (min 6 chars)</label>
+        <input type="password" id="reg-pass" placeholder="Create a strong password" autocomplete="new-password"/>
+      </div>
+      <div class="form-group" id="reg-phone-group" style="display:none">
+        <label>Phone Number (for VAPI voice calls)</label>
+        <input type="tel" id="reg-phone" placeholder="+91 XXXXX XXXXX"/>
+      </div>
+      <div class="form-group" id="reg-age-gender-group" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.65rem">
+          <div>
+            <label>Age</label>
+            <input type="number" id="reg-age" placeholder="Your age" min="0" max="120"/>
+          </div>
+          <div>
+            <label>Gender</label>
+            <select id="reg-gender-select">
+              <option value="">Select</option>
+              <option>Female</option><option>Male</option><option>Other</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="form-group" id="reg-district-group" style="display:none">
+        <label>District (for ASHA)</label>
+        <input type="text" id="reg-district" placeholder="e.g. Dharwad"/>
+      </div>
+      <div class="form-group" id="reg-spec-group" style="display:none">
+        <label>Specialization (for Doctor)</label>
+        <input type="text" id="reg-spec" placeholder="e.g. General Medicine, Paediatrics"/>
+      </div>
+      <div class="form-group" id="reg-hospital-group" style="display:none">
+        <label>Hospital / Clinic</label>
+        <input type="text" id="reg-hospital" placeholder="e.g. PHC Hubballi"/>
+      </div>
+      <button class="btn" id="reg-btn" onclick="doRegister()">
+        <span id="reg-btn-text">Create Account</span>
+      </button>
+    </div>
+
+    <div class="divider">or continue with</div>
+    <button class="btn btn-ghost" onclick="doGoogleSignIn()">
+      <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285f4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34a853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fbbc05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#ea4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Continue with Google
+    </button>
+
+    <div class="firebase-badge">
+      🔒 Secured by Firebase Authentication · Your data is private
+    </div>
+
+    <div class="demo-skip">
+      <a onclick="demoMode()">▶ Skip to Demo (no account needed)</a>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDK (loaded from CDN, config injected from backend) -->
+<script type="module">
+import { initializeApp }           from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+         sendPasswordResetEmail, GoogleAuthProvider, signInWithPopup,
+         updateProfile }           from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+// ── Load Firebase config from backend (/auth/firebase-config) ────────────────
+let firebaseApp = null;
+let auth        = null;
+let selectedRole = 'patient';
+
+const API = (location.hostname === 'localhost' || location.protocol === 'file:')
+  ? 'http://localhost:8000' : '';
+
+async function initFirebase() {
+  try {
+    const r   = await fetch(API + '/auth/firebase-config');
+    const d   = await r.json();
+    if (d.available && d.config) {
+      firebaseApp = initializeApp(d.config);
+      auth        = getAuth(firebaseApp);
+      console.log('Firebase initialised ✅');
+      return true;
+    }
+  } catch (e) {
+    console.warn('Firebase config not available — using legacy auth');
+  }
+  return false;
+}
+
+// ── Shared: call backend after Firebase sign-in ───────────────────────────────
+async function backendLogin(idToken, role) {
+  const r = await fetch(API + '/auth/firebase-login', {
+    method:  'POST',
+    headers: {'Content-Type':'application/json'},
+    body:    JSON.stringify({ id_token: idToken, role }),
+  });
+  if (!r.ok) throw new Error((await r.json()).detail || 'Backend error');
+  return await r.json();
+}
+
+function storeAndRedirect(data, role) {
+  localStorage.setItem('sahayak_token',      data.access_token);
+  localStorage.setItem('sahayak_user_id',    String(data.user_id || ''));
+  localStorage.setItem('sahayak_role',       data.role || role);
+  localStorage.setItem('sahayak_name',       data.full_name || '');
+  localStorage.setItem('sahayak_email',      data.email || '');
+  localStorage.setItem('sahayak_firebase_uid', data.firebase_uid || '');
+  if (data.patient_id) localStorage.setItem('sahayak_patient_id', String(data.patient_id));
+  const dest = (data.role||role) === 'doctor' ? 'doctor.html'
+             : (data.role||role) === 'asha'   ? 'asha_portal.html'
+             : 'patient.html';
+  window.location.href = dest;
+}
+
+// ── Sign In ───────────────────────────────────────────────────────────────────
+window.doSignIn = async function() {
+  const email = document.getElementById('si-email').value.trim();
+  const pass  = document.getElementById('si-pass').value;
+  if (!email || !pass) return showErr('Please enter email and password');
+
+  setBusy('si', true);
+  const fbReady = await initFirebase();
+
+  if (fbReady && auth) {
+    try {
+      const cred  = await signInWithEmailAndPassword(auth, email, pass);
+      const token = await cred.user.getIdToken();
+      // Determine role from backend
+      const data  = await backendLogin(token, 'patient');
+      storeAndRedirect(data, data.role);
+    } catch (e) {
+      setBusy('si', false);
+      showErr(firebaseErrMsg(e));
+    }
+  } else {
+    // Firebase not configured — fall back to legacy JWT
+    try {
+      const r = await fetch(API + '/auth/login', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body:    JSON.stringify({ email, password: pass }),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.detail || 'Login failed');
+      storeAndRedirect(data, data.role);
+    } catch (e) {
+      setBusy('si', false);
+      showErr(e.message);
+    }
+  }
+};
+
+// ── Register ──────────────────────────────────────────────────────────────────
+window.doRegister = async function() {
+  const name  = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pass  = document.getElementById('reg-pass').value;
+  const dist  = document.getElementById('reg-district').value.trim();
+  const spec  = document.getElementById('reg-spec')?.value.trim()         || '';
+  const hosp  = document.getElementById('reg-hospital')?.value.trim()     || '';
+  const phone = document.getElementById('reg-phone')?.value.trim()        || '';
+  const age   = parseInt(document.getElementById('reg-age')?.value || '0') || 0;
+  const gender= document.getElementById('reg-gender-select')?.value        || '';
+  const role  = selectedRole;
+
+  if (!name)  return showErr('Please enter your full name');
+  if (!email) return showErr('Please enter your email');
+  if (pass.length < 6) return showErr('Password must be at least 6 characters');
+
+  setBusy('reg', true);
+  const fbReady = await initFirebase();
+
+  if (fbReady && auth) {
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, email, pass);
+      await updateProfile(cred.user, { displayName: name });
+      const token = await cred.user.getIdToken();
+      const r = await fetch(API + '/auth/firebase-login', {
+        method:  'POST',
+        headers: {'Content-Type':'application/json'},
+        body:    JSON.stringify({ id_token: token, role }),
+      });
+      const data = await r.json();
+      // Also save district for ASHA
+      // Save role-specific profile data
+      const profileData = {};
+      if (dist)  profileData.district       = dist;
+      if (spec)  profileData.specialization = spec;
+      if (hosp)  profileData.hospital       = hosp;
+      if (phone)  profileData.phone  = phone;
+      if (age)    profileData.age    = age;
+      if (gender) profileData.gender = gender;
+      if (Object.keys(profileData).length > 0) {
+        await fetch(API + '/auth/update-profile', {
+          method:  'PATCH',
+          headers: {'Content-Type':'application/json', 'Authorization': 'Bearer ' + token},
+          body:    JSON.stringify(profileData),
+        }).catch(() => {});
+      }
+      storeAndRedirect(data, role);
+    } catch (e) {
+      setBusy('reg', false);
+      showErr(firebaseErrMsg(e));
+    }
+  } else {
+    // Legacy JWT fallback
+    try {
+      const r = await fetch(API + '/auth/register', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body:    JSON.stringify({ email, password: pass, full_name: name, name, role, district: dist, specialization: spec, hospital: hosp, phone, age, gender }),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.detail || 'Registration failed');
+      storeAndRedirect(data, role);
+    } catch (e) {
+      setBusy('reg', false);
+      showErr(e.message);
+    }
+  }
+};
+
+// ── Google Sign-In ────────────────────────────────────────────────────────────
+window.doGoogleSignIn = async function() {
+  const fbReady = await initFirebase();
+  if (!fbReady || !auth) {
+    // Show gentle info message — not a scary red error
+    showOk('Firebase not yet configured. Please use email/password to sign in. See FIREBASE_SETUP_GUIDE.md to enable Google Sign-In.');
+    // Also scroll to email field
+    document.getElementById('si-email')?.focus();
+    return;
+  }
+  try {
+    const provider = new GoogleAuthProvider();
+    const cred  = await signInWithPopup(auth, provider);
+    const token = await cred.user.getIdToken();
+    const data  = await backendLogin(token, selectedRole);
+    storeAndRedirect(data, selectedRole);
+  } catch (e) {
+    showErr(firebaseErrMsg(e));
+  }
+};
+
+// ── Password Reset ────────────────────────────────────────────────────────────
+window.doPasswordReset = async function() {
+  const email = document.getElementById('si-email').value.trim();
+  if (!email) return showErr('Enter your email above to reset password');
+  const fbReady = await initFirebase();
+  if (!fbReady || !auth) return showErr('Password reset requires Firebase setup.');
+  try {
+    await sendPasswordResetEmail(auth, email);
+    showOk('Password reset email sent! Check your inbox.');
+  } catch (e) {
+    showErr(firebaseErrMsg(e));
+  }
+};
+
+// ── Demo Mode ─────────────────────────────────────────────────────────────────
+window.demoMode = function() {
+  localStorage.setItem('demo_mode', '1');
+  localStorage.setItem('sahayak_role', 'patient');
+  localStorage.setItem('sahayak_user_id', 'demo_' + Date.now());
+  localStorage.setItem('sahayak_name', 'Demo Patient');
+  window.location.href = 'patient.html';
+};
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+window.showTab = function(tab) {
+  document.getElementById('signinPanel').style.display   = tab === 'signin'   ? '' : 'none';
+  document.getElementById('registerPanel').style.display = tab === 'register' ? '' : 'none';
+  document.getElementById('tabSignin').classList.toggle('active', tab === 'signin');
+  document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
+  clearMsgs();
+};
+
+window.setRole = function(role) {
+  selectedRole = role;
+  ['patient','doctor','asha'].forEach(r => {
+    document.getElementById('role-' + r)?.classList.toggle('active', r === role);
+  });
+  const distGroup  = document.getElementById('reg-district-group');
+  const specGroup  = document.getElementById('reg-spec-group');
+  const hospGroup  = document.getElementById('reg-hospital-group');
+  if (distGroup)  distGroup.style.display  = role === 'asha'    ? '' : 'none';
+  if (specGroup)  specGroup.style.display  = role === 'doctor'  ? '' : 'none';
+  if (hospGroup)  hospGroup.style.display  = role === 'doctor'  ? '' : 'none';
+  const phoneGroup   = document.getElementById('reg-phone-group');
+  const ageGenderGrp = document.getElementById('reg-age-gender-group');
+  if (phoneGroup)   phoneGroup.style.display   = role === 'patient' ? '' : 'none';
+  if (ageGenderGrp) ageGenderGrp.style.display = role === 'patient' ? '' : 'none';
+};
+
+function setBusy(prefix, busy) {
+  const btn  = document.getElementById(prefix + '-btn');
+  const txt  = document.getElementById(prefix + '-btn-text');
+  if (!btn) return;
+  btn.disabled = busy;
+  btn.innerHTML = busy
+    ? '<div class="spin"></div> Please wait…'
+    : (prefix === 'si' ? '<span id="si-btn-text">Sign In</span>' : '<span id="reg-btn-text">Create Account</span>');
+}
+
+function showErr(msg) {
+  const el = document.getElementById('err');
+  el.textContent = msg; el.style.display = 'block';
+  document.getElementById('ok').style.display = 'none';
+}
+function showOk(msg) {
+  const el = document.getElementById('ok');
+  el.textContent = msg; el.style.display = 'block';
+  document.getElementById('err').style.display = 'none';
+}
+function clearMsgs() {
+  document.getElementById('err').style.display = 'none';
+  document.getElementById('ok').style.display  = 'none';
+}
+
+function firebaseErrMsg(e) {
+  const map = {
+    'auth/user-not-found'     : 'No account found for this email.',
+    'auth/wrong-password'     : 'Incorrect password.',
+    'auth/email-already-in-use': 'Email already registered. Please sign in.',
+    'auth/weak-password'      : 'Password too weak — use at least 6 characters.',
+    'auth/invalid-email'      : 'Invalid email address.',
+    'auth/too-many-requests'  : 'Too many attempts. Try again in a few minutes.',
+    'auth/network-request-failed': 'Network error. Check your connection.',
+    'auth/popup-blocked'      : 'Popup blocked. Allow popups for this site.',
+    'auth/cancelled-popup-request': 'Sign-in cancelled.',
+  };
+  return map[e.code] || e.message || 'An error occurred. Please try again.';
+}
+
+// Pre-fill role from URL param
+const params = new URLSearchParams(location.search);
+if (params.get('role')) { showTab('register'); setRole(params.get('role')); }
+if (params.get('tab') === 'register') showTab('register');
+
+// Check if already logged in
+const tok = localStorage.getItem('sahayak_token');
+const role = localStorage.getItem('sahayak_role');
+if (tok && role) {
+  const dest = role === 'doctor' ? 'doctor.html' : role === 'asha' ? 'asha_portal.html' : 'patient.html';
+  window.location.href = dest;
+}
+</script>
+</body>
+</html>

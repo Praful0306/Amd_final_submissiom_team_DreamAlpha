@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Sahayak AI — Live Vitals Analyzer · ICMR Clinical Engine</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --or:#e35a2c;--orl:#f97316;
+  --bg:#070709;--s1:#0f0f13;--s2:#161619;--s3:#1d1d21;
+  --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.11);
+  --text:#eeeef0;--muted:#8888a0;--hint:#454558;
+  --green:#22c55e;--red:#ef4444;--yellow:#f59e0b;--blue:#60a5fa;--purple:#a78bfa;
+  --t:all .32s cubic-bezier(.23,1,.32,1);
+  --r:16px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+/* bg */
+.bg-mesh{position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 800px 500px at 70% 0%,rgba(227,90,44,.06),transparent),radial-gradient(ellipse 600px 400px at 10% 80%,rgba(96,165,250,.04),transparent)}
+/* layout */
+.layout{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:0 1.5rem 4rem}
+/* topbar */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 0;margin-bottom:2rem;border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:.625rem;font-family:'Syne',sans-serif;font-weight:800;font-size:1.15rem;letter-spacing:-.3px;text-decoration:none;color:var(--text)}
+.brand-icon{width:30px;height:30px;background:linear-gradient(135deg,var(--or),var(--orl));border-radius:8px;display:flex;align-items:center;justify-content:center}
+.brand em{color:var(--or);font-style:normal}
+.topbar-right{display:flex;align-items:center;gap:.75rem}
+.nav-link{font-size:.8rem;color:var(--muted);text-decoration:none;padding:.4rem .8rem;border-radius:8px;transition:var(--t)}
+.nav-link:hover{color:var(--text);background:rgba(255,255,255,.04)}
+.nav-link.active{color:var(--or)}
+/* page title */
+.page-head{margin-bottom:2rem}
+.page-tag{display:inline-flex;align-items:center;gap:.5rem;background:rgba(227,90,44,.08);border:1px solid rgba(227,90,44,.2);color:var(--or);font-size:.7rem;font-weight:700;padding:.375rem .875rem;border-radius:100px;text-transform:uppercase;letter-spacing:.07em;margin-bottom:1rem}
+.page-tag::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--or)}
+.page-title{font-family:'Syne',sans-serif;font-size:2.25rem;font-weight:800;letter-spacing:-1.5px;margin-bottom:.5rem}
+.page-title em{color:var(--or);font-style:normal}
+.page-sub{font-size:.95rem;color:var(--muted);max-width:560px;line-height:1.7}
+/* main grid */
+.main-grid{display:grid;grid-template-columns:400px 1fr;gap:1.5rem;align-items:start}
+@media(max-width:960px){.main-grid{grid-template-columns:1fr}}
+/* input panel */
+.input-panel{background:var(--s1);border:1px solid var(--border);border-radius:20px;overflow:hidden;position:sticky;top:1.25rem}
+.panel-header{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.panel-title{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700}
+.panel-subtitle{font-size:.72rem;color:var(--muted);margin-top:.125rem}
+.clear-btn{background:none;border:1px solid var(--border2);color:var(--muted);font-family:inherit;font-size:.7rem;padding:.35rem .8rem;border-radius:8px;cursor:pointer;transition:var(--t)}
+.clear-btn:hover{border-color:var(--red);color:var(--red)}
+.panel-body{padding:1.25rem 1.5rem}
+/* vitals form */
+.form-section{margin-bottom:1.25rem}
+.form-section-title{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--hint);font-weight:700;margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem}
+.form-section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:.625rem}
+.field-full{grid-column:1/-1}
+/* field */
+.field{position:relative}
+.field-label{font-size:.7rem;font-weight:600;color:var(--muted);margin-bottom:.4rem;display:flex;align-items:center;justify-content:space-between}
+.field-unit{font-size:.65rem;color:var(--hint)}
+.field-input{width:100%;background:var(--s2);border:1.5px solid var(--border);border-radius:10px;padding:.6rem .875rem;font-family:inherit;font-size:.875rem;color:var(--text);outline:none;transition:var(--t)}
+.field-input:focus{border-color:var(--or);background:rgba(227,90,44,.04)}
+.field-input::placeholder{color:var(--hint)}
+.field-status{position:absolute;right:.625rem;bottom:.65rem;font-size:.6rem;font-weight:700;padding:1px 6px;border-radius:4px;pointer-events:none}
+.field-status.normal{background:rgba(34,197,94,.1);color:var(--green)}
+.field-status.high{background:rgba(239,68,68,.1);color:var(--red)}
+.field-status.low{background:rgba(245,158,11,.1);color:var(--yellow)}
+.field-status.critical{background:rgba(239,68,68,.2);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+/* range hint */
+.range-hint{font-size:.62rem;color:var(--hint);margin-top:.3rem;display:flex;align-items:center;gap:.3rem}
+.range-hint::before{content:'↔';opacity:.5}
+/* gender toggle */
+.gender-toggle{display:flex;gap:.375rem}
+.gender-btn{flex:1;padding:.5rem;border-radius:8px;background:var(--s2);border:1.5px solid var(--border);color:var(--muted);font-family:inherit;font-size:.75rem;font-weight:600;cursor:pointer;transition:var(--t)}
+.gender-btn.active{background:rgba(227,90,44,.1);border-color:var(--or);color:var(--or)}
+/* analyse button */
+.analyse-btn{width:100%;padding:1rem;border-radius:12px;border:none;background:var(--or);color:#fff;font-family:inherit;font-size:.9375rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.5rem;transition:var(--t);margin-top:1.25rem;box-shadow:0 4px 18px rgba(227,90,44,.25)}
+.analyse-btn:hover{background:#c94d23;box-shadow:0 8px 28px rgba(227,90,44,.38);transform:translateY(-1px)}
+.analyse-btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+/* ── RESULTS PANEL ─────────────────────────────────── */
+.results-panel{display:flex;flex-direction:column;gap:1.25rem}
+/* empty state */
+.empty-state{background:var(--s1);border:1px solid var(--border);border-radius:20px;padding:4rem 2rem;text-align:center;display:flex;flex-direction:column;align-items:center;gap:1rem}
+.empty-icon{width:60px;height:60px;background:rgba(227,90,44,.07);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:1.75rem}
+.empty-title{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700}
+.empty-sub{font-size:.85rem;color:var(--muted);max-width:260px;line-height:1.6}
+/* risk banner */
+.risk-banner{border-radius:20px;padding:1.5rem;border:1px solid;animation:fadeSlide .4s ease}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.risk-banner.emergency{background:linear-gradient(135deg,rgba(239,68,68,.12),rgba(239,68,68,.05));border-color:rgba(239,68,68,.3)}
+.risk-banner.high{background:linear-gradient(135deg,rgba(239,68,68,.10),rgba(239,68,68,.04));border-color:rgba(239,68,68,.25)}
+.risk-banner.medium{background:linear-gradient(135deg,rgba(245,158,11,.10),rgba(245,158,11,.04));border-color:rgba(245,158,11,.25)}
+.risk-banner.low{background:linear-gradient(135deg,rgba(34,197,94,.08),rgba(34,197,94,.03));border-color:rgba(34,197,94,.2)}
+.risk-banner-row{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem}
+.risk-badge{display:inline-flex;align-items:center;gap:.5rem;padding:.5rem 1.125rem;border-radius:100px;font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.875rem}
+.risk-badge.emergency,.risk-badge.high{background:#ef4444;color:#fff}
+.risk-badge.medium{background:#f59e0b;color:#000}
+.risk-badge.low{background:#22c55e;color:#000}
+.risk-title{font-family:'Syne',sans-serif;font-size:1.625rem;font-weight:800;letter-spacing:-1px;margin-bottom:.375rem}
+.risk-sub{font-size:.85rem;color:var(--muted);line-height:1.6}
+.risk-score-ring{position:relative;width:88px;height:88px;flex-shrink:0}
+.risk-score-ring svg{transform:rotate(-90deg)}
+.ring-val{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-num{font-family:'Syne',sans-serif;font-size:1.375rem;font-weight:800;line-height:1}
+.ring-lbl{font-size:.55rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
+/* vital readings grid */
+.readings-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.875rem}
+.reading-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.125rem;position:relative;overflow:hidden;animation:fadeSlide .4s ease}
+.reading-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px}
+.reading-card.normal::before{background:var(--green)}
+.reading-card.high::before,.reading-card.critical::before{background:var(--red)}
+.reading-card.low::before{background:var(--yellow)}
+.reading-card.unknown::before{background:var(--hint)}
+.r-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.5rem;font-weight:700}
+.r-value{font-family:'Syne',sans-serif;font-size:1.625rem;font-weight:800;letter-spacing:-1px;margin-bottom:.25rem;line-height:1}
+.r-unit{font-size:.7rem;color:var(--muted)}
+.r-status{font-size:.65rem;font-weight:700;display:inline-flex;align-items:center;gap:.3rem;padding:.25rem .625rem;border-radius:100px;margin-top:.375rem}
+.r-status.normal{background:rgba(34,197,94,.1);color:var(--green)}
+.r-status.high{background:rgba(239,68,68,.1);color:var(--red)}
+.r-status.low{background:rgba(245,158,11,.1);color:var(--yellow)}
+.r-status.critical{background:rgba(239,68,68,.18);color:var(--red)}
+.r-range{font-size:.62rem;color:var(--hint);margin-top:.25rem}
+/* red flags */
+.flags-card{background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.2);border-radius:var(--r);padding:1.25rem;animation:fadeSlide .4s ease .1s both}
+.flags-title{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--red);font-weight:700;margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem}
+.flag-item{display:flex;align-items:flex-start;gap:.625rem;margin-bottom:.5rem;font-size:.825rem;line-height:1.55}
+.flag-dot{width:16px;height:16px;border-radius:4px;background:rgba(239,68,68,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.6rem;margin-top:2px}
+/* recommendations */
+.recs-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:1.25rem;animation:fadeSlide .4s ease .15s both}
+.recs-title{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700;margin-bottom:.875rem;display:flex;align-items:center;gap:.5rem}
+.recs-title svg{opacity:.5}
+.rec-item{display:flex;align-items:flex-start;gap:.75rem;padding:.625rem 0;border-bottom:1px solid var(--border)}
+.rec-item:last-child{border-bottom:none;padding-bottom:0}
+.rec-num{width:22px;height:22px;border-radius:7px;background:rgba(227,90,44,.12);border:1px solid rgba(227,90,44,.2);color:var(--or);font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.rec-text{font-size:.825rem;color:var(--muted);line-height:1.6}
+/* disease probability */
+.disease-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:1.25rem;animation:fadeSlide .4s ease .2s both}
+.disease-title{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700;margin-bottom:.875rem}
+.disease-row{display:flex;align-items:center;gap:.875rem;margin-bottom:.75rem}
+.disease-row:last-child{margin-bottom:0}
+.disease-name{font-size:.825rem;font-weight:600;min-width:140px}
+.disease-bar-wrap{flex:1;height:8px;background:var(--s2);border-radius:4px;overflow:hidden}
+.disease-bar{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--or),var(--orl));transition:width 1.2s cubic-bezier(.23,1,.32,1)}
+.disease-pct{font-size:.75rem;font-weight:700;min-width:36px;text-align:right;color:var(--or)}
+/* sample buttons */
+.samples-row{display:flex;gap:.625rem;flex-wrap:wrap;margin-bottom:1.25rem}
+.sample-btn{padding:.45rem 1rem;border-radius:100px;background:var(--s2);border:1px solid var(--border2);color:var(--muted);font-family:inherit;font-size:.725rem;font-weight:600;cursor:pointer;transition:var(--t);display:flex;align-items:center;gap:.375rem}
+.sample-btn:hover{border-color:var(--or);color:var(--or);background:rgba(227,90,44,.05)}
+.sample-btn .dot{width:6px;height:6px;border-radius:50%}
+/* spinner */
+.spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin 1s linear infinite;display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.analyse-btn.loading .btn-text{display:none}
+.analyse-btn.loading .spinner{display:block}
+/* toast */
+.toast-wrap{position:fixed;top:80px;right:1.25rem;display:flex;flex-direction:column;gap:.5rem;z-index:999}
+.toast{background:var(--s2);border:1px solid var(--border2);border-radius:12px;padding:.75rem 1rem;font-size:.8rem;max-width:280px;transform:translateX(120%);transition:transform .38s cubic-bezier(.23,1,.32,1);box-shadow:0 8px 32px rgba(0,0,0,.4);display:flex;align-items:center;gap:.625rem}
+.toast.show{transform:translateX(0)}
+</style>
+</head>
+<body>
+<div class="bg-mesh"></div>
+<div class="layout">
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <a href="index.html" class="brand">
+    <div class="brand-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 4v4m0 8v4M4 12h4m8 0h4" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/><circle cx="12" cy="12" r="3" fill="#fff"/></svg></div>
+    Sahayak <em>AI</em>
+  </a>
+  <div class="topbar-right">
+    <a href="index.html" class="nav-link">Home</a>
+    <a href="asha_demo.html" class="nav-link">ASHA Demo</a>
+    <a href="doctor.html" class="nav-link">Doctor</a>
+    <a href="vitals.html" class="nav-link active">Vitals Analyzer</a>
+  </div>
+</header>
+
+<!-- PAGE HEAD -->
+<div class="page-head">
+  <div class="page-tag">Live · ICMR Clinical Engine</div>
+  <h1 class="page-title">Vital Signs <em>Analyzer</em></h1>
+  <p class="page-sub">Enter any combination of vitals and get instant ICMR/WHO-grounded risk assessment. Red flag detection, disease probability scoring, and clinical recommendations — powered by the same engine running on AMD Ryzen AI NPU.</p>
+</div>
+
+<!-- SAMPLE SHORTCUTS -->
+<div class="samples-row">
+  <button class="sample-btn" onclick="loadSample('malaria')"><span class="dot" style="background:#ef4444"></span>Malaria Case</button>
+  <button class="sample-btn" onclick="loadSample('diabetes')"><span class="dot" style="background:#f59e0b"></span>Diabetic Crisis</button>
+  <button class="sample-btn" onclick="loadSample('anaemia')"><span class="dot" style="background:#a78bfa"></span>Severe Anaemia</button>
+  <button class="sample-btn" onclick="loadSample('bp')"><span class="dot" style="background:#60a5fa"></span>Hypertensive Crisis</button>
+  <button class="sample-btn" onclick="loadSample('normal')"><span class="dot" style="background:#22c55e"></span>Normal Readings</button>
+</div>
+
+<!-- MAIN GRID -->
+<div class="main-grid">
+
+  <!-- INPUT PANEL -->
+  <div class="input-panel">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">Patient Vital Signs</div>
+        <div class="panel-subtitle">Fill any fields · Instant ICMR analysis</div>
+      </div>
+      <button class="clear-btn" onclick="clearAll()">Clear</button>
+    </div>
+    <div class="panel-body">
+      <!-- Gender -->
+      <div class="form-section">
+        <div class="form-section-title">Patient</div>
+        <div class="field">
+          <div class="field-label">Gender (affects reference ranges)</div>
+          <div class="gender-toggle">
+            <button class="gender-btn active" id="g-male" onclick="setGender('male',this)">Male</button>
+            <button class="gender-btn" id="g-female" onclick="setGender('female',this)">Female</button>
+            <button class="gender-btn" id="g-child" onclick="setGender('child',this)">Child</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Core vitals -->
+      <div class="form-section">
+        <div class="form-section-title">Haematology</div>
+        <div class="fields-grid">
+          <div class="field">
+            <div class="field-label">Haemoglobin <span class="field-unit">g/dL</span></div>
+            <input class="field-input" id="hb" type="number" step="0.1" min="1" max="25" placeholder="e.g. 11.2" oninput="liveCheck('hb',this.value)"/>
+            <div class="range-hint" id="hint-hb">Normal: 13–17 (M), 12–16 (F)</div>
+          </div>
+          <div class="field">
+            <div class="field-label">Blood Sugar <span class="field-unit">mg/dL</span></div>
+            <input class="field-input" id="sugar" type="number" step="1" min="20" max="600" placeholder="e.g. 126" oninput="liveCheck('sugar',this.value)"/>
+            <div class="range-hint" id="hint-sugar">Normal fasting: 70–100</div>
+          </div>
+          <div class="field">
+            <div class="field-label">Platelets <span class="field-unit">/µL</span></div>
+            <input class="field-input" id="platelets" type="number" step="1000" min="0" max="1000000" placeholder="e.g. 65000" oninput="liveCheck('platelets',this.value)"/>
+            <div class="range-hint">Normal: 1,50,000–4,00,000</div>
+          </div>
+          <div class="field">
+            <div class="field-label">WBC Count <span class="field-unit">cells/µL</span></div>
+            <input class="field-input" id="wbc" type="number" step="100" min="0" max="100000" placeholder="e.g. 4500" oninput="liveCheck('wbc',this.value)"/>
+            <div class="range-hint">Normal: 4,000–10,000</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BP & vitals -->
+      <div class="form-section">
+        <div class="form-section-title">Cardiovascular &amp; Respiratory</div>
+        <div class="fields-grid">
+          <div class="field field-full">
+            <div class="field-label">Blood Pressure <span class="field-unit">mmHg</span></div>
+            <input class="field-input" id="bp" type="text" placeholder="e.g. 148/92" oninput="liveCheck('bp',this.value)"/>
+            <div class="range-hint" id="hint-bp">Normal: &lt;120/80 · Stage 2 HTN: ≥140/90</div>
+          </div>
+          <div class="field">
+            <div class="field-label">Heart Rate <span class="field-unit">BPM</span></div>
+            <input class="field-input" id="hr" type="number" step="1" min="20" max="250" placeholder="e.g. 88" oninput="liveCheck('hr',this.value)"/>
+            <div class="range-hint">Normal: 60–100</div>
+          </div>
+          <div class="field">
+            <div class="field-label">SpO₂ <span class="field-unit">%</span></div>
+            <input class="field-input" id="spo2" type="number" step="1" min="50" max="100" placeholder="e.g. 98" oninput="liveCheck('spo2',this.value)"/>
+            <div class="range-hint">Normal: 95–100 · Critical: &lt;88</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Physical -->
+      <div class="form-section">
+        <div class="form-section-title">Physical &amp; Temperature</div>
+        <div class="fields-grid">
+          <div class="field">
+            <div class="field-label">Temperature <span class="field-unit">°C</span></div>
+            <input class="field-input" id="temp" type="number" step="0.1" min="30" max="45" placeholder="e.g. 38.5" oninput="liveCheck('temp',this.value)"/>
+            <div class="range-hint">Normal: 36.1–37.2</div>
+          </div>
+          <div class="field">
+            <div class="field-label">Weight <span class="field-unit">kg</span></div>
+            <input class="field-input" id="weight" type="number" step="0.5" min="5" max="200" placeholder="e.g. 55" oninput="liveCheck('weight',this.value)"/>
+            <div class="range-hint">Adult normal: 35–90</div>
+          </div>
+          <div class="field">
+            <div class="field-label">HbA1c <span class="field-unit">%</span></div>
+            <input class="field-input" id="hba1c" type="number" step="0.1" min="3" max="20" placeholder="e.g. 7.2" oninput="liveCheck('hba1c',this.value)"/>
+            <div class="range-hint">Normal: 4–5.6 · DM: ≥6.5</div>
+          </div>
+          <div class="field">
+            <div class="field-label">Cholesterol <span class="field-unit">mg/dL</span></div>
+            <input class="field-input" id="cholesterol" type="number" step="1" min="50" max="500" placeholder="e.g. 220" oninput="liveCheck('cholesterol',this.value)"/>
+            <div class="range-hint">Desirable: &lt;200</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Symptoms -->
+      <div class="form-section">
+        <div class="form-section-title">Symptoms (optional)</div>
+        <div class="field">
+          <textarea class="field-input" id="symptoms" rows="3" placeholder="e.g. Fever for 3 days, chills, sweating, headache, nausea…" style="resize:vertical;line-height:1.6"></textarea>
+        </div>
+      </div>
+
+      <button class="analyse-btn" id="analyse-btn" onclick="runAnalysis()">
+        <span class="btn-text">⚡ Analyse with ICMR Engine</span>
+        <div class="spinner"></div>
+      </button>
+    </div>
+  </div>
+
+  <!-- RESULTS PANEL -->
+  <div class="results-panel" id="results">
+    <div class="empty-state" id="empty-state">
+      <div class="empty-icon">🩺</div>
+      <div class="empty-title">Ready to Analyse</div>
+      <div class="empty-sub">Enter vital signs on the left or pick a sample case. ICMR/WHO reference ranges are applied instantly.</div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+const API = '';
+let currentGender = 'male';
+
+// ── ICMR reference ranges (mirrors clinical_engine.py) ──
+const RANGES = {
+  hb:          { male:[13,17], female:[12,16], child:[11,16], unit:'g/dL', label:'Haemoglobin', crit_low:7 },
+  sugar:        { male:[70,100], female:[70,100], child:[70,100], unit:'mg/dL', label:'Blood Sugar (fasting)', crit_high:400, crit_low:50, warn_high:126 },
+  platelets:    { male:[150000,400000], female:[150000,400000], child:[150000,400000], unit:'/µL', label:'Platelets', crit_low:50000 },
+  wbc:          { male:[4000,10000], female:[4000,10000], child:[4000,10000], unit:'cells/µL', label:'WBC Count' },
+  spo2:         { male:[95,100], female:[95,100], child:[95,100], unit:'%', label:'SpO₂', crit_low:88, warn_low:95 },
+  temp:         { male:[36.1,37.2], female:[36.1,37.2], child:[36.1,37.2], unit:'°C', label:'Temperature', crit_high:40, warn_high:38.5 },
+  hr:           { male:[60,100], female:[60,100], child:[70,120], unit:'BPM', label:'Heart Rate', crit_low:40, crit_high:140 },
+  cholesterol:  { male:[0,200], female:[0,200], child:[0,200], unit:'mg/dL', label:'Cholesterol', warn_high:200 },
+  hba1c:        { male:[4,5.6], female:[4,5.6], child:[4,5.6], unit:'%', label:'HbA1c' },
+  weight:       { male:[35,90], female:[35,90], child:[10,60], unit:'kg', label:'Weight' },
+};
+
+const SAMPLE_CASES = {
+  malaria: { hb:'9.2', sugar:'88', platelets:'62000', temp:'39.8', hr:'108', spo2:'96', bp:'104/68', symptoms:'High fever with chills and rigors for 3 days. Cyclical sweating every 48 hours. Severe headache, muscle pain, nausea. Mild splenomegaly.' },
+  diabetes: { sugar:'410', hb:'11.5', hba1c:'9.8', bp:'146/92', hr:'96', spo2:'97', temp:'37.1', symptoms:'Excessive thirst, frequent urination, blurred vision, weakness. Known diabetic on metformin.' },
+  anaemia: { hb:'5.8', sugar:'94', spo2:'93', hr:'118', temp:'37.0', bp:'98/62', symptoms:'Extreme weakness, pale conjunctiva, shortness of breath on exertion, dizziness. Pregnant 28 weeks.' },
+  bp: { bp:'192/124', hr:'102', spo2:'96', temp:'37.2', cholesterol:'248', sugar:'118', symptoms:'Severe headache, visual disturbances, chest tightness, nausea. Known hypertensive, missed medications.' },
+  normal: { hb:'14.5', sugar:'88', platelets:'220000', spo2:'99', temp:'36.8', hr:'72', bp:'118/76', cholesterol:'172', hba1c:'5.2' },
+};
+
+function loadSample(name) {
+  clearAll(false);
+  const s = SAMPLE_CASES[name];
+  Object.entries(s).forEach(([k,v]) => {
+    const el = document.getElementById(k);
+    if (el) { el.value = v; liveCheck(k, v); }
+  });
+  runAnalysis();
+  showToast('📋 Sample loaded: ' + name.charAt(0).toUpperCase() + name.slice(1));
+}
+
+function setGender(g, btn) {
+  currentGender = g;
+  document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // update range hints
+  const hb_range = g === 'female' ? '12–16' : g === 'child' ? '11–16' : '13–17';
+  document.getElementById('hint-hb').textContent = `Normal: ${hb_range} g/dL`;
+}
+
+// ── LIVE FIELD CHECKING ──────────────────────────────
+function liveCheck(field, raw) {
+  const el = document.getElementById(field);
+  if (!el || field === 'bp' || field === 'symptoms') return;
+
+  const val = parseFloat(raw);
+  if (isNaN(val) || raw === '') {
+    el.style.borderColor = '';
+    return;
+  }
+  const status = getStatus(field, val);
+  const colors = { normal: '#22c55e', high: '#ef4444', low: '#f59e0b', critical: '#ef4444', unknown: '' };
+  el.style.borderColor = colors[status] || '';
+}
+
+function getStatus(field, val) {
+  const r = RANGES[field];
+  if (!r || val === null || val === undefined) return 'unknown';
+  const g = currentGender;
+  const range = r[g] || r.male;
+  if (r.crit_low !== undefined && val < r.crit_low) return 'critical';
+  if (r.crit_high !== undefined && val > r.crit_high) return 'critical';
+  if (val < range[0]) return 'low';
+  if (val > range[1]) return 'high';
+  return 'normal';
+}
+
+function parseBP(s) {
+  const m = /(\d{2,3})\s*\/\s*(\d{2,3})/.exec(s || '');
+  return m ? [parseFloat(m[1]), parseFloat(m[2])] : null;
+}
+
+// ── ANALYSIS ────────────────────────────────────────
+async function runAnalysis() {
+  const form = collectForm();
+  const hasAny = Object.values(form).some(v => v !== '' && v !== null && v !== undefined);
+  if (!hasAny) { showToast('⚠ Please enter at least one vital sign'); return; }
+
+  const btn = document.getElementById('analyse-btn');
+  btn.disabled = true; btn.classList.add('loading');
+
+  try {
+    // Try backend first
+    const payload = { ...form, gender: currentGender };
+    const r = await Promise.race([
+      const _vtok = localStorage.getItem('sahayak_token') || '';
+      fetch(API + '/diagnose/', { method: 'POST', headers: {'Content-Type':'application/json', ...(_vtok ? {'Authorization':'Bearer '+_vtok} : {})},
+        body: JSON.stringify({ symptoms: form.symptoms || buildSymptomsFromVitals(form), vitals: buildVitalsString(form) }) }),
+      new Promise((_, rej) => setTimeout(() => rej('timeout'), 5000))
+    ]);
+    if (r.ok) {
+      const d = await r.json();
+      renderResults(form, d, null);
+    } else throw new Error('non-200');
+  } catch {
+    // Pure client-side ICMR engine
+    const local = localClinicalEngine(form);
+    renderResults(form, null, local);
+  } finally {
+    btn.disabled = false; btn.classList.remove('loading');
+  }
+}
+
+function collectForm() {
+  const fields = ['hb','sugar','platelets','wbc','spo2','temp','hr','cholesterol','hba1c','weight','bp','symptoms'];
+  const form = {};
+  fields.forEach(f => { const el = document.getElementById(f); if (el) form[f] = el.value.trim() || ''; });
+  return form;
+}
+
+function buildVitalsString(form) {
+  const parts = [];
+  if (form.hb) parts.push('HB:' + form.hb);
+  if (form.sugar) parts.push('Sugar:' + form.sugar);
+  if (form.bp) parts.push('BP:' + form.bp);
+  if (form.temp) parts.push('Temp:' + form.temp);
+  if (form.spo2) parts.push('SpO2:' + form.spo2);
+  if (form.hr) parts.push('HR:' + form.hr);
+  return parts.join(', ');
+}
+
+function buildSymptomsFromVitals(form) {
+  const desc = [];
+  const hb = parseFloat(form.hb);
+  if (!isNaN(hb) && hb < 10) desc.push('pallor, weakness, breathlessness');
+  const sg = parseFloat(form.sugar);
+  if (!isNaN(sg) && sg > 200) desc.push('excessive thirst, frequent urination');
+  if (!isNaN(sg) && sg < 60) desc.push('sweating, confusion, shakiness');
+  const bp = parseBP(form.bp);
+  if (bp && bp[0] >= 160) desc.push('severe headache, visual disturbances');
+  const temp = parseFloat(form.temp);
+  if (!isNaN(temp) && temp > 38.5) desc.push('fever with chills');
+  return desc.join(', ') || 'Vital sign assessment';
+}
+
+// ── LOCAL ICMR ENGINE (JavaScript port of clinical_engine.py) ─
+function localClinicalEngine(form) {
+  const g = currentGender;
+  const readings = [];
+  const flags = [];
+  let score = 0;
+
+  function check(field, val, label, unit) {
+    if (val === null || val === undefined || isNaN(val)) return;
+    const status = getStatus(field, val);
+    const r = RANGES[field];
+    const range = r ? (r[g] || r.male) : null;
+    readings.push({ field, label, value: val, unit, status, range });
+    if (status === 'critical') {
+      flags.push(`CRITICAL: ${label} = ${val} ${unit} — immediate care required`);
+      score += 50;
+    } else if (status === 'high') {
+      flags.push(`HIGH: ${label} = ${val} ${unit} — above normal`);
+      score += field === 'cholesterol' ? 10 : 20;
+    } else if (status === 'low') {
+      flags.push(`LOW: ${label} = ${val} ${unit} — below normal`);
+      score += field === 'weight' ? 5 : 15;
+    }
+  }
+
+  check('hb', parseFloat(form.hb), 'Haemoglobin', 'g/dL');
+  check('sugar', parseFloat(form.sugar), 'Blood Sugar', 'mg/dL');
+  check('platelets', parseFloat(form.platelets), 'Platelets', '/µL');
+  check('wbc', parseFloat(form.wbc), 'WBC Count', 'cells/µL');
+  check('spo2', parseFloat(form.spo2), 'SpO₂', '%');
+  check('temp', parseFloat(form.temp), 'Temperature', '°C');
+  check('hr', parseFloat(form.hr), 'Heart Rate', 'BPM');
+  check('cholesterol', parseFloat(form.cholesterol), 'Cholesterol', 'mg/dL');
+  check('hba1c', parseFloat(form.hba1c), 'HbA1c', '%');
+
+  // BP special
+  const bp = parseBP(form.bp);
+  if (bp) {
+    const [sys, dia] = bp;
+    let bpLabel = 'Normal';
+    if (sys >= 180 || dia >= 120) { bpLabel = 'Hypertensive Crisis'; score += 50; flags.push(`CRITICAL: BP ${form.bp} — Hypertensive Crisis`); }
+    else if (sys >= 140 || dia >= 90) { bpLabel = 'Stage 2 HTN'; score += 25; flags.push(`HIGH: BP ${form.bp} — Stage 2 Hypertension`); }
+    else if (sys >= 130) { bpLabel = 'Elevated'; score += 10; }
+    readings.push({ field:'bp', label:'Blood Pressure', value: form.bp, unit:'mmHg', status: sys >= 140 ? 'high' : 'normal', bpLabel });
+  }
+
+  // Risk level
+  let level = 'LOW', recs = [];
+  if (score >= 50) {
+    level = 'EMERGENCY';
+    recs = ['Call 108 immediately — life-threatening condition', 'Do NOT delay going to hospital', 'Take all current medications', 'Keep patient calm and lying down'];
+  } else if (score >= 25) {
+    level = 'HIGH';
+    recs = ['Visit a doctor within 24 hours', 'Avoid strenuous activity', 'Monitor vitals every 6 hours', 'If condition worsens, go to emergency'];
+  } else if (score >= 10) {
+    level = 'MEDIUM';
+    recs = ['Schedule doctor appointment within 1-2 weeks', 'Follow ICMR dietary guidelines: low salt, low sugar', 'Walk 30 minutes daily, avoid smoking/alcohol', 'Take prescribed medications regularly'];
+  } else {
+    level = 'LOW';
+    recs = ['Continue healthy lifestyle', 'Routine checkup in 3-6 months', '30 minutes moderate exercise 5 days/week', 'Annual blood tests recommended'];
+  }
+
+  // Disease probabilities (simplified)
+  const diseases = computeDiseaseProbs(form, readings);
+
+  return { level, score, flags, readings, recs, diseases };
+}
+
+function computeDiseaseProbs(form, readings) {
+  const d = {};
+  const statusOf = (f) => readings.find(r => r.field === f)?.status;
+  const valOf = (f) => parseFloat(form[f]) || null;
+  const sym = (form.symptoms || '').toLowerCase();
+
+  // Malaria
+  let malScore = 0;
+  if (statusOf('hb') === 'low' || statusOf('hb') === 'critical') malScore += 20;
+  if (statusOf('platelets') === 'low') malScore += 30;
+  if (statusOf('temp') === 'high' || statusOf('temp') === 'critical') malScore += 25;
+  if (sym.includes('fever') || sym.includes('chill') || sym.includes('shiver')) malScore += 35;
+  if (sym.includes('malaria') || sym.includes('rigor')) malScore += 50;
+  if (malScore > 0) d.malaria = Math.min(malScore, 95);
+
+  // Dengue
+  let dengScore = 0;
+  if (statusOf('platelets') === 'low' || statusOf('platelets') === 'critical') dengScore += 40;
+  if (statusOf('wbc') === 'low') dengScore += 25;
+  if (statusOf('temp') === 'high') dengScore += 20;
+  if (sym.includes('dengue') || sym.includes('joint') || sym.includes('bone') || sym.includes('rash')) dengScore += 50;
+  if (dengScore > 0) d.dengue = Math.min(dengScore, 95);
+
+  // Diabetes
+  const sg = valOf('sugar');
+  let dmScore = 0;
+  if (sg && sg >= 400) dmScore += 80;
+  else if (sg && sg >= 200) dmScore += 60;
+  else if (sg && sg >= 126) dmScore += 35;
+  const a1c = valOf('hba1c');
+  if (a1c && a1c >= 6.5) dmScore += 60;
+  else if (a1c && a1c >= 5.7) dmScore += 30;
+  if (sym.includes('thirst') || sym.includes('urinat') || sym.includes('diabetes')) dmScore += 30;
+  if (dmScore > 0) d.diabetes = Math.min(dmScore, 95);
+
+  // Anaemia
+  const hb = valOf('hb');
+  let anScore = 0;
+  if (hb && hb < 7) anScore += 80;
+  else if (hb && hb < 10) anScore += 55;
+  else if (hb && hb < 12) anScore += 30;
+  if (sym.includes('pale') || sym.includes('weak') || sym.includes('anaemi')) anScore += 40;
+  if (anScore > 0) d.anaemia = Math.min(anScore, 95);
+
+  // Hypertension
+  const bp = parseBP(form.bp);
+  let htScore = 0;
+  if (bp && bp[0] >= 180) htScore += 90;
+  else if (bp && bp[0] >= 140) htScore += 70;
+  else if (bp && bp[0] >= 130) htScore += 40;
+  if (htScore > 0) d.hypertension = Math.min(htScore, 95);
+
+  // Normalize to %
+  const total = Object.values(d).reduce((s,v)=>s+v,0) || 1;
+  const result = {};
+  Object.entries(d).sort((a,b)=>b[1]-a[1]).slice(0,4).forEach(([k,v]) => {
+    result[k] = Math.round((v/total)*100);
+  });
+  return result;
+}
+
+// ── RENDER RESULTS ───────────────────────────────────
+function renderResults(form, apiData, localData) {
+  const data = localData || {};
+  const level = (apiData?.risk_level || data.level || 'LOW').toLowerCase();
+  const readings = data.readings || [];
+  const flags = data.flags || apiData?.red_flags || [];
+  const recs = data.recs || apiData?.recommendations || [];
+  const diseases = data.diseases || {};
+  const score = data.score || 0;
+  const maxScore = 100;
+  const pct = Math.min(Math.round((score / maxScore) * 100), 100);
+
+  const ringR = 36, ringC = 2*Math.PI*ringR;
+  const ringDash = ringC * (pct / 100);
+  const ringColor = { emergency: '#ef4444', high: '#ef4444', medium: '#f59e0b', low: '#22c55e' }[level] || '#f59e0b';
+
+  document.getElementById('empty-state')?.remove();
+
+  const container = document.getElementById('results');
+
+  // Rebuild
+  container.innerHTML = '';
+
+  // ① Risk banner
+  const riskEl = document.createElement('div');
+  riskEl.className = `risk-banner ${level}`;
+  riskEl.innerHTML = `
+    <div class="risk-banner-row">
+      <div>
+        <div class="risk-badge ${level}">⚕ ${level.toUpperCase()} RISK</div>
+        <div class="risk-title">${riskTitle(level, apiData)}</div>
+        <div class="risk-sub">ICMR/WHO Standard Treatment Guidelines · ${apiData ? 'AI-grounded' : 'Rule-based'} assessment</div>
+      </div>
+      <div class="risk-score-ring">
+        <svg width="88" height="88" viewBox="0 0 88 88">
+          <circle cx="44" cy="44" r="${ringR}" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="6"/>
+          <circle cx="44" cy="44" r="${ringR}" fill="none" stroke="${ringColor}" stroke-width="6"
+            stroke-dasharray="${ringDash} ${ringC}" stroke-linecap="round"
+            style="transition:stroke-dasharray 1s ease"/>
+        </svg>
+        <div class="ring-val"><div class="ring-num" style="color:${ringColor}">${pct}</div><div class="ring-lbl">Risk</div></div>
+      </div>
+    </div>`;
+  container.appendChild(riskEl);
+
+  // ② Vital readings
+  if (readings.length) {
+    const grid = document.createElement('div');
+    grid.className = 'readings-grid';
+    readings.forEach(r => {
+      const st = r.status || 'unknown';
+      const stLabel = { normal:'Normal', high:'Above Normal', low:'Below Normal', critical:'CRITICAL', unknown:'' }[st] || '';
+      const color = { normal:'var(--green)', high:'var(--red)', low:'var(--yellow)', critical:'var(--red)', unknown:'var(--hint)' }[st];
+      grid.innerHTML += `
+        <div class="reading-card ${st}" style="animation-delay:${readings.indexOf(r) * .06}s">
+          <div class="r-label">${r.label}</div>
+          <div class="r-value" style="color:${color}">${r.bpLabel ? form.bp : (typeof r.value === 'number' ? r.value.toLocaleString() : r.value)}</div>
+          <div class="r-unit">${r.unit}</div>
+          ${stLabel ? `<div class="r-status ${st}">${stLabel}</div>` : ''}
+          ${r.range ? `<div class="r-range">Normal: ${r.range[0].toLocaleString()}–${r.range[1].toLocaleString()}</div>` : ''}
+          ${r.bpLabel ? `<div class="r-status ${st}">${r.bpLabel}</div>` : ''}
+        </div>`;
+    });
+    container.appendChild(grid);
+  }
+
+  // ③ Red flags
+  if (flags.length) {
+    const fc = document.createElement('div');
+    fc.className = 'flags-card';
+    fc.innerHTML = `<div class="flags-title">🚨 Clinical Alerts (${flags.length})</div>` +
+      flags.map(f => `<div class="flag-item"><div class="flag-dot">!</div>${escHtml(f)}</div>`).join('');
+    container.appendChild(fc);
+  }
+
+  // ④ Disease probabilities
+  if (Object.keys(diseases).length) {
+    const dc = document.createElement('div');
+    dc.className = 'disease-card';
+    const displayNames = { malaria:'Malaria (Plasmodium)', dengue:'Dengue Fever', diabetes:'Diabetes Mellitus', anaemia:'Anaemia', hypertension:'Hypertension', typhoid:'Typhoid Fever', tb:'Tuberculosis', pneumonia:'Pneumonia' };
+    dc.innerHTML = `<div class="disease-title">Differential Diagnosis (ICMR Guidelines)</div>` +
+      Object.entries(diseases).map(([k,p]) => `
+        <div class="disease-row">
+          <div class="disease-name">${displayNames[k] || k}</div>
+          <div class="disease-bar-wrap"><div class="disease-bar" style="width:0%" data-w="${p}%"></div></div>
+          <div class="disease-pct">${p}%</div>
+        </div>`).join('');
+    container.appendChild(dc);
+    setTimeout(() => dc.querySelectorAll('.disease-bar').forEach(b => b.style.width = b.dataset.w), 100);
+  }
+
+  // ⑤ Recommendations
+  if (recs.length) {
+    const rc = document.createElement('div');
+    rc.className = 'recs-card';
+    rc.innerHTML = `<div class="recs-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 11l3 3L22 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" stroke="currentColor" stroke-width="2"/></svg> ICMR Recommendations (${level.toUpperCase()})</div>` +
+      recs.map((r,i) => `<div class="rec-item"><div class="rec-num">${i+1}</div><div class="rec-text">${escHtml(r)}</div></div>`).join('');
+    container.appendChild(rc);
+  }
+}
+
+function riskTitle(level, d) {
+  if (d?.disease_name) return d.disease_name;
+  const t = { emergency:'Emergency — Immediate Care', high:'High Risk — Doctor within 24h', medium:'Moderate Risk — Monitor Closely', low:'Low Risk — Routine Follow-up' };
+  return t[level] || 'Assessment Complete';
+}
+
+function clearAll(rerender = true) {
+  ['hb','sugar','platelets','wbc','bp','hr','spo2','temp','weight','hba1c','cholesterol','symptoms'].forEach(f => {
+    const el = document.getElementById(f);
+    if (el) { el.value = ''; el.style.borderColor = ''; }
+  });
+  if (rerender) {
+    document.getElementById('results').innerHTML = `
+      <div class="empty-state" id="empty-state">
+        <div class="empty-icon">🩺</div>
+        <div class="empty-title">Ready to Analyse</div>
+        <div class="empty-sub">Enter vital signs on the left or pick a sample case.</div>
+      </div>`;
+  }
+}
+
+function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function showToast(msg) {
+  const wrap = document.getElementById('toast-wrap');
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  wrap.appendChild(el);
+  requestAnimationFrame(() => { requestAnimationFrame(() => el.classList.add('show')); });
+  setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 400); }, 3500);
+}
+</script>
+</body>
+</html>

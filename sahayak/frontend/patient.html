@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en" data-role="patient">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Sahayak AI — Patient Dashboard</title>
+  <link rel="stylesheet" href="portal.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>if(typeof pdfjsLib!=="undefined"){pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";}</script>
+
+  <script src="firebase_refresh.js"></script>
+  <script src="offline_sync.js" defer></script>
+</head>
+<body>
+<div class="portal-wrap">
+
+<!-- ── SIDEBAR ─────────────────────────────────────────── -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-logo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 4v4m0 8v4M4 12h4m8 0h4" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/><circle cx="12" cy="12" r="3" fill="#fff"/></svg></div>
+    <span class="sidebar-brand-name">Sahayak <span>AI</span></span>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Patient Portal</div>
+    <div class="nav-item active" data-section="dashboard" onclick="showSection('dashboard',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item" data-section="information" onclick="showSection('information',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      My Information
+    </div>
+    <div class="nav-item" data-section="upload" onclick="showSection('upload',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Upload Reports
+    </div>
+    <div class="nav-item" data-section="reports" onclick="showSection('reports',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      AI Health Reports
+      <span class="nav-badge" id="reports-count" style="display:none">0</span>
+    </div>
+    <div class="nav-item" data-section="records" onclick="showSection('records',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Checkup Records
+    </div>
+    <div class="nav-section-label">Tools</div>
+    <div class="nav-item" data-section="diagnosis" onclick="showSection('diagnosis',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Quick Diagnosis
+    </div>
+    <div class="nav-item" data-section="share" onclick="showSection('share',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      Share with Doctor
+    </div>
+    <div class="nav-section-label" style="margin-top:.5rem">AI Assistant</div>
+    <div class="nav-item" onclick="openHealthAssistant()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Health Assistant
+    </div>
+    <div class="nav-item" id="patient-call-nav" onclick="startPatientVapiCall()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.18h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      Voice Health Call
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-chip">
+      <div class="user-avatar" id="sidebar-avatar">P</div>
+      <div><div class="user-info-name" id="sidebar-name">Loading…</div><div class="user-info-role">Patient</div></div>
+    </div>
+    <button class="btn-logout" onclick="logout()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign Out
+    </button>
+  </div>
+</aside>
+
+<!-- ── MAIN ─────────────────────────────────────────────── -->
+<div class="main-area">
+  <div class="topbar">
+      <div class="net-status" id="net-indicator"><div class="net-dot network-status-dot" id="net-dot-main"></div><span class="network-status-label" id="net-label-main" style="display:none">Online</span></div>
+    <div class="topbar-left">
+      <h1 id="page-title">Dashboard</h1>
+      <p id="page-sub">Your complete health overview</p>
+    </div>
+    <div class="topbar-right">
+      <span id="rate-badge" class="nav-badge" style="background:rgba(22,163,74,.1);color:#15803d;font-size:.75rem;padding:4px 10px;border-radius:100px;font-weight:600">AI Ready</span>
+      <button class="topbar-btn" onclick="showSection('upload',document.querySelector('[data-section=upload]'))">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Upload Report
+      </button>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    <!-- ══════════════════════════════════════════════════ -->
+    <!-- SECTION 1 — DASHBOARD                              -->
+    <!-- ══════════════════════════════════════════════════ -->
+    <div id="sec-dashboard" class="section-view active">
+      <!-- Stat Cards -->
+      <div class="stat-row stat-4" style="margin-bottom:1.5rem">
+        <div class="stat-card">
+          <div class="stat-card-header"><div class="stat-icon stat-icon-orange"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div></div>
+          <div class="stat-value" id="sc-health-val">—</div>
+          <div class="stat-label">Health Score <span style="font-size:.65rem;color:var(--hint)">/100</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-header"><div class="stat-icon stat-icon-blue"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></div></div>
+          <div class="stat-value" id="sc-reports-val">0</div>
+          <div class="stat-label">Reports Uploaded</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-header"><div class="stat-icon stat-icon-green"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div></div>
+          <div class="stat-value" id="sc-checkups-val">0</div>
+          <div class="stat-label">Doctor Visits</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-header"><div class="stat-icon stat-icon-amber"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div></div>
+          <div class="stat-value" id="sc-next-val" style="font-size:1.125rem;letter-spacing:-.3px">—</div>
+          <div class="stat-label">Next Checkup</div>
+        </div>
+      </div>
+
+      <!-- Voice Health Call Card -->
+      <div id="patient-vapi-card" style="background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px solid rgba(227,90,44,.3);border-radius:14px;padding:1.25rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+        <div style="width:44px;height:44px;border-radius:50%;background:rgba(227,90,44,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e35a2c" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.18h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        </div>
+        <div style="flex:1;min-width:180px">
+          <div style="font-weight:700;color:#fff;margin-bottom:.25rem">Voice Health Assistant</div>
+          <div style="font-size:.8rem;color:rgba(255,255,255,.6)">Ask about your medicines, reports or health doubts — voice or chat</div>
+        </div>
+        <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+          <button onclick="startPatientVapiCall()" style="background:#e35a2c;color:#fff;border:none;border-radius:22px;padding:.5rem 1.25rem;font-size:.85rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:.4rem">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.18h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            Voice Call
+          </button>
+          <button onclick="openHealthAssistant()" style="background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:22px;padding:.5rem 1.25rem;font-size:.85rem;font-weight:600;cursor:pointer">
+            💬 Chat
+          </button>
+        </div>
+      </div>
+      <!-- VAPI Overlay for Patient -->
+      <div id="patient-call-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.8);z-index:9999;align-items:center;justify-content:center">
+        <div style="background:#1a1a2e;border:1px solid rgba(227,90,44,.4);border-radius:20px;padding:2rem;max-width:340px;width:90%;text-align:center">
+          <div style="width:72px;height:72px;border-radius:50%;background:rgba(227,90,44,.2);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;border:2px solid #e35a2c">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#e35a2c" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.18h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          </div>
+          <div style="color:#fff;font-weight:700;font-size:1.1rem;margin-bottom:.5rem" id="p-call-status">Connecting…</div>
+          <div style="color:rgba(255,255,255,.6);font-size:.85rem;margin-bottom:1.5rem">Sahayak Health Assistant</div>
+          <div style="color:rgba(255,255,255,.5);font-size:.9rem;margin-bottom:1.5rem" id="p-call-transcript"></div>
+          <button onclick="endPatientCall()" style="background:rgba(239,68,68,.8);color:#fff;border:none;border-radius:22px;padding:.65rem 2rem;font-size:.9rem;font-weight:600;cursor:pointer">End Call</button>
+        </div>
+      </div>
+
+      <!-- Latest Vitals + Trend Chart -->
+      <div class="card-grid-2" style="margin-bottom:1.5rem">
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">Latest Vitals</div><div class="card-subtitle" id="vitals-date">From most recent report</div></div>
+            <button class="btn btn-outline btn-sm" onclick="showSection('upload',document.querySelector('[data-section=upload]'))">+ Add</button>
+          </div>
+          <div class="vitals-grid" id="vitals-grid">
+            <div class="vital-box"><div class="vital-value" id="v-bp">—</div><div class="vital-name">Blood Pressure</div><div class="vital-status" id="v-bp-s">—</div></div>
+            <div class="vital-box"><div class="vital-value" id="v-sugar">—</div><div class="vital-name">Blood Sugar</div><div class="vital-status" id="v-sugar-s">—</div></div>
+            <div class="vital-box"><div class="vital-value" id="v-hb">—</div><div class="vital-name">Haemoglobin</div><div class="vital-status" id="v-hb-s">—</div></div>
+            <div class="vital-box"><div class="vital-value" id="v-spo2">—</div><div class="vital-name">SpO₂</div><div class="vital-status" id="v-spo2-s">—</div></div>
+          </div>
+        </div>
+        <div class="chart-box">
+          <div class="card-header" style="margin-bottom:1rem">
+            <div><div class="chart-box-title">Vital Trends</div><div class="chart-box-sub">Last 6 data points</div></div>
+            <select id="trend-metric-sel" class="form-select" style="width:auto;padding:.35rem .75rem;font-size:.8rem" onchange="switchTrendMetric()">
+              <option value="sugar">Blood Sugar</option>
+              <option value="bp">Blood Pressure</option>
+              <option value="hb">Haemoglobin</option>
+            </select>
+          </div>
+          <div class="chart-area"><canvas id="trend-chart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- AI Insights + Recent Reports -->
+      <div class="card-grid-2">
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">AI Health Insights</div><div class="card-subtitle">From your latest analysis</div></div>
+            <span class="ai-badge">LLaMA 70B</span>
+          </div>
+          <div id="dash-insights">
+            <div class="empty-state" style="padding:2rem">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <h4>No analysis yet</h4><p>Upload a report and the AI will analyse it instantly.</p>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">Recent Reports</div><div class="card-subtitle">Uploaded documents</div></div>
+            <button class="btn btn-outline btn-sm" onclick="showSection('reports',document.querySelector('[data-section=reports]'))">View All</button>
+          </div>
+          <div id="dash-recent-reports">
+            <div class="empty-state" style="padding:2rem">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <h4>No reports yet</h4><p>Upload blood tests, X-rays or any health report to get started.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════ -->
+    <!-- SECTION 2 — MY INFORMATION                         -->
+    <!-- ══════════════════════════════════════════════════ -->
+    <div id="sec-information" class="section-view">
+      <div class="card-grid-2">
+        <!-- Profile card -->
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">Personal Profile</div><div class="card-subtitle">Your health identity</div></div>
+            <button class="btn btn-outline btn-sm" id="edit-profile-btn" onclick="toggleEditProfile()">Edit Profile</button>
+          </div>
+          <!-- View mode -->
+          <div id="profile-view" style="display:grid;gap:.75rem">
+            <div style="display:flex;align-items:center;gap:1.25rem;margin-bottom:.5rem">
+              <div class="user-avatar" style="width:56px;height:56px;font-size:1.5rem;font-weight:800;flex-shrink:0" id="pv-init">P</div>
+              <div>
+                <div style="font-size:1.25rem;font-weight:800;letter-spacing:-.4px" id="pv-name">—</div>
+                <div style="font-size:.875rem;color:var(--muted)" id="pv-age">—</div>
+              </div>
+            </div>
+            <div class="form-grid-2">
+              <div><div class="form-label">Phone</div><div style="font-size:.9rem" id="pv-phone">—</div></div>
+              <div><div class="form-label">Location</div><div style="font-size:.9rem" id="pv-village">—</div></div>
+              <div><div class="form-label">Blood Group</div><div style="font-size:.9rem;color:var(--orange);font-weight:700" id="pv-blood">—</div></div>
+            </div>
+            <div style="margin-top:.5rem"><div class="form-label">Medical History</div><div style="font-size:.875rem;line-height:1.65;color:var(--muted)" id="pv-history">No prior conditions recorded.</div></div>
+          </div>
+          <!-- Edit mode -->
+          <div id="profile-edit" style="display:none">
+            <div class="form-grid-2" style="gap:.875rem">
+              <div class="form-group full"><label class="form-label">Full Name</label><input class="form-input" id="pe-name" placeholder="Your full name"/></div>
+              <div class="form-group"><label class="form-label">Age</label><input class="form-input" type="number" id="pe-age" placeholder="Age"/></div>
+              <div class="form-group"><label class="form-label">Gender</label><select class="form-select" id="pe-gender"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div>
+              <div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="pe-phone" placeholder="+91 XXXXX XXXXX"/></div>
+              <div class="form-group"><label class="form-label">Blood Group</label><select class="form-select" id="pe-blood"><option value="">Select</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>O+</option><option>O-</option><option>AB+</option><option>AB-</option></select></div>
+              <div class="form-group"><label class="form-label">Village</label><input class="form-input" id="pe-village" placeholder="Village"/></div>
+              <div class="form-group"><label class="form-label">District</label><input class="form-input" id="pe-district" placeholder="District"/></div>
+              <div class="form-group full"><label class="form-label">Medical History & Known Conditions</label><textarea class="form-textarea" id="pe-history" placeholder="Diabetes, Hypertension, allergies…"></textarea></div>
+            </div>
+            <div style="display:flex;gap:.75rem;margin-top:1rem">
+              <button class="btn btn-primary" onclick="saveProfile_fn()">Save Changes</button>
+              <button class="btn btn-outline" onclick="toggleEditProfile()">Cancel</button>
+            </div>
+          </div>
+        </div>
+        <!-- Stats summary -->
+        <div style="display:flex;flex-direction:column;gap:1rem">
+          <div class="card">
+            <div class="card-title" style="margin-bottom:1rem">Health Summary</div>
+            <div class="stat-row stat-3" style="margin:0">
+              <div class="stat-card" style="padding:1rem"><div class="stat-value" id="psum-reports" style="font-size:1.5rem">0</div><div class="stat-label">Reports</div></div>
+              <div class="stat-card" style="padding:1rem"><div class="stat-value" id="psum-visits" style="font-size:1.5rem">0</div><div class="stat-label">Visits</div></div>
+              <div class="stat-card" style="padding:1rem"><div class="stat-value" id="psum-score" style="font-size:1.5rem;color:var(--orange)">—</div><div class="stat-label">Score</div></div>
+            </div>
+          </div>
+          <div class="card" style="flex:1">
+            <div class="card-title" style="margin-bottom:.75rem">Data Privacy</div>
+            <div class="insight-card insight-good">🔒 All your health data is stored <strong>only on this device</strong>. Nothing is sent to the cloud unless you explicitly share a doctor code.</div>
+            <div class="insight-card insight-info" style="margin-top:.75rem">🏛️ AI suggestions are grounded in <strong>ICMR & WHO Standard Treatment Guidelines</strong>.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════ -->
+    <!-- SECTION 3 — UPLOAD REPORTS                         -->
+    <!-- ══════════════════════════════════════════════════ -->
+    <div id="sec-upload" class="section-view">
+      <div style="max-width:760px">
+        <div class="card" style="margin-bottom:1.5rem">
+          <div class="card-header">
+            <div><div class="card-title">Add Health Report</div><div class="card-subtitle">Upload a file or fill in manually — AI will extract and analyse automatically</div></div>
+            <div class="tab-bar" style="max-width:220px">
+              <button class="tab-pill" id="mode-upload-btn" onclick="switchUploadMode('upload')">Smart Upload</button>
+              <button class="tab-pill active" id="mode-manual-btn" onclick="switchUploadMode('manual')">Manual Entry</button>
+            </div>
+          </div>
+
+          <!-- Smart Upload Zone -->
+          <div id="upload-section" style="display:none">
+            <div class="upload-zone" id="drop-zone">
+              <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <h4>Click or drag PDF / Image</h4>
+              <p>Blood test, X-ray, prescription, ECG, endoscopy — any medical document</p>
+              <input type="file" id="report-file-input" style="display:none" accept="image/*,application/pdf"/>
+            </div>
+            <div id="upload-progress" style="display:none;margin-top:1rem">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
+                <span style="font-size:.8rem;font-weight:600;color:var(--muted)" id="progress-label">Processing…</span>
+                <span id="upload-filename" style="font-size:.8rem;color:var(--hint)"></span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+            </div>
+            <div id="processing-indicator" style="display:none;align-items:center;gap:.875rem;margin-top:1rem;padding:1rem;background:var(--pale);border-radius:12px">
+              <div class="spinner"></div>
+              <div><div style="font-weight:600;font-size:.875rem;color:var(--orange)">AI is reading your report…</div><div style="font-size:.775rem;color:var(--muted)">Extracting medical values automatically</div></div>
+            </div>
+          </div>
+
+          <!-- Manual / pre-filled Form -->
+          <div id="manual-section">
+            <!-- Extraction Results Feedback -->
+            <div id="extraction-banner" class="extraction-banner" style="display:none">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <span id="extraction-pct-text">Auto-filled 0 fields (0%) via AI</span>
+            </div>
+
+            <div id="red-flags-banner" class="red-flags-banner" style="display:none">
+              <div class="rf-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span id="rf-count">0</span> abnormal values detected
+              </div>
+              <ul class="rf-list" id="rf-list"></ul>
+              <p class="rf-advice">Please review these values carefully before saving.</p>
+            </div>
+
+            <div id="report-form">
+              <div class="form-grid-3" style="gap:.875rem;margin-bottom:1rem">
+                <div class="form-group"><label class="form-label">Report Date *</label><input class="form-input" type="date" id="r-date"/></div>
+                <div class="form-group"><label class="form-label">Report Type</label><select class="form-select" id="r-type"><option>Blood Test</option><option>X-Ray</option><option>ECG</option><option>Endoscopy</option><option>Heart Report</option><option>Urine Test</option><option>CT Scan / MRI</option><option>General Checkup</option><option>Eye Test</option><option>Other</option></select></div>
+                <div class="form-group"><label class="form-label">Hospital / Clinic *</label><input class="form-input" id="r-hospital" placeholder="Name of hospital or clinic"/></div>
+                <div class="form-group"><label class="form-label">Doctor Name</label><input class="form-input" id="r-doctor" placeholder="Dr. Name"/></div>
+                <div class="form-group"><label class="form-label">Next Checkup Date</label><input class="form-input" type="date" id="r-next"/></div>
+              </div>
+              <div style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.875rem">Vital Signs</div>
+              <div class="form-grid-4" style="gap:.875rem;margin-bottom:1.25rem">
+                <div class="form-group"><label class="form-label">Blood Pressure</label><input class="form-input" id="r-bp" placeholder="120/80 mmHg"/></div>
+                <div class="form-group"><label class="form-label">Heart Rate</label><input class="form-input" type="number" id="r-hr" placeholder="72 BPM"/></div>
+                <div class="form-group"><label class="form-label">Temperature (°C)</label><input class="form-input" type="number" step="0.1" id="r-temp" placeholder="36.8"/></div>
+                <div class="form-group"><label class="form-label">SpO₂ (%)</label><input class="form-input" type="number" id="r-spo2" placeholder="98"/></div>
+                <div class="form-group"><label class="form-label">Blood Sugar (mg/dL)</label><input class="form-input" type="number" id="r-sugar" placeholder="90"/></div>
+                <div class="form-group"><label class="form-label">Haemoglobin (g/dL)</label><input class="form-input" type="number" step="0.1" id="r-hb" placeholder="13.5"/></div>
+                <div class="form-group"><label class="form-label">Cholesterol (mg/dL)</label><input class="form-input" type="number" id="r-cholesterol" placeholder="180"/></div>
+                <div class="form-group"><label class="form-label">Weight (kg)</label><input class="form-input" type="number" step="0.1" id="r-weight" placeholder="65"/></div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.875rem"><div style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Clinical Notes</div><button class="btn btn-outline btn-sm" type="button" onclick="voiceFillField('r-symptoms')" style="font-size:.7rem;padding:3px 10px;border-radius:20px">🎤 Voice Fill Symptoms</button></div>
+              <div class="form-grid-2" style="gap:.875rem;margin-bottom:1.5rem">
+                <div class="form-group"><label class="form-label">Symptoms</label><textarea class="form-textarea" id="r-symptoms" placeholder="Fatigue, headache, fever, chest pain…"></textarea></div>
+                <div class="form-group"><label class="form-label">Diagnosis</label><textarea class="form-textarea" id="r-diagnosis" placeholder="Doctor's diagnosis…"></textarea></div>
+                <div class="form-group"><label class="form-label">Medications Prescribed</label><textarea class="form-textarea" id="r-meds" placeholder="Medication name, dose, frequency…"></textarea></div>
+                <div class="form-group"><label class="form-label">Doctor's Notes</label><textarea class="form-textarea" id="r-notes" placeholder="Follow-up instructions, diet advice…"></textarea></div>
+              </div>
+              <div style="display:flex;gap:.875rem;flex-wrap:wrap">
+                <button class="btn btn-primary" id="submit-report-btn" onclick="submitReport()" style="flex:2">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  Save Report + Run AI Analysis
+                </button>
+                <button class="btn btn-outline" onclick="document.querySelectorAll('#report-form input,#report-form textarea,#report-form select').forEach(e=>{if(e.type!=='select-one')e.value=''})" style="flex:1">Clear Form</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI notice -->
+        <div class="insight-card insight-info">
+          <strong>How AI analysis works:</strong> After you save a report, LLaMA 70B cross-references your vitals and symptoms against ICMR Standard Treatment Guidelines and WHO protocols. You get a risk level, clinical summary, and actionable steps — all approved frameworks, no guesswork.
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════ -->
+    <!-- SECTION 4 — AI HEALTH REPORTS                      -->
+    <!-- ══════════════════════════════════════════════════ -->
+    <div id="sec-reports" class="section-view">
+      <!-- Charts row -->
+      <div class="card-grid-3" style="margin-bottom:1.5rem">
+        <div class="chart-box">
+          <div class="chart-box-title">Blood Sugar Trend</div>
+          <div class="chart-box-sub">mg/dL — Normal &lt;100, Diabetic ≥200</div>
+          <div class="chart-area"><canvas id="reports-sugar-chart"></canvas></div>
+        </div>
+        <div class="chart-box">
+          <div class="chart-box-title">Haemoglobin Trend</div>
+          <div class="chart-box-sub">g/dL — Normal ≥12 (F) / ≥13 (M)</div>
+          <div class="chart-area"><canvas id="reports-hb-chart"></canvas></div>
+        </div>
+        <div class="chart-box">
+          <div class="chart-box-title">Blood Pressure Trend</div>
+          <div class="chart-box-sub">Systolic mmHg — Normal &lt;120, High ≥140</div>
+          <div class="chart-area"><canvas id="reports-bp-chart"></canvas></div>
+        </div>
+      </div>
+      <!-- Reports list -->
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">All Reports</div><div class="card-subtitle">Oldest to newest — nothing ever deleted</div></div>
+          <div style="display:flex;gap:.75rem">
+            <button class="btn btn-outline btn-sm" onclick="if(S.reports[0]) generatePatientPDF(S.reports[0].id)">⬇ Download Full PDF Report</button>
+            <button class="btn btn-primary btn-sm" onclick="showSection('upload',document.querySelector('[data-section=upload]'))">+ Add Report</button>
+          </div>
+        </div>
+        <div id="reports-list"></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════ -->
+    <!-- SECTION 5 — CHECKUP RECORDS                        -->
+    <!-- ══════════════════════════════════════════════════ -->
+    <div id="sec-records" class="section-view">
+      <div class="card-grid-2">
+        <div class="card" style="grid-column:1/-1">
+          <div class="card-header">
+            <div><div class="card-title">Upcoming Appointments</div><div class="card-subtitle">Scheduled follow-up visits</div></div>
+          </div>
+          <div id="upcoming-appts"><div style="font-size:.875rem;color:var(--muted);padding:.5rem 0">No upcoming appointments recorded.</div></div>
+        </div>
+        <div class="card" style="grid-column:1/-1">
+          <div class="card-header">
+            <div><div class="card-title">Visit Timeline</div><div class="card-subtitle" id="checkup-count">All doctor visits</div></div>
+          </div>
+          <div id="checkup-timeline" class="timeline"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════ -->
+    <!-- SECTION 6 — QUICK AI DIAGNOSIS                     -->
+    <!-- ══════════════════════════════════════════════════ -->
+    <div id="sec-diagnosis" class="section-view">
+      <div class="card-grid-2">
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">Symptom Analysis</div><div class="card-subtitle">Describe your symptoms in any language</div></div><span class="ai-badge">ICMR · WHO</span></div>
+          <div class="form-group" style="margin-bottom:1rem">
+            <label class="form-label">Describe your symptoms</label>
+            <textarea class="form-textarea" id="diag-input" style="min-height:130px" placeholder="Example: Fever for 3 days, headache, body aches, chills in the evening. No cough. Slight nausea."></textarea>
+          </div>
+          <div style="display:flex;gap:.75rem">
+            <button class="btn btn-primary" id="diag-btn" onclick="runDiagnosis()" style="flex:2">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              Analyse Symptoms
+            </button>
+            <button class="btn btn-outline" id="voice-btn" onclick="recordVoice()" style="flex:1">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+              Voice Input
+            </button>
+          </div>
+          <div class="insight-card insight-info" style="margin-top:1rem">
+            <strong>Supported languages:</strong> Hindi, Kannada, Tamil, Telugu, Bengali, Malayalam, Marathi, English and more via Whisper ASR.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">AI Assessment</div><div class="card-subtitle">Based on ICMR Standard Treatment Guidelines</div></div>
+          <div id="diag-output">
+            <div class="empty-state" style="padding:2.5rem">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              <h4>Ready for analysis</h4>
+              <p>Describe your symptoms on the left and click Analyse to get instant ICMR-based triage.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="insight-card insight-warning" style="margin-top:1.5rem">
+        ⚠ <strong>Important:</strong> This AI triage is based on ICMR guidelines and is not a substitute for professional medical diagnosis. In case of emergency, call 108 or go to the nearest hospital immediately.
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════ -->
+    <!-- SECTION 7 — SHARE WITH DOCTOR                      -->
+    <!-- ══════════════════════════════════════════════════ -->
+    <!-- VAPI Voice Settings -->
+    <div id="sec-voice-settings" class="section-view" style="padding:1.5rem">
+      <h2 style="margin-bottom:1.5rem;font-size:1.4rem;font-weight:800">Voice Assistant Settings</h2>
+      <div class="card" style="max-width:520px">
+        <div class="card-header"><div class="card-title">VAPI Configuration</div></div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:1rem">
+          <div><label style="font-size:.8rem;font-weight:600;color:var(--muted);display:block;margin-bottom:.4rem">VAPI Public Key</label>
+            <input id="p-vapi-key" type="password" placeholder="vapi_pub_xxxx…" style="width:100%;padding:.6rem .9rem;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text)"/>
+          </div>
+          <div><label style="font-size:.8rem;font-weight:600;color:var(--muted);display:block;margin-bottom:.4rem">Assistant ID (optional)</label>
+            <input id="p-vapi-aid" placeholder="Leave blank — system auto-creates agent" style="width:100%;padding:.6rem .9rem;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text)"/>
+          </div>
+          <button onclick="savePatientVapiSettings()" style="background:#e35a2c;color:#fff;border:none;border-radius:22px;padding:.6rem 1.5rem;font-size:.875rem;font-weight:600;cursor:pointer;align-self:flex-start">Save &amp; Test</button>
+          <div id="p-vapi-result" style="display:none;padding:.75rem;border-radius:8px;font-size:.8rem;background:var(--surface2)"></div>
+          <div style="font-size:.75rem;color:var(--muted);line-height:1.8;border-top:1px solid var(--border);padding-top:.75rem">
+            <strong>Get your free VAPI key:</strong><br>
+            1. Go to <a href="https://vapi.ai" target="_blank" style="color:#e35a2c">vapi.ai</a> &rarr; Sign up free<br>
+            2. Dashboard &rarr; API Keys &rarr; Copy <strong>Public Key</strong><br>
+            3. Paste above &rarr; Save &amp; Test.<br>
+            <em>No Assistant ID needed &mdash; the system creates a personalised agent using your health data.</em><br><br>
+            <strong>You can ask:</strong> &ldquo;When to take my Metformin?&rdquo; &bull; &ldquo;What does Hb 8.4 mean?&rdquo; &bull; &ldquo;Is my BP normal?&rdquo;
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="sec-share" class="section-view">
+      <div class="card-grid-2">
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">Doctor Access Code</div><div class="card-subtitle">Give this code to any doctor to access your complete records</div></div></div>
+          <div class="share-code-display" style="margin-bottom:1.5rem">
+            <div class="share-code-label">Your Patient Code</div>
+            <div class="share-code-value" id="share-code-value">••••••••</div>
+            <div class="share-code-hint" id="share-code-exp">Generate a code to share with your doctor</div>
+          </div>
+          <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+            <button class="btn btn-primary" id="gen-code-btn" onclick="generateShareCode()" style="flex:1">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              Generate New Code
+            </button>
+            <button class="btn btn-outline" onclick="copyShareCode()" style="flex:1">📋 Copy Code</button>
+            <button class="btn btn-ghost" onclick="revokeCode()" style="color:var(--danger)">Revoke</button>
+          </div>
+          <div id="doctor-access-list" style="margin-top:1rem"></div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="margin-bottom:1rem">How It Works</div>
+          <div class="timeline">
+            <div class="tl-item"><div class="tl-dot-col"><div class="tl-dot filled"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-title">Generate your code</div><div class="tl-desc">Tap "Generate New Code" to create a unique patient access code like SAHA-7293.</div></div></div>
+            <div class="tl-item"><div class="tl-dot-col"><div class="tl-dot filled"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-title">Share with your doctor</div><div class="tl-desc">Tell the code to any doctor you trust — verbally, by message, or printed on paper.</div></div></div>
+            <div class="tl-item"><div class="tl-dot-col"><div class="tl-dot filled"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-title">Doctor accesses your records</div><div class="tl-desc">The doctor enters your code in their Sahayak portal to see all your reports, vitals, history and AI analysis.</div></div></div>
+            <div class="tl-item"><div class="tl-dot-col"><div class="tl-dot"></div></div><div class="tl-content"><div class="tl-title">Revoke anytime</div><div class="tl-desc">Generate a new code to revoke the old one. Your data stays on your device — only you control access.</div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="insight-card insight-info" style="margin-top:1.5rem">
+        🔒 <strong>Privacy First:</strong> Your health data is stored only on this device. When you share a code, the doctor gets read-only access. Generating a new code immediately revokes the previous one.
+      </div>
+    </div>
+
+  </div><!-- end .page-content -->
+</div><!-- end .main-area -->
+</div><!-- end .portal-wrap -->
+
+<div id="toast" class="toast" style="display:none"></div>
+
+<script>
+// Set today's date in the date field on load
+document.addEventListener('DOMContentLoaded', () => {
+  const dt = document.getElementById('r-date');
+  if (dt) dt.value = new Date().toISOString().split('T')[0];
+});
+</script>
+<script src="report_generator.js"></script>
+<script src="patient.js"></script>
+<script>
+function openPatientChatbot() {
+  var pid  = localStorage.getItem('sahayak_patient_id') || '';
+  var name = localStorage.getItem('sahayak_name') || 'Patient';
+  window.open('chatbot_patient.html?pid=' + encodeURIComponent(pid) + '&name=' + encodeURIComponent(name),
+    '_blank', 'width=440,height=700,resizable=yes');
+}
+</script>
+<script>
+/* VAPI settings for patient portal */
+function savePatientVapiSettings() {
+  var key = document.getElementById('p-vapi-key').value.trim();
+  var aid = document.getElementById('p-vapi-aid').value.trim();
+  if (!key) { alert('Please enter your VAPI Public Key'); return; }
+  localStorage.setItem('patient_vapi_key', key);
+  localStorage.setItem('vapi_public_key', key);
+  if (aid) { localStorage.setItem('patient_vapi_aid', aid); localStorage.setItem('vapi_assistant_id', aid); }
+  var res = document.getElementById('p-vapi-result');
+  if (res) { res.style.display='block'; res.style.color='#22c55e';
+    res.textContent = '\u2705 VAPI key saved! Click Voice Call on dashboard to test.'; }
+}
+document.addEventListener('DOMContentLoaded', function() {
+  var k = localStorage.getItem('patient_vapi_key') || '';
+  var a = localStorage.getItem('patient_vapi_aid') || '';
+  var ke = document.getElementById('p-vapi-key'); if(ke&&k) ke.value=k;
+  var ae = document.getElementById('p-vapi-aid'); if(ae&&a) ae.value=a;
+});
+</script>
+</body>
+</html>

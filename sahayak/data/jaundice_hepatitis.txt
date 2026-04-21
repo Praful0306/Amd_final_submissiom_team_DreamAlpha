@@ -1,0 +1,47 @@
+JAUNDICE / HEPATITIS A & E — ICMR India Guidelines
+
+CLINICAL FEATURES
+Yellow discolouration of sclera (eyes) first, then skin.
+Dark urine (tea/cola coloured), pale stools (clay-coloured).
+Fatigue, loss of appetite (anorexia), nausea, vomiting, abdominal pain (right upper quadrant), low-grade fever.
+Hepatitis A: Acute, self-limiting, spreads faecal-oral, more common in children.
+Hepatitis E: More severe, especially dangerous in pregnancy (maternal mortality up to 25%).
+
+GRADING JAUNDICE
+Mild: Serum bilirubin 1–3 mg/dL.
+Moderate: 3–10 mg/dL.
+Severe: > 10 mg/dL (indicates serious liver dysfunction).
+
+DIAGNOSIS
+LFT: Raised AST/ALT (often 10× normal in hepatitis A/E), raised bilirubin (direct + indirect).
+Hepatitis A: Anti-HAV IgM (acute infection).
+Hepatitis E: Anti-HEV IgM.
+Urine bilirubin: positive (urobilinogen).
+Prothrombin time: prolonged in severe hepatitis (liver failure risk).
+INR/PT > 1.5 = significant liver dysfunction.
+
+TREATMENT
+No specific antiviral for Hepatitis A or E.
+Supportive: rest, adequate nutrition, oral hydration.
+Avoid: alcohol, hepatotoxic drugs (Paracetamol in high dose, anti-TB drugs, herbal remedies).
+Most cases resolve in 3–6 weeks.
+Hepatitis E in Pregnancy: requires hospital admission (high risk of fulminant failure).
+
+RED FLAGS (Refer urgently)
+- Altered sensorium, confusion, hepatic encephalopathy
+- Severe vomiting preventing oral intake
+- Prolonged PT/INR > 1.5 (bleeding risk)
+- Pregnancy with jaundice
+- Bilirubin > 10 mg/dL
+- Ascites (abdominal fluid)
+- Spontaneous bleeding (gums, under skin)
+
+ASHA ACTION
+1. Suspect jaundice: yellow eyes + dark urine + fatigue.
+2. Refer to PHC for LFT and hepatitis serology.
+3. Counsel: rest, avoid heavy work.
+4. Dietary advice: small frequent meals, avoid fatty/spicy food.
+5. Strict hygiene: safe drinking water (boil/chlorinate), handwashing.
+6. Pregnant women with jaundice: same-day referral to hospital — do not wait.
+7. Investigate water source for community outbreak (HAV/HEV spread via contaminated water).
+8. Report cluster (≥ 3 cases in community within 2 weeks) to BMO.

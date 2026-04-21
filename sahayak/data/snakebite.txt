@@ -1,0 +1,47 @@
+SNAKE BITE — ICMR / MoHFW India Emergency Guidelines
+
+OVERVIEW
+India: 50,000+ snakebite deaths annually. Venomous species: Spectacled Cobra (Naja naja), Russell's Viper (Daboia russelii), Common Krait (Bungarus caeruleus), Saw-scaled Viper (Echis carinatus) — "Big Four".
+
+TYPES OF VENOM
+Neurotoxic (Krait, Cobra): Affects nerves — drooping eyelids, blurred vision, difficulty swallowing, respiratory paralysis. Fang marks may be minimal.
+Cytotoxic/Haemotoxic (Viper): Local tissue destruction + coagulopathy — massive swelling, bleeding from wound, systemic bleeding, blood in urine, DIC.
+Myotoxic (Sea snake): Muscle breakdown (rhabdomyolysis), dark urine.
+
+IMMEDIATE FIRST AID (CRITICAL)
+1. Immobilise the bitten limb — keep still and at or below heart level.
+2. Remove rings, bangles, tight clothing near bite site.
+3. Mark the edge of swelling with pen + time (to track progression).
+4. Transport IMMEDIATELY to hospital — do not delay.
+5. Do NOT: incise/cut the wound, suck venom, apply tourniquet, apply ice/heat, give oral medications.
+6. Try to note snake description (colour, pattern, size) — do not try to catch snake.
+7. Keep patient calm — reduce heart rate to slow venom spread.
+
+HOSPITAL TREATMENT
+Anti-snake venom (ASV): polyvalent ASV — ONLY effective treatment. Administer IV.
+Test dose (0.1 mL SC/ID) then full dose IV over 30–60 min.
+10 vials initial dose for systemic envenomation; repeat if no improvement at 1 hour.
+Premedication with Adrenaline 0.25 mg SC + Promethazine IV to prevent ASV anaphylaxis.
+Neostigmine (+ Atropine): for neurotoxic envenomation — reversal of paralysis.
+Ventilator support: for respiratory paralysis.
+
+SIGNS OF SYSTEMIC ENVENOMATION (requires ASV)
+Haemotoxic: Non-clotting blood (20-minute whole blood clotting test — WBCT20 > 20 min), spontaneous bleeding from gums/wound/IV site, haematuria.
+Neurotoxic: Ptosis (drooping eyelid), diplopia, difficulty swallowing/breathing, ascending paralysis.
+Cytotoxic: Extensive local necrosis, spreading beyond bite site.
+
+RED FLAGS (ALL snakebite patients must go to hospital)
+- Any neurotoxic signs → ventilation risk — do not leave alone
+- Respiratory distress → immediate intubation at hospital
+- Signs of systemic bleeding → ASV urgently
+- Renal failure (no urine output) — dialysis may be needed
+- Anaphylaxis after ASV → Adrenaline immediately
+
+ASHA ACTION
+1. First aid as above — immobilise + immediate transport.
+2. Reassure patient (panic increases heart rate and venom spread).
+3. Call 108 ambulance.
+4. Do NOT give any home remedies, tourniquets, or herbal medicines.
+5. All snakebite victims go to hospital regardless of symptoms — krait bite may be painless but lethal.
+6. Record time of bite, snake description, progression of swelling.
+7. Community: educate on sleeping on raised beds/cots in endemic areas, torch at night, boots in fields.

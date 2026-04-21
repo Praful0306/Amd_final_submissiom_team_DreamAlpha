@@ -1,0 +1,51 @@
+ANAEMIA — ICMR / NHM India Guidelines
+
+DEFINITION (ICMR Reference Values)
+Haemoglobin (Hb) thresholds:
+- Children 6 months–5 years: Normal ≥ 11.0, Mild 10–10.9, Moderate 7–9.9, Severe < 7 g/dL
+- Children 5–11 years: Normal ≥ 11.5, Mild 11–11.4, Moderate 8–10.9, Severe < 8 g/dL
+- Non-pregnant women: Normal ≥ 12.0, Mild 11–11.9, Moderate 8–10.9, Severe < 8 g/dL
+- Pregnant women: Normal ≥ 11.0, Mild 10–10.9, Moderate 7–9.9, Severe < 7 g/dL
+- Men: Normal ≥ 13.0, Mild 11–12.9, Moderate 8–10.9, Severe < 8 g/dL
+
+CLINICAL FEATURES
+Fatigue, weakness, pallor (conjunctival, palmar, nail-bed), dyspnoea on exertion, palpitations, dizziness, cold extremities, angular stomatitis, glossitis, koilonychia (spoon nails — iron deficiency), jaundice (haemolytic anaemia).
+Severe: cardiac failure features, pedal oedema, tachycardia at rest, altered sensorium.
+
+CAUSES IN INDIA
+Iron Deficiency Anaemia (IDA): most common — poor diet, blood loss (worms, menorrhagia), malabsorption.
+Nutritional: Folate/B12 deficiency → megaloblastic anaemia.
+Haemolytic: Sickle cell, G6PD deficiency, malaria.
+Chronic disease: TB, HIV, renal failure.
+Pregnancy-related.
+
+DIAGNOSIS
+CBC: Hb, MCV (microcytic = iron deficiency; macrocytic = B12/folate), WBC, platelets.
+Peripheral blood smear: hypochromic microcytic (IDA), oval macrocytes (B12/folate deficiency).
+Serum ferritin (if available): < 12 ng/mL confirms iron deficiency.
+Hb electrophoresis: for sickle cell, thalassaemia.
+Stool for ova/cysts: hookworm infestation.
+
+TREATMENT — NHM Protocol
+IDA (Mild/Moderate): Iron + Folic Acid tablet daily.
+Children: IFA syrup 1 mg/kg/day elemental iron × 100 days.
+Pregnant women: 2 IFA tablets daily throughout pregnancy + 180 days postpartum.
+Adolescent girls: Weekly IFA tablet under WIFS programme.
+Severe anaemia: Blood transfusion if Hb < 7 g/dL (or < 8 in pregnancy).
+B12 deficiency: Vitamin B12 IM injections.
+Deworming: Albendazole 400 mg single dose (all school-age children, pregnant women after 1st trimester).
+
+RED FLAGS
+- Hb < 7 g/dL (Hb < 8 in pregnant woman) — refer for transfusion
+- Signs of cardiac decompensation (oedema, tachycardia at rest)
+- Altered sensorium
+- Failure to respond to oral iron after 4 weeks
+
+ASHA ACTION
+1. Screen Hb using HemoCue or colour scale card.
+2. Distribute IFA tablets under NHM programme.
+3. Counsel on iron-rich diet (green leafy vegetables, jaggery, meat, pulses).
+4. Administer Albendazole deworming per schedule.
+5. Refer severe anaemia (Hb < 7) to PHC urgently.
+6. Pregnant women: ensure daily IFA compliance.
+7. Report severe anaemia in pregnancy immediately.
