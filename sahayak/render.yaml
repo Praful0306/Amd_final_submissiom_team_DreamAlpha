@@ -3,14 +3,14 @@ services:
     name: sahayak-api
     env: python
     region: singapore
-    plan: free
+    plan: starter
     buildCommand: >
-      pip install uv &&
-      uv venv &&
-      uv pip install -r requirements.txt &&
-      uv run python data/ingest_guidelines.py
-    startCommand: uv run uvicorn main:app --host 0.0.0.0 --port $PORT
+      pip install -r requirements.txt &&
+      python data/ingest_guidelines.py
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.11
       - key: FRONTEND_URL
         value: https://sahayak-ai.vercel.app
       - key: GROQ_API_KEY_1
@@ -40,4 +40,4 @@ services:
       - key: EMBEDDING_MODEL
         value: all-MiniLM-L6-v2
       - key: DATABASE_URL
-        value: sqlite:///./patients.db
+        value: sqlite:////var/data/patients.db
