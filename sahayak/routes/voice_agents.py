@@ -11,6 +11,7 @@ import os
 from datetime import datetime
 from typing import Optional
 
+import httpx
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy import text
@@ -228,6 +229,15 @@ class HandoffRequest(BaseModel):
     asha_phone: Optional[str] = None
     fallback_phone: Optional[str] = None
     reason: Optional[str] = None
+
+
+class TriggerFollowupRequest(BaseModel):
+    patient_id: int
+    phone_number: str
+    patient_name: Optional[str] = None
+    asha_user_id: Optional[int] = None
+    asha_name: Optional[str] = None
+    lang: str = "kn"
 
 
 def _create_voice_log(
@@ -627,4 +637,100 @@ async def transfer_to_asha(req: HandoffRequest):
         "asha_name": asha_name,
         "target_phone": target_phone,
         "message": f"Connect the caller to {asha_name} at {target_phone}",
+    }
+
+
+@router.post("/trigger-followup")
+async def trigger_followup(req: TriggerFollowupRequest):
+    retell_api_key = os.getenv("RETELL_API_KEY", "").strip()
+    retell_agent_id = os.getenv("RETELL_ASHA_AGENT_ID", "").strip()
+    from_number = os.getenv("RETELL_FROM_NUMBER", "").strip()
+
+    if not retell_api_key:
+        raise HTTPException(status_code=500, detail="RETELL_API_KEY is not configured.")
+    if not retell_agent_id:
+        raise HTTPException(status_code=500, detail="RETELL_ASHA_AGENT_ID is not configured.")
+    if not from_number:
+        raise HTTPException(status_code=500, detail="RETELL_FROM_NUMBER is not configured.")
+
+    patient = _fetch_patient_record(patient_id=req.patient_id, phone=req.phone_number, name=req.patient_name or "")
+    patient_name = req.patient_name or (patient["name"] if patient else None) or "Patient"
+    patient_phone = req.phone_number or (patient["phone"] if patient else "")
+    asha_user_id = req.asha_user_id or (patient["asha_worker_id"] if patient else None)
+    asha_name = req.asha_name or "ASHA Worker"
+
+    if asha_user_id and not req.asha_name:
+        with engine.connect() as conn:
+            row = conn.execute(
+                text("SELECT full_name FROM users WHERE id=:id AND role='asha'"),
+                {"id": asha_user_id},
+            ).fetchone()
+            if row and row[0]:
+                asha_name = row[0]
+
+    payload = {
+        "from_number": from_number,
+        "to_number": patient_phone,
+        "override_agent_id": retell_agent_id,
+        "metadata": {
+            "patient_id": req.patient_id,
+            "patient_name": patient_name,
+            "asha_user_id": asha_user_id,
+            "asha_name": asha_name,
+            "agent_type": "asha_followup",
+        },
+        "retell_llm_dynamic_variables": {
+            "patient_name": patient_name,
+            "asha_name": asha_name,
+            "language": req.lang,
+        },
+    }
+
+    headers = {
+        "Authorization": f"Bearer {retell_api_key}",
+        "Content-Type": "application/json",
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=30) as client:
+            response = await client.post(
+                "https://api.retellai.com/v2/create-phone-call",
+                json=payload,
+                headers=headers,
+            )
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=f"Retell request failed: {exc}") from exc
+
+    data = response.json() if response.content else {}
+    if response.status_code != 201:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Retell call failed: {data or response.text}",
+        )
+
+    log_id = _create_voice_log(
+        agent_type="asha_followup_trigger",
+        patient_id=req.patient_id,
+        doctor_id=None,
+        asha_user_id=asha_user_id,
+        patient_name=patient_name,
+        patient_phone=patient_phone,
+        summary="Outbound ASHA follow-up call initiated",
+        outcome="call_initiated",
+        urgency="low",
+        requested_action="retell_outbound_call",
+        needs_handoff=False,
+        handoff_target=None,
+        metadata={
+            "retell_call_id": data.get("call_id"),
+            "retell_agent_id": data.get("agent_id"),
+            "retell_status": data.get("call_status"),
+        },
+    )
+
+    return {
+        "success": True,
+        "status": "call_initiated",
+        "log_id": log_id,
+        "retell_response": data,
     }
